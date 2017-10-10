@@ -1,0 +1,22 @@
+{
+  "extension_name": {
+    "message": "Tab Groups",
+    "description": "Name of the extension."
+  },
+
+  "extension_description": {
+    "message": "Tab Groups are an easy way to organize a lot of tabs. You can visually group related tabs, switch between groups, and quickly search through all of your tabs to switch to a specific one.",
+    "description": "Description of the extension."
+  },
+
+  "tab_group_name_placeholder": {
+    "message": "Group $INDEX$",
+    "description": "This is used as a placeholder name for new groups",
+    "placeholders": {
+      "index": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  }
+}

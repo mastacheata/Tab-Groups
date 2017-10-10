@@ -1,0 +1,44 @@
+{
+  "manifest_version": 2,
+  "name": "__MSG_extension_name__",
+  "description": "__MSG_extension_description__",
+  "version": "3.0.0a1",
+  "applications": {
+    "gecko": {
+      "strict_min_version": "54.0a1"
+    }
+  },
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "default_locale": "en",
+  "background": {
+    "scripts": [ "background.js" ]
+  },
+  "browser_action": {
+    "browser_style": true,
+    "default_icon": "icons/action-inverted.png",
+    "default_title": "Tab Groups",
+    "default_popup": "action.html"
+  },
+  "chrome_url_overrides": {
+    "newtab": "sidebar.html"
+  },
+  "sidebar_action": {
+    "default_icon": "icons/sidebar.png",
+    "default_title" : "Tab Groups",
+    "default_panel": "sidebar.html"
+  },
+  "options_ui": {
+    "browser_style": true,
+    "page": "options.html"
+  },
+  "commands": {
+    "_execute_sidebar_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+E"
+      }
+    }
+  }
+}
