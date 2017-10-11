@@ -3,6 +3,11 @@ p1
 - options
   - storage
   - duplicate contents
+- action
+  - list groups with counts
+  - 2nd screen for open tabs
+  - tab search
+  - close on selection
 - separate common service to be called by different components
 - content in sidebar
 - test multi-component rendering with bindings to action and sidebar
@@ -14,6 +19,7 @@ p1
 
 p2
 - save settings and tabs to sync
+  - determine what current sync format is, can leverage for shared structure?
 - toggle dark and light theme
 - localization
   - https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Internationalization
@@ -24,4 +30,5 @@ p2
   - https://vuejs.org/v2/guide/typescript.html
 
 p3
-- is bookmark folder option possible
+- move window to group
+- is bookmark folder option possible?

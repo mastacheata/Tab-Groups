@@ -1,7 +1,9 @@
 <template>
-  <section>
-    <div>@todo options page contents</div>
-  </section>
+  <body class="options">
+    <section>
+      <div>@todo options page contents</div>
+    </section>
+  </body>
 </template>
 
 <script>

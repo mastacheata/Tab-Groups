@@ -1,7 +1,9 @@
 <template>
-  <div class="page">
-    <div v-on:click="createTabGroup()">New Group</div>
-  </div>
+  <body class="tab-groups">
+    <div class="page">
+      <div v-on:click="createTabGroup()">New Group</div>
+    </div>
+  </body>
 </template>
 
 <script>

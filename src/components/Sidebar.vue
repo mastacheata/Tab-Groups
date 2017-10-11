@@ -1,15 +1,17 @@
 <template>
-  <div>
-    <ul>
-      <li v-for="tab_group in tab_groups" v-bind:key="tab_group.id">
-        {{ tab_group.name }}
-        <ul>
-          <li v-for="tab in tab_group.tabs" v-bind:key="tab.id">
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </div>
+  <body class="sidebar">
+    <div>
+      <ul>
+        <li v-for="tab_group in tab_groups" v-bind:key="tab_group.id">
+          {{ tab_group.name }}
+          <ul>
+            <li v-for="tab in tab_group.tabs" v-bind:key="tab.id">
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </body>
 </template>
 
 <script>

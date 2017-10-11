@@ -9,6 +9,11 @@
     "description": "Description of the extension."
   },
 
+  "tab_group_manage": {
+    "message": "Manage my groups",
+    "description": "Link to tab group page"
+  },
+
   "tab_group_name_placeholder": {
     "message": "Group $INDEX$",
     "description": "This is used as a placeholder name for new groups",
@@ -18,5 +23,10 @@
         "example": "1"
       }
     }
+  },
+
+  "tab_search_placeholder": {
+    "message": "Search for a tab…",
+    "description": "Placeholder for tab search field"
   }
 }
