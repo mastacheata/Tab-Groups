@@ -7,12 +7,15 @@
 
       <!-- @todo style classes -->
       <div class="panel-section panel-section-list panel-section-content">
-        <div class="panel-list-item" v-for="tab_group in tab_groups" v-bind:key="tab_group.id">
-          <span class="text" v-on:click="selectTabGroup( tab_group.id )">{{ tab_group.name }}</span>
-          <div>
+        <div class="panel-list-item" v-for="tab_group in tab_groups" v-bind:key="tab_group.id" v-bind:class="{ 'active': tab_group.id == 2 }">
+          <div class="text" v-on:click="selectTabGroup( tab_group.id )">
+            {{ tab_group.name }}
+          </div>
+          <div v-on-click="viewTabGroupTabs( tab_group.id )">
             <!-- @todo hover effect -->
             <!-- @todo proper plural -->
             <!-- {{ tab_group.tabs.length }} tab(s) -->
+            6 tabs
           </div>
         </div>
       </div>
@@ -35,6 +38,9 @@
 export default {
   name: 'action',
   data() {
+    // @todo load from the store
+    // browser.tabs.query({ currentWindow: true, windowType: 'normal' })
+
     return {
       tab_groups: [
         {
@@ -72,6 +78,10 @@ export default {
       // @todo
       console.info('Action.selectTabGroup', tab_group_id)
     },
+    viewTabGroupTabs: function( tab_group_id ) {
+      // @todo
+      console.info('Action.viewTabGroupTabs', tab_group_id)
+    },
     updateQueryText: function() {
       this.content = this.query_text
       // @todo handle query change with page transition
@@ -101,6 +111,19 @@ export default {
 
 .panel-section-content {
   min-height: 100px;
+  max-height: 200px;
+  overflow: -moz-scrollbars-none;
+}
+
+.panel-list-item {
+  min-height: 24px;
+  max-height: 32px;
+}
+
+.panel-list-item.active {
+  background-color: rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .panel-section-footer-button {
@@ -117,7 +140,8 @@ export default {
 /* @todo should be moved to common css */
 .icon {
   height: 16px;
-  width: 20px;
+  width: 16px;
+  margin-right: 4px;
 }
 
 .icon-tab-groups {
