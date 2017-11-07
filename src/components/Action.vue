@@ -11,7 +11,7 @@
           <div class="text" v-on:click="selectTabGroup( tab_group.id )">
             {{ tab_group.name }}
           </div>
-          <div v-on-click="viewTabGroupTabs( tab_group.id )">
+          <div v-on:click="viewTabGroupTabs( tab_group.id )">
             <!-- @todo hover effect -->
             <!-- @todo proper plural -->
             <!-- {{ tab_group.tabs.length }} tab(s) -->

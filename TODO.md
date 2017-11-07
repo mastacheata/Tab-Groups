@@ -25,6 +25,8 @@ p2
   - determine what current sync format is, can leverage for shared structure?
 - toggle dark and light theme
 - drag and drop
+- styling
+  - http://design.firefox.com/photon/visuals/color.html
 - localization
   - https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Internationalization
   - investigate cleaner way to map localizations in components
@@ -42,3 +44,8 @@ p3
 - animations
 - move window to group
 - is bookmark folder option possible?
+
+other
+- investigate weh
+  - https://github.com/mi-g/weh
+  - should use standard form spec for preferences

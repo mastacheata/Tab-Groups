@@ -1,4 +1,5 @@
 import alias from 'rollup-plugin-alias'
+// import async from 'rollup-plugin-async'
 import vue from 'rollup-plugin-vue'
 import buble from 'rollup-plugin-buble'
 import nodeResolve from 'rollup-plugin-node-resolve'
@@ -9,6 +10,7 @@ import livereload from 'rollup-plugin-livereload'
 import serve from 'rollup-plugin-serve'
 
 let plugins = [
+  // async(),
   alias({
     vue$: 'vue/dist/vue.common.js'
   }),
@@ -28,7 +30,7 @@ let plugins = [
 ]
 
 let config = {
-  input: './src/main.js',
+  input: './src/main.mjs',
   output: {
     file: './dist/assets/js/app.js',
     format: 'umd'
