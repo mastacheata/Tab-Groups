@@ -14,7 +14,6 @@ export default {
   },
   methods: {
     createTabGroup: function() {
-      debugger;
     }
   }
 }

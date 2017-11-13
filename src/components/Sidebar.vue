@@ -70,7 +70,6 @@ export default {
           }
 
           const loadState = ( state ) => {
-            debugger
             const state_window = state.windows.find( ( window ) => window.id = this.window_id )
             if( state_window ) {
               console.info('@todo update data from state', state)

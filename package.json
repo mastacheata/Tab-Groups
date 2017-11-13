@@ -8,7 +8,8 @@
     "build:autoprefixer": "postcss --use autoprefixer -o dist/assets/css/app.css dist/assets/css/app.css",
     "build:cssnano": "cssnano dist/assets/css/app.css dist/assets/css/app.css",
     "dev": "cross-env NODE_ENV=development rollup -cw",
-    "test": "node --experimental-modules test/index.mjs"
+    "test": "node --experimental-modules test/index.mjs",
+    "debug": "./node_modules/.bin/web-ext --source-dir dist run"
   },
   "author": "Alex McCausland <alex.mccausland@gmail.com>",
   "license": "MPL-2.0",
@@ -41,6 +42,7 @@
     "rollup-plugin-serve": "^0.4.2",
     "rollup-plugin-uglify": "^2.0.1",
     "rollup-plugin-vue": "^2.4.0",
-    "vue-template-compiler": "^2.4.4"
+    "vue-template-compiler": "^2.4.4",
+    "web-ext": "^2.2.2"
   }
 }
