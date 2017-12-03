@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import { loadInitialState } from '../../src/store/index'
+import { init } from '../../src/store/reducers'
 
 // Test initialization for single window
 
@@ -51,6 +51,6 @@ const tab_group_id_map = new Map()
 const window_active_tab_group_id_map = new Map()
 
 export default function() {
-  const initial_state = loadInitialState({ tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map })
+  const initial_state = init( null, { tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map })
   console.info( 'loadInitialState', JSON.stringify( initial_state ) )
 }
