@@ -25,5 +25,6 @@ export function addTab( tab, tab_group_id ) {
 export function removeTab( tab_id ) {
   return {
     type: TAB_REMOVE,
+    tab_id
   }
 }

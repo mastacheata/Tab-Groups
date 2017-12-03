@@ -99,6 +99,35 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
   return init_state
 }
 
+/**
+ * Update reference to tab_group in windows
+ * @param windows
+ * @param tab_group
+ */
+function updateWindowsTabGroup( windows, tab_group ) {
+  if( ! tab_group ) {
+    return windows
+  }
+  const isTabGroup = ( tab_group ) => tab_group.id === tab_group.id
+
+  // Update tab group in window
+  const window_index = windows.findIndex( window => window.tab_groups.some( isTabGroup ) )
+  if( window_index === -1 ) {
+    // @todo throw error
+    return windows
+  }
+
+  // Create new object
+  const window = Object.assign( {}, windows[ window_index ] )
+  window.tab_groups = [ ...window.tab_groups ]
+  windows = [ ...windows ]
+  windows[ window_index ] = window
+
+  // Update reference in windows
+  window.tab_groups[ window.tab_groups.findIndex( isTabGroup ) ] = tab_group
+  return windows
+}
+
 export function addTab( state, { tab, tab_group_id } ) {
   // If tab_group_id is not defined, use the window's active_tab_group_id instead
   if( typeof tab_group_id === 'undefined') {
@@ -133,31 +162,49 @@ export function addTab( state, { tab, tab_group_id } ) {
   const tab_groups = [ ...state.tab_groups ]
   tab_groups[ tab_group_index ] = tab_group
 
-  // @todo pull window edit to helper
-  // Update tab group in window
-  const window_index = state.windows.findIndex( ( window ) => tab.windowId )
-  if( window_index === -1 ) {
-    // @todo throw error
-    return state
-  }
-
-  // Create new object
-  const window = Object.assign( {}, state.windows[ window_index ] )
-  window.tab_groups = [ ...window.tab_groups ]
-  const windows = [ ...state.windows ]
-  windows[ window_index ] = window
-
-  // Update reference in windows
-  window.tab_groups[ window.tab_groups.indexOf( state.tab_groups[ tab_group_index ] ) ] = tab_group
-
   return {
     tab_groups,
-    windows
+    windows: updateWindowsTabGroup( state.windows, tab_group )
   }
 }
 
-export function removeTab( state ) {
-  return state
+function removeTabFromGroup( tab_group, tab_id ) {
+  const tab_index = tab_group.tabs.findIndex( ( tab ) => tab.id === tab_id )
+  if( tab_index === -1 ) {
+    return tab_group
+  }
+  tab_group = Object.assign( {}, tab_group )
+
+  tab_group.tabs_count--
+  if( tab_index === 0 ) {
+    tab_group.tabs = [ ...tab_group.tabs.slice( 1 ) ]
+  } else if( tab_index === tab_group.tabs_count ) {
+    tab_group.tabs = [ ...tab_group.tabs.slice( 0, tab_group.tabs_count ) ]
+  } else {
+    tab_group.tabs = [
+      ...tab_group.tabs.slice( 0, tab_index - 1 ),
+      ...tab_group.tabs.slice( tab_index + 1, tab_group.tabs.length )
+    ]
+  }
+  return tab_group
+}
+
+export function removeTab( state, { tab_id } ) {
+  const tab_groups = []
+  let updated_tab_group = null
+
+  state.tab_groups.forEach( ( tab_group ) => {
+    const new_tab_group = removeTabFromGroup( tab_group, tab_id )
+    if( new_tab_group !== tab_group ) {
+      updated_tab_group = new_tab_group
+    }
+    tab_groups.push( new_tab_group )
+  })
+
+  return {
+    tab_groups,
+    windows: updateWindowsTabGroup( state.windows, updated_tab_group )
+  }
 }
 
 export default function App( state = initial_state, action ) {

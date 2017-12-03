@@ -1,7 +1,7 @@
 import { createStore } from 'redux'
 
 import App, { init } from './store/reducers.mjs'
-import { addTab } from './store/actions.mjs'
+import { addTab, removeTab } from './store/actions.mjs'
 
 window.process = { env: { NODE_ENV: 'production' } }
 
