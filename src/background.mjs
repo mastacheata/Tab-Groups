@@ -1,7 +1,6 @@
 import { createStore } from 'redux'
 
-import { loadInitialState } from './store/index.mjs'
-import App from './store/reducers.mjs'
+import { init, App } from './store/reducers.mjs'
 
 window.process = { env: { NODE_ENV: 'production' } }
 
@@ -135,7 +134,7 @@ window.store = new Promise( ( resolve, reject ) => {
       const tab_group_id_map = new Map()
       const window_active_tab_group_id_map = new Map()
 
-      const initial_state = loadInitialState({ tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map })
+      const initial_state = init( null, { tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map } )
 
       // browser.storage.local.set( { state } )
       resolve( createStore( App, initial_state ) )

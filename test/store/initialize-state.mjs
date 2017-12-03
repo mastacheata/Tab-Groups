@@ -51,6 +51,13 @@ const tab_group_id_map = new Map()
 const window_active_tab_group_id_map = new Map()
 
 export default function() {
-  const initial_state = init( null, { tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map })
-  console.info( 'loadInitialState', JSON.stringify( initial_state ) )
+  let initial_state = init( null, { tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map })
+  assert.equal( initial_state.tab_groups.length, 1 )
+  assert.equal( initial_state.tab_groups[ 0 ].id, 1 )
+  assert.equal( initial_state.tab_groups[ 0 ].name, "Group 1" )
+  assert.equal( initial_state.tab_groups[ 0 ].tabs.length, 2 )
+  assert.equal( initial_state.tab_groups[ 0 ].tabs_count, initial_state.tab_groups[ 0 ].tabs.length )
+  assert.equal( initial_state.windows.length, 1 )
+  assert.equal( initial_state.windows[ 0 ].active_tab_group_id, initial_state.tab_groups[ 0 ].id )
+  assert.equal( initial_state.windows[ 0 ].tab_groups[ 0 ], initial_state.tab_groups[ 0 ] )
 }

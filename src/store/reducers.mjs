@@ -4,6 +4,11 @@ import {
   TAB_REMOVE
 } from './action-types.mjs'
 
+const initial_state = {
+  tab_groups: [],
+  windows: []
+}
+
 export function init( state, { tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map } ) {
   const window_tabs_map = new Map()
 
@@ -64,7 +69,7 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
     })
   }
 
-  const initial_state = {
+  const init_state = {
     tab_groups,
     windows
       /*
@@ -82,7 +87,7 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
   }
 
   for( let [ window_id, active_tab_group_id ] of window_active_tab_group_id_map.entries() ) {
-    initial_state.windows.push({
+    init_state.windows.push({
       id: window_id,
       active_tab_group_id,
       tab_groups: []
@@ -91,18 +96,58 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
 
   // @todo compare with state to return optimized diff
 
-  return initial_state
+  return init_state
 }
 
-export function addTab( state, { tab_group_id, tab } ) {
-  return state
+export function addTab( state, { tab, tab_group_id } ) {
+  // @todo if tab_group_id not set, determine from window + active_tab_group_id
+  const tab_group_index = state.tab_groups.findIndex( ( tab_group ) => tab_group.id === tab_group_id )
+  if( tab_group_index === -1 ) {
+    // @todo throw error
+    console.error('addTab: tab_group_id not found')
+    return state
+  }
+
+  // Create new object
+  const tab_group = Object.assign( {}, state.tab_groups[ tab_group_index ] )
+  // @todo use tab.index to determine order
+  tab_group.tabs = [
+    ...tab_group.tabs,
+    tab
+  ]
+  tab_group.tabs_count++
+
+  const tab_groups = [ ...state.tab_groups ]
+  tab_groups[ tab_group_index ] = tab_group
+
+  // @todo pull window edit to helper
+  // Update tab group in window
+  const window_index = state.windows.findIndex( ( window ) => tab.windowId )
+  if( window_index === -1 ) {
+    // @todo throw error
+    return state
+  }
+
+  // Create new object
+  const window = Object.assign( {}, state.windows[ window_index ] )
+  window.tab_groups = [ ...window.tab_groups ]
+  const windows = [ ...state.windows ]
+  windows[ window_index ] = window
+
+  // Update reference in windows
+  window.tab_groups[ window.tab_groups.indexOf( state.tab_groups[ tab_group_index ] ) ] = tab_group
+
+  return {
+    tab_groups,
+    windows
+  }
 }
 
 export function removeTab( state ) {
   return state
 }
 
-export default function App( state, action ) {
+export default function App( state = initial_state, action ) {
   switch( action.type ) {
     case INIT:
       return init( state, action )
