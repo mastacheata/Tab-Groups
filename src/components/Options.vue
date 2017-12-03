@@ -1,6 +1,6 @@
 <template>
   <body class="options">
-    <form>
+    <form v-on:submit.prevent>
       <section>
         <label>
           <button v-on:click="reset()">Reset</button>
@@ -19,6 +19,7 @@ export default {
   },
   methods: {
     reset: function() {
+      console.info('reset')
     }
   }
 }

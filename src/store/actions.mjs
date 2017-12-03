@@ -14,10 +14,16 @@ export function init({ tabs, tab_groups, tab_group_id_map, window_active_tab_gro
   }
 }
 
-export function addTab( tab_group_id, tab ) {
+export function addTab( tab, tab_group_id ) {
   return {
     type: TAB_ADD,
-    tab_group_id,
-    tab
+    tab,
+    tab_group_id
+  }
+}
+
+export function removeTab( tab_id ) {
+  return {
+    type: TAB_REMOVE,
   }
 }

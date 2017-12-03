@@ -100,7 +100,20 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
 }
 
 export function addTab( state, { tab, tab_group_id } ) {
-  // @todo if tab_group_id not set, determine from window + active_tab_group_id
+  // If tab_group_id is not defined, use the window's active_tab_group_id instead
+  if( typeof tab_group_id === 'undefined') {
+    const window = state.windows.find( ( window ) => window.id === tab.windowId )
+    if( window ) {
+      tab_group_id = window.active_tab_group_id
+    }
+    if( ! tab_group_id ) {
+      // @todo throw error
+      console.error("addTab: window doesn't have active group")
+      return state
+    }
+  }
+
+  // Find the tab_group by id
   const tab_group_index = state.tab_groups.findIndex( ( tab_group ) => tab_group.id === tab_group_id )
   if( tab_group_index === -1 ) {
     // @todo throw error

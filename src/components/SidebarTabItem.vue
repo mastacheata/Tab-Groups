@@ -1,5 +1,5 @@
 <template>
-  <div class="sidebar-tab-view-item">
+  <div class="sidebar-tab-view-item" v-on:click="openTab( tab )">
     <!-- @todo favicon & preview image -->
     <span>{{ tab.title }}</span>
     <span>{{ tab.url }}</span>
@@ -25,6 +25,11 @@ export default {
   //     ]
   //   }
   // }
+  methods: {
+    openTab: function( tab ) {
+      console.info('openTab', tab)
+    }
+  }
 }
 </script>
 

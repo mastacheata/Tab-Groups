@@ -19,8 +19,6 @@
 </template>
 
 <script>
-import '../store/actions.mjs'
-
 import SidebarTabItem from './SidebarTabItem.vue'
 
 export default {
@@ -74,7 +72,7 @@ export default {
             if( state_window ) {
               console.info('@todo update data from state', state)
               this.active_tab_group_id = state_window.active_tab_group_id
-              this.tab_groups = state_window.tab_groups
+              Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...state_window.tab_groups ] )
               // @todo what else is required here?
             } else {
               // @todo error
@@ -117,6 +115,11 @@ export default {
 </script>
 
 <style scoped>
+.sidebar {
+  color: #fff;
+  background-color: #202340; /* Photon Ink 80 */
+}
+
 .sidebar-tab-group-list {
   width: 100%;
   display: flex;

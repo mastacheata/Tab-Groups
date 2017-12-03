@@ -1,6 +1,7 @@
 import { createStore } from 'redux'
 
-import { init, App } from './store/reducers.mjs'
+import App, { init } from './store/reducers.mjs'
+import { addTab } from './store/actions.mjs'
 
 window.process = { env: { NODE_ENV: 'production' } }
 
@@ -12,6 +13,8 @@ const TAB_GROUP_ID_SESSION_KEY = 'tab_group_id'
 const WINDOW_ACTIVE_GROUP_ID_SESSION_KEY = 'active_tab_group_id'
 
 window.store = new Promise( ( resolve, reject ) => {
+  let store = null
+
   // browser.windows.getAll( { populate: true, windowTypes: [ 'normal' ] } )
   //   .then(
   //     ( windows ) => {
@@ -39,17 +42,19 @@ window.store = new Promise( ( resolve, reject ) => {
 
   browser.tabs.onCreated.addListener( ( tab ) => {
     console.info('tabs.onCreated', tab)
-    // @todo find active group for window
-    // @todo
+    if( store ) {
+      store.dispatch( addTab( tab ) )
+    }
   })
 
   browser.tabs.onRemoved.addListener( ( tab_id, remove_info ) => {
-    // @todo can start process to capture image here
     console.info('tabs.onRemoved', tab_id, remove_info)
+    if( store ) {
+      store.dispatch( removeTab( tab_id ) )
+    }
   })
 
   browser.tabs.onMoved.addListener( ( tab_id, { windowId, fromIndex, toIndex } ) => {
-    // @todo can start process to capture image here
     console.info('tabs.onMoved', tab_id, windowId, fromIndex, toIndex)
   })
 
@@ -136,8 +141,10 @@ window.store = new Promise( ( resolve, reject ) => {
 
       const initial_state = init( null, { tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map } )
 
+      store = createStore( App, initial_state )
+
       // browser.storage.local.set( { state } )
-      resolve( createStore( App, initial_state ) )
+      resolve( store )
     }
   ).catch( ( err ) => {
     console.error( 'error', err )
