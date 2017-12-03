@@ -1,5 +1,9 @@
 <template>
-  <div class="sidebar-tab-view-item">THIS IS THE ITEM VIEW: {{ tab.id }}, {{ tab.title }}</div>
+  <div class="sidebar-tab-view-item">
+    <!-- @todo favicon & preview image -->
+    <span>{{ tab.title }}</span>
+    <span>{{ tab.url }}</span>
+  </div>
 </template>
 
 <script>

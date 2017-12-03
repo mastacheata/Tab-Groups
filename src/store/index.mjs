@@ -24,7 +24,8 @@ export function loadInitialState({ tabs, tab_groups, tab_group_id_map, window_ac
     id: new_tab_group_id,
     name: `Group ${ new_tab_group_id }`,
     // name: browser.i18n.getMessage( "tab_group_name_placeholder", [ new_tab_group_id ] ),
-    tabs: []
+    tabs: [],
+    tabs_count: 0
   }
   for( let [ window_id, tabs ] of window_tabs_map.entries() ) {
     let is_initializing = false
@@ -39,6 +40,7 @@ export function loadInitialState({ tabs, tab_groups, tab_group_id_map, window_ac
           window_tab_groups.push( new_tab_group )
         }
         new_tab_group.tabs.push( tab )
+        new_tab_group.tabs_count++
       } else {
         // Find the tab group in the collections
         let tab_group = window_tab_groups.find( ( tab_group ) => tab_group.id === tab_group_id )

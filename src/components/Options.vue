@@ -1,8 +1,12 @@
 <template>
   <body class="options">
-    <section>
-      <div>@todo options page contents</div>
-    </section>
+    <form>
+      <section>
+        <label>
+          <button v-on:click="reset()">Reset</button>
+        </label>
+      </section>
+    </form>
   </body>
 </template>
 
@@ -11,6 +15,10 @@ export default {
   name: 'options',
   data() {
     return {
+    }
+  },
+  methods: {
+    reset: function() {
     }
   }
 }

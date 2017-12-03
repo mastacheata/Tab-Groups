@@ -142,6 +142,7 @@ window.store = new Promise( ( resolve, reject ) => {
     }
   ).catch( ( err ) => {
     console.error( 'error', err )
+    reject( err )
   })
 
   // @todo load from storage

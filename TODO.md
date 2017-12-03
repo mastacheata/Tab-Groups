@@ -1,6 +1,7 @@
 p1
-- load state for tabs
-- find session code with recovery logic
+- add reload button to settings page
+- investigate plugin for vscode debugging
+- investigate placeholder thumbnails on mobile new tab page
 - options
   - storage (sync?)
   - duplicate contents
@@ -15,18 +16,24 @@ p1
 - save offline data for tabs
 - find in tabs
   - https://github.com/mdn/webextensions-examples/tree/master/find-across-tabs
-- populate store
 - link tab state to store
 - debugging for background tasks
 - common css rules
 
 p2
 - save settings and tabs to sync
+  - synced groups
   - determine what current sync format is, can leverage for shared structure?
-- toggle dark and light theme
 - drag and drop
+  - groups in sidebar
+  - between windows
+- toggle sidebar styles
+  - background color
+  - big vs little icons
 - styling
   - http://design.firefox.com/photon/visuals/color.html
+  - pull css styles into shared file
+  - toggle dark and light theme
 - localization
   - https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Internationalization
   - investigate cleaner way to map localizations in components
@@ -35,6 +42,7 @@ p2
 - documentation
 - test rollup & typescript integration
   - https://vuejs.org/v2/guide/typescript.html
+  -
 - light and dark themes for actions
 
 p3
