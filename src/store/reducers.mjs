@@ -87,14 +87,6 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
       */
   }
 
-  for( let [ window_id, active_tab_group_id ] of window_active_tab_group_id_map.entries() ) {
-    init_state.windows.push({
-      id: window_id,
-      active_tab_group_id,
-      tab_groups: []
-    })
-  }
-
   // @todo compare with state to return optimized diff
 
   return init_state
@@ -103,13 +95,13 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
 /**
  * Update reference to tab_group in windows
  * @param windows
- * @param tab_group
+ * @param updated_tab_group
  */
-function updateWindowsTabGroup( windows, tab_group ) {
-  if( ! tab_group ) {
+function updateWindowsTabGroup( windows, updated_tab_group ) {
+  if( ! updated_tab_group ) {
     return windows
   }
-  const isTabGroup = ( tab_group ) => tab_group.id === tab_group.id
+  const isTabGroup = ( tab_group ) => tab_group.id === updated_tab_group.id
 
   // Update tab group in window
   const window_index = windows.findIndex( window => window.tab_groups.some( isTabGroup ) )
@@ -125,7 +117,7 @@ function updateWindowsTabGroup( windows, tab_group ) {
   windows[ window_index ] = window
 
   // Update reference in windows
-  window.tab_groups[ window.tab_groups.findIndex( isTabGroup ) ] = tab_group
+  window.tab_groups[ window.tab_groups.findIndex( isTabGroup ) ] = updated_tab_group
   return windows
 }
 

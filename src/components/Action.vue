@@ -14,8 +14,7 @@
           <div v-on:click="viewTabGroupTabs( tab_group.id )">
             <!-- @todo hover effect -->
             <!-- @todo proper plural -->
-            <!-- {{ tab_group.tabs.length }} tab(s) -->
-            6 tabs
+            {{ tab_group.tabs_count }} tab(s)
           </div>
         </div>
       </div>
@@ -63,7 +62,7 @@ export default {
       browser.runtime.openOptionsPage()
     },
     openTabGroupPage: function() {
-      const url = browser.extension.getURL( "tab-groups.html" )
+      const url = browser.extension.getURL( "sidebar.html" )
 
       browser.tabs.create({ url })
         .then( () => {

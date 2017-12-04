@@ -78,6 +78,6 @@ function testMultiWindowFreshInit() {
 }
 
 export default function() {
-  // testSingleWindowFreshInit()
+  testSingleWindowFreshInit()
   testMultiWindowFreshInit()
 }

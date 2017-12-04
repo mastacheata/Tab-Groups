@@ -17,7 +17,7 @@ Promise.all([
 .then( ( [ current_window, store ] ) => {
 
   window.current_window_id = current_window.id
-  window.store = window.store
+  window.store = store
 
   if( window.document.getElementById( 'action' ) ) {
     new Vue({

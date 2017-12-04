@@ -1,7 +1,8 @@
 <template>
   <div class="sidebar-tab-view-item" v-on:click="openTab( tab )">
     <!-- @todo favicon & preview image -->
-    <span class="sidebar-tab-view-item-title">{{ tab.title }}</span><br>
+    <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
+    <br>
     <span class="sidebar-tab-view-item-url">{{ tab.url }}</span>
   </div>
 </template>
@@ -32,7 +33,7 @@ export default {
 }
 
 .sidebar-tab-view-item-title {
-  color: #fff;
+  color: #fff; /* Photon White */
 }
 
 .sidebar-tab-view-item-url {

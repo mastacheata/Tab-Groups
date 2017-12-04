@@ -30,7 +30,7 @@ export default {
     // @todo pull data from binding
 
     return {
-      window_id: null,
+      window_id: window.current_window_id,
       active_tab_group_id: null,
       is_tab_group_open: [],
       tab_groups: [
@@ -57,44 +57,24 @@ export default {
   created() {
     window.addEventListener( 'beforeunload', this.unload() )
 
-    browser.windows.getCurrent()
-      .then(
-        ( current_window ) => {
-          console.info('current_window', current_window)
-          this.window_id = current_window.id
+    const loadState = ( state ) => {
+      const state_window = state.windows.find( ( window ) => window.id === this.window_id )
+      if( state_window ) {
+        console.info('@todo update data from state', state)
+        this.active_tab_group_id = state_window.active_tab_group_id
+        Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...state_window.tab_groups ] )
+        // @todo what else is required here?
+      } else {
+        // @todo error
+      }
+    }
 
-          if( ! window.background.store ) {
-            return
-          }
+    loadState( window.store.getState() )
 
-          const loadState = ( state ) => {
-            const state_window = state.windows.find( ( window ) => window.id = this.window_id )
-            if( state_window ) {
-              console.info('@todo update data from state', state)
-              this.active_tab_group_id = state_window.active_tab_group_id
-              Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...state_window.tab_groups ] )
-              // @todo what else is required here?
-            } else {
-              // @todo error
-            }
-          }
-
-          window.background.store
-            .then(
-              ( store ) => {
-                loadState( store.getState() )
-
-                // Attach listener to background state changes so we can update the data
-                this.unsubscribe = store.subscribe( () => {
-                  loadState( store.getState() )
-                })
-              }
-            )
-        },
-        ( err ) => {
-          console.error('err')
-        }
-      )
+    // Attach listener to background state changes so we can update the data
+    this.unsubscribe = window.store.subscribe( () => {
+      loadState( window.store.getState() )
+    })
   },
   // ready() {
   // },

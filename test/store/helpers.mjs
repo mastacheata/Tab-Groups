@@ -30,12 +30,12 @@ export function getInitialState() {
           Object.assign( {}, base_new_tab, {
             id: 1,
             index: 0,
-            windowId: 3
+            windowId: 1
           }),
           Object.assign( {}, base_new_tab, {
             id: 2,
             index: 1,
-            windowId: 3
+            windowId: 1
           })
         ],
         tabs_count: 2
@@ -45,11 +45,41 @@ export function getInitialState() {
 
   initial_state[ 'windows' ] = [
     {
-      id: 3,
+      id: 1,
       active_tab_group_id: 1,
       tab_groups: [ ...initial_state.tab_groups ]
     }
   ]
+
+  return initial_state
+}
+
+export function getMultiWindowInitialState() {
+  const initial_state = getInitialState()
+
+  initial_state.tab_groups.push({
+    id: 2,
+    name: "Group 1",
+    tabs: [
+      Object.assign( {}, base_new_tab, {
+        id: 3,
+        index: 0,
+        windowId: 2
+      }),
+      Object.assign( {}, base_new_tab, {
+        id: 4,
+        index: 1,
+        windowId: 2
+      })
+    ],
+    tabs_count: 2
+  })
+
+  initial_state.windows.push({
+    id: 2,
+    active_tab_group_id: 2,
+    tab_groups: [ initial_state.tab_groups[ 1 ] ]
+  })
 
   return initial_state
 }
