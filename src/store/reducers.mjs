@@ -1,7 +1,8 @@
 import {
   INIT,
   TAB_ADD,
-  TAB_REMOVE
+  TAB_REMOVE,
+  TAB_UPDATE
 } from './action-types.mjs'
 
 const initial_state = {
@@ -167,18 +168,9 @@ function removeTabFromGroup( tab_group, tab_id ) {
     return tab_group
   }
   tab_group = Object.assign( {}, tab_group )
-
+  tab_group.tabs = tab_group.tabs.slice( 0 )
   tab_group.tabs_count--
-  if( tab_index === 0 ) {
-    tab_group.tabs = [ ...tab_group.tabs.slice( 1 ) ]
-  } else if( tab_index === tab_group.tabs_count ) {
-    tab_group.tabs = [ ...tab_group.tabs.slice( 0, tab_group.tabs_count ) ]
-  } else {
-    tab_group.tabs = [
-      ...tab_group.tabs.slice( 0, tab_index - 1 ),
-      ...tab_group.tabs.slice( tab_index + 1, tab_group.tabs.length )
-    ]
-  }
+  tab_group.tabs.splice( tab_index, 1 )
   return tab_group
 }
 
@@ -200,6 +192,34 @@ export function removeTab( state, { tab_id } ) {
   }
 }
 
+function updateTabFromGroup( tab_group, updated_tab ) {
+  const tab_index = tab_group.tabs.findIndex( ( tab ) => tab.id === updated_tab.id )
+  if( tab_index === -1 ) {
+    return tab_group
+  }
+  tab_group = Object.assign( {}, tab_group )
+  tab_group.tabs = tab_group.tabs.slice( 0 )
+  tab_group.tabs[ tab_index ] = updated_tab
+  return tab_group
+}
+
+export function updateTab( state, { tab, change_info } ) {
+  // @todo change use the nature of change_info to ignore changes
+  let updated_tab_group = null
+  const tab_groups = state.tab_groups.map( ( tab_group ) => {
+    const new_tab_group = updateTabFromGroup( tab_group, tab )
+    if( new_tab_group !== tab_group ) {
+      updated_tab_group = new_tab_group
+    }
+    return new_tab_group
+  })
+
+  return {
+    tab_groups,
+    windows: updateWindowsTabGroup( state.windows, updated_tab_group )
+  }
+}
+
 export default function App( state = initial_state, action ) {
   switch( action.type ) {
     case INIT:
@@ -208,6 +228,8 @@ export default function App( state = initial_state, action ) {
       return addTab( state, action )
     case TAB_REMOVE:
       return removeTab( state, action )
+    case TAB_UPDATE:
+      return updateTab( state, action )
     default:
       return state
   }

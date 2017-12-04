@@ -90,7 +90,6 @@ export default {
 </script>
 
 <style scoped>
-
 /* @todo which of these styles are required? */
 .panel {
   overflow-x: hidden;
