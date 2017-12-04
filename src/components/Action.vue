@@ -14,6 +14,7 @@
           <div v-on:click="viewTabGroupTabs( tab_group.id )">
             <!-- @todo hover effect -->
             <!-- @todo proper plural -->
+            <!-- @todo localization -->
             {{ tab_group.tabs_count }} tab(s)
           </div>
         </div>
@@ -37,17 +38,34 @@
 export default {
   name: 'action',
   data() {
-    // @todo load from the store
-    // browser.tabs.query({ currentWindow: true, windowType: 'normal' })
-
     return {
+      window_id: window.current_window_id,
+      active_tab_group_id: null,
       tab_groups: [
-        {
-          id: 1,
-          name: "group 1"
-        }
       ]
     }
+  },
+  created() {
+    window.addEventListener( 'beforeunload', this.unload )
+
+    const loadState = ( state ) => {
+      const state_window = state.windows.find( ( window ) => window.id === this.window_id )
+      if( state_window ) {
+        console.info('@todo update data from state', state)
+        this.active_tab_group_id = state_window.active_tab_group_id
+        Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...state_window.tab_groups ] )
+        // @todo what else is required here?
+      } else {
+        // @todo error
+      }
+    }
+
+    loadState( window.store.getState() )
+
+    // Attach listener to background state changes so we can update the data
+    this.unsubscribe = window.store.subscribe( () => {
+      loadState( window.store.getState() )
+    })
   },
   computed: {
     __MSG_tab_group_manage__: function() {
@@ -62,7 +80,7 @@ export default {
       browser.runtime.openOptionsPage()
     },
     openTabGroupPage: function() {
-      const url = browser.extension.getURL( "sidebar.html" )
+      const url = browser.extension.getURL( "tab-groups.html" )
 
       browser.tabs.create({ url })
         .then( () => {
@@ -84,6 +102,12 @@ export default {
     updateQueryText: function() {
       this.content = this.query_text
       // @todo handle query change with page transition
+    },
+    unload: function() {
+      console.info('calling unsubscribe')
+      if( this.unsubscribe ) {
+        this.unsubscribe()
+      }
     }
   }
 }

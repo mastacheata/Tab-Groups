@@ -55,7 +55,7 @@ export default {
     }
   },
   created() {
-    window.addEventListener( 'beforeunload', this.unload() )
+    window.addEventListener( 'beforeunload', this.unload )
 
     const loadState = ( state ) => {
       const state_window = state.windows.find( ( window ) => window.id === this.window_id )
@@ -83,7 +83,6 @@ export default {
       console.info('toggleTabGroupOpen',tab_group_id)
       this.is_tab_group_open[ tab_group_id ] = ! this.is_tab_group_open[ tab_group_id ]
     },
-    // @todo add functions here to dispatch on the window.background.store
     unload: function() {
       console.info('calling unsubscribe')
       if( this.unsubscribe ) {
@@ -96,7 +95,7 @@ export default {
 
 <style scoped>
 .sidebar {
-  color: #fff;
+  color: #fff; /* Photon White */
   background-color: #202340; /* Photon Ink 80 */
 }
 

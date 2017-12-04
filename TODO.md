@@ -1,24 +1,28 @@
 p1
-- add reload button to settings page
-- investigate plugin for vscode debugging
-- investigate placeholder thumbnails on mobile new tab page
+- content in sidebar
+  - create new group
+  - toggle groups
+  - tab close button
+  - style for active tab
+  - tab search
+  - images (favicon)
+- fix dead object error on component toggle
 - options
   - storage (sync?)
   - duplicate contents
 - action
-  - list groups with counts
   - 2nd screen for open tabs
   - tab search
   - close on selection
-- separate common service to be called by different components
-- content in sidebar
-- test multi-component rendering with bindings to action and sidebar
 - save offline data for tabs
 - find in tabs
   - https://github.com/mdn/webextensions-examples/tree/master/find-across-tabs
-- link tab state to store
-- debugging for background tasks
 - common css rules
+- fix ellipsis color in sidebar
+- add reload button to settings page
+- tab groups page
+- clean up console warnings
+- clear out repo
 
 p2
 - save settings and tabs to sync
@@ -27,9 +31,6 @@ p2
 - drag and drop
   - groups in sidebar
   - between windows
-- toggle sidebar styles
-  - background color
-  - big vs little icons
 - styling
   - http://design.firefox.com/photon/visuals/color.html
   - pull css styles into shared file
@@ -42,8 +43,13 @@ p2
 - documentation
 - test rollup & typescript integration
   - https://vuejs.org/v2/guide/typescript.html
-  -
 - light and dark themes for actions
+- sidebar
+  - bubbling audio indicator
+  - pinned tabs
+  - toggle styles
+    - background color
+    - big vs little icons
 
 p3
 - chrome testing
@@ -52,6 +58,8 @@ p3
 - animations
 - move window to group
 - is bookmark folder option possible?
+- investigate plugin for vscode debugging
+- investigate placeholder thumbnails on mobile new tab page
 
 other
 - investigate weh

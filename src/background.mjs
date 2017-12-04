@@ -1,7 +1,14 @@
 import { createStore } from 'redux'
 
 import App, { init } from './store/reducers.mjs'
-import { addTab, removeTab, updateTab } from './store/actions.mjs'
+import {
+  addTab,
+  removeTab,
+  updateTab,
+  moveTab,
+  attachTab,
+  detachTab,
+} from './store/actions.mjs'
 
 window.process = { env: { NODE_ENV: 'production' } }
 
@@ -56,18 +63,30 @@ window.store = new Promise( ( resolve, reject ) => {
 
   browser.tabs.onMoved.addListener( ( tab_id, { windowId, fromIndex, toIndex } ) => {
     console.info('tabs.onMoved', tab_id, windowId, fromIndex, toIndex)
+    if( store ) {
+      store.dispatch( moveTab( tab_id, { window_id: windowId, from_index: fromIndex, to_index: toIndex } ) )
+    }
   })
 
   browser.tabs.onAttached.addListener( ( tab_id, { newWindowId, newPosition } ) => {
     console.info('tabs.onAttached', tab_id, newWindowId, newPosition)
+    if( store ) {
+      store.dispatch( attachTab( tab_id, { window_id: newWindowId, index: newPosition } ) )
+    }
   })
 
   browser.tabs.onDetached.addListener( ( tab_id, { oldWindowId, oldPosition } ) => {
     console.info('tabs.onDetached', tab_id, oldWindowId, oldPosition)
+    if( store ) {
+      store.dispatch( detachTab( tab_id, { window_id: oldWindowId, index: oldPosition } ) )
+    }
   })
 
   browser.tabs.onReplaced.addListener( ( added_tab_id, removed_tab_id ) => {
     console.info('tabs.onReplaced', added_tab_id, removed_tab_id)
+    if( store ) {
+      // @todo
+    }
   })
 
   browser.tabs.onUpdated.addListener( ( tab_id, change_info, tab ) => {

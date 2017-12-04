@@ -2,7 +2,10 @@ import {
   INIT,
   TAB_ADD,
   TAB_REMOVE,
-  TAB_UPDATE
+  TAB_UPDATE,
+  TAB_MOVE,
+  TAB_ATTACH,
+  TAB_DETACH,
 } from './action-types.mjs'
 
 const initial_state = {
@@ -220,6 +223,18 @@ export function updateTab( state, { tab, change_info } ) {
   }
 }
 
+export function moveTab( state, { tab_id, change_info } ) {
+  return state
+}
+
+export function attachTab( state, { tab_id, change_info } ) {
+  return state
+}
+
+export function detachTab( state, { tab_id, change_info } ) {
+  return state
+}
+
 export default function App( state = initial_state, action ) {
   switch( action.type ) {
     case INIT:
@@ -230,6 +245,12 @@ export default function App( state = initial_state, action ) {
       return removeTab( state, action )
     case TAB_UPDATE:
       return updateTab( state, action )
+    case TAB_MOVE:
+      return moveTab( state, action )
+    case TAB_ATTACH:
+      return attachTab( state, action )
+    case TAB_DETACH:
+      return detachTab( state, action )
     default:
       return state
   }

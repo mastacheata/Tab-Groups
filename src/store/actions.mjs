@@ -3,6 +3,9 @@ import {
   TAB_ADD,
   TAB_REMOVE,
   TAB_UPDATE,
+  TAB_MOVE,
+  TAB_ATTACH,
+  TAB_DETACH,
 } from './action-types.mjs'
 
 export function init({ tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map }) {
@@ -34,6 +37,30 @@ export function updateTab( tab, change_info ) {
   return {
     type: TAB_UPDATE,
     tab,
+    change_info
+  }
+}
+
+export function moveTab( tab_id, change_info ) {
+  return {
+    type: TAB_MOVE,
+    tab_id,
+    change_info
+  }
+}
+
+export function attachTab( tab_id, change_info ) {
+  return {
+    type: TAB_ATTACH,
+    tab_id,
+    change_info
+  }
+}
+
+export function detachTab( tab_id, change_info ) {
+  return {
+    type: TAB_DETACH,
+    tab_id,
     change_info
   }
 }
