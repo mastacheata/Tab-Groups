@@ -1,7 +1,7 @@
-import testImport from './store/initialize-state'
+import testInit from './store/init'
 import testAddTab from './store/add-tab'
 import testRemoveTab from './store/remove-tab'
 
-testImport()
+testInit()
 testAddTab()
 testRemoveTab()

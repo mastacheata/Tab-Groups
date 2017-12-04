@@ -5,30 +5,45 @@ import Options from './components/Options.vue'
 import TabGroups from './components/TabGroups.vue'
 import Sidebar from './components/Sidebar.vue'
 
-browser.runtime.getBackgroundPage()
-  .then(
-    ( background ) => {
+Promise.all([
+  browser.windows.getCurrent(),
+  browser.runtime.getBackgroundPage()
+    .then( ( background ) => {
       // Save a reference to the background script so it can be accessed syncronously
       window.background = background
+      return background.store
+    })
+])
+.then( ( [ current_window, store ] ) => {
 
-      new Vue({
-        el: '#action',
-        render: ( h ) => h( Action )
-      })
+  window.current_window_id = current_window.id
+  window.store = window.store
 
-      new Vue({
-        el: '#options',
-        render: ( h ) => h( Options )
-      })
+  if( window.document.getElementById( 'action' ) ) {
+    new Vue({
+      el: '#action',
+      render: ( h ) => h( Action )
+    })
+  }
 
-      new Vue({
-        el: '#tab-groups',
-        render: ( h ) => h( TabGroups )
-      })
+  if( window.document.getElementById( 'options' ) ) {
+    new Vue({
+      el: '#options',
+      render: ( h ) => h( Options )
+    })
+  }
 
-      new Vue({
-        el: '#sidebar',
-        render: ( h ) => h( Sidebar )
-      })
-    }
-  )
+  if( window.document.getElementById( 'tab-groups' ) ) {
+    new Vue({
+      el: '#tab-groups',
+      render: ( h ) => h( TabGroups )
+    })
+  }
+
+  if( window.document.getElementById( 'sidebar' ) ) {
+    new Vue({
+      el: '#sidebar',
+      render: ( h ) => h( Sidebar )
+    })
+  }
+})

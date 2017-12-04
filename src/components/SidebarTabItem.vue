@@ -1,8 +1,8 @@
 <template>
   <div class="sidebar-tab-view-item" v-on:click="openTab( tab )">
     <!-- @todo favicon & preview image -->
-    <span>{{ tab.title }}</span>
-    <span>{{ tab.url }}</span>
+    <span class="sidebar-tab-view-item-title">{{ tab.title }}</span><br>
+    <span class="sidebar-tab-view-item-url">{{ tab.url }}</span>
   </div>
 </template>
 
@@ -12,22 +12,10 @@ export default {
   props: [
     'tab'
   ],
-  // data() {
-  //   console.info('current window_id', browser.windows.getCurrent())
-
-  //   return {
-  //     window_id: null,
-  //     tab_groups: [
-  //       {
-  //         id: 1,
-  //         name: "group 1"
-  //       }
-  //     ]
-  //   }
-  // }
   methods: {
     openTab: function( tab ) {
       console.info('openTab', tab)
+      browser.tabs.update( tab.id, { active: true } )
     }
   }
 }
@@ -37,7 +25,17 @@ export default {
 .sidebar-tab-view-item {
   padding: 10px;
   width: 100%;
-  color: #fff;
   background-color: #202340; /* Photon Ink 80 */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sidebar-tab-view-item-title {
+  color: #fff;
+}
+
+.sidebar-tab-view-item-url {
+  color: #737373; /* Photon Grey 50 */
 }
 </style>

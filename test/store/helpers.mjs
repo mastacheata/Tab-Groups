@@ -1,4 +1,25 @@
 
+export const base_new_tab = {
+  id: null,
+  index: null,
+  windowId: null,
+  highlighted: false,
+  active: false,
+  pinned: false,
+  status: "complete",
+  discarded: false,
+  incognito: false,
+  width: 1278,
+  height: 968,
+  lastAccessed: 1512330352266,
+  audible: false,
+  mutedInfo: { muted: false },
+  isArticle: false,
+  isInReaderMode: false,
+  url: "about:blank",
+  title: "New Tab"
+}
+
 export function getInitialState() {
   const initial_state = {
     tab_groups: [
@@ -6,46 +27,16 @@ export function getInitialState() {
         id: 1,
         name: "Group 1",
         tabs: [
-          {
+          Object.assign( {}, base_new_tab, {
             id: 1,
             index: 0,
-            windowId: 3,
-            highlighted: false,
-            active: false,
-            pinned: false,
-            status: "complete",
-            discarded: false,
-            incognito: false,
-            width: 1918,
-            height: 968,
-            lastAccessed: 1510531570549,
-            audible: false,
-            mutedInfo: { muted: false },
-            isArticle: false,
-            isInReaderMode: false,
-            url: "about:blank",
-            title: "New Tab"
-          },
-          {
+            windowId: 3
+          }),
+          Object.assign( {}, base_new_tab, {
             id: 2,
             index: 1,
-            windowId: 3,
-            highlighted: true,
-            active: true,
-            pinned: false,
-            status: "complete",
-            discarded: false,
-            incognito: false,
-            width: 1918,
-            height: 968,
-            lastAccessed: 1510531664937,
-            audible: false,
-            mutedInfo: { muted: false },
-            isArticle: false,
-            isInReaderMode: false,
-            url: "about:debugging",
-            title: "Debugging with Firefox Developer Tools"
-          }
+            windowId: 3
+          })
         ],
         tabs_count: 2
       }

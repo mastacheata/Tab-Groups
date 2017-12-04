@@ -30,14 +30,14 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
   })
 
   const windows = []
-  let new_tab_group = {
-    id: new_tab_group_id,
-    name: `Group ${ new_tab_group_id }`,
-    // name: browser.i18n.getMessage( "tab_group_name_placeholder", [ new_tab_group_id ] ),
-    tabs: [],
-    tabs_count: 0
-  }
   for( let [ window_id, tabs ] of window_tabs_map.entries() ) {
+    let new_tab_group = {
+      id: new_tab_group_id,
+      name: `Group ${ new_tab_group_id }`,
+      // name: browser.i18n.getMessage( "tab_group_name_placeholder", [ new_tab_group_id ] ),
+      tabs: [],
+      tabs_count: 0
+    }
     let is_initializing = false
     let window_tab_groups = []
     for( let tab of tabs ) {
@@ -48,6 +48,7 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
           is_initializing = true
           tab_groups.push( new_tab_group )
           window_tab_groups.push( new_tab_group )
+          new_tab_group_id++
         }
         new_tab_group.tabs.push( tab )
         new_tab_group.tabs_count++
