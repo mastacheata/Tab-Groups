@@ -1,5 +1,9 @@
 import {
   INIT,
+  GROUP_ADD,
+  GROUP_REMOVE,
+  GROUP_UPDATE,
+  GROUP_MOVE,
   TAB_ACTIVATE,
   TAB_ADD,
   TAB_REMOVE,
@@ -95,6 +99,22 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
   // @todo compare with state to return optimized diff
 
   return init_state
+}
+
+export function addGroup( state, { tab_group, window_id } ) {
+  return state
+}
+
+export function removeGroup( state, { tab_group_id, window_id } ) {
+  return state
+}
+
+export function updateGroup( state, { tab_group, window_id, change_info } ) {
+  return state
+}
+
+export function moveGroup( state, { tab_group_id, window_id, index } ) {
+  return state
 }
 
 export function activateTab( state, { tab_id, window_id } ) {
@@ -303,6 +323,14 @@ export default function App( state = initial_state, action ) {
   switch( action.type ) {
     case INIT:
       return init( state, action )
+    case GROUP_ADD:
+      return addGroup( state, action )
+    case GROUP_REMOVE:
+      return removeGroup( state, action )
+    case GROUP_UPDATE:
+      return updateGroup( state, action )
+    case GROUP_MOVE:
+      return moveGroup( state, action )
     case TAB_ACTIVATE:
       return activateTab( state, action )
     case TAB_ADD:

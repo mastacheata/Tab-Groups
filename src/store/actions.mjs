@@ -1,5 +1,9 @@
 import {
   INIT,
+  GROUP_ADD,
+  GROUP_REMOVE,
+  GROUP_UPDATE,
+  GROUP_MOVE,
   TAB_ACTIVATE,
   TAB_ADD,
   TAB_REMOVE,
@@ -16,6 +20,40 @@ export function init({ tabs, tab_groups, tab_group_id_map, window_active_tab_gro
     tab_groups,
     tab_group_id_map,
     window_active_tab_group_id_map
+  }
+}
+
+export function addGroup( tab_group, window_id ) {
+  return {
+    type: GROUP_ADD,
+    tab_group,
+    window_id
+  }
+}
+
+export function removeGroup( tab_group_id, window_id ) {
+  return {
+    type: GROUP_REMOVE,
+    tab_group_id,
+    window_id
+  }
+}
+
+export function updateGroup( tab_group, window_id, change_info ) {
+  return {
+    type: GROUP_UPDATE,
+    tab_group,
+    window_id,
+    change_info
+  }
+}
+
+export function moveGroup( tab_group_id, window_id, index ) {
+  return {
+    type: GROUP_MOVE,
+    tab_group_id,
+    window_id,
+    index
   }
 }
 

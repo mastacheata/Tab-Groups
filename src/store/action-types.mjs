@@ -1,4 +1,8 @@
 export const INIT = 'INIT'
+export const GROUP_ADD = 'GROUP_ADD'
+export const GROUP_REMOVE = 'GROUP_REMOVE'
+export const GROUP_UPDATE = 'GROUP_UPDATE'
+export const GROUP_MOVE = 'GROUP_MOVE'
 export const TAB_ACTIVATE = 'TAB_ACTIVATE'
 export const TAB_ADD = 'TAB_ADD'
 export const TAB_REMOVE = 'TAB_REMOVE'
