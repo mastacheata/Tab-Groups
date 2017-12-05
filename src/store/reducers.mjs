@@ -1,5 +1,6 @@
 import {
   INIT,
+  TAB_ACTIVATE,
   TAB_ADD,
   TAB_REMOVE,
   TAB_UPDATE,
@@ -9,7 +10,7 @@ import {
 } from './action-types.mjs'
 
 const initial_state = {
-  tab_groups: [],
+  orphan_tabs: [],
   windows: []
 }
 
@@ -75,7 +76,7 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
   }
 
   const init_state = {
-    tab_groups,
+    orphan_tabs: initial_state.orphan_tabs,
     windows
       /*
       id,
@@ -96,149 +97,214 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
   return init_state
 }
 
-/**
- * Update reference to tab_group in windows
- * @param windows
- * @param updated_tab_group
- */
-function updateWindowsTabGroup( windows, updated_tab_group ) {
-  if( ! updated_tab_group ) {
-    return windows
-  }
-  const isTabGroup = ( tab_group ) => tab_group.id === updated_tab_group.id
-
-  // Update tab group in window
-  const window_index = windows.findIndex( window => window.tab_groups.some( isTabGroup ) )
-  if( window_index === -1 ) {
-    // @todo throw error
-    return windows
-  }
-
-  // Create new object
-  const window = Object.assign( {}, windows[ window_index ] )
-  window.tab_groups = [ ...window.tab_groups ]
-  windows = [ ...windows ]
-  windows[ window_index ] = window
-
-  // Update reference in windows
-  window.tab_groups[ window.tab_groups.findIndex( isTabGroup ) ] = updated_tab_group
-  return windows
+export function activateTab( state, { tab_id, window_id } ) {
+  // @todo optimize to return existing state if tab already active
+  return Object.assign( {}, state, {
+    windows: state.windows.map( window => {
+      if( window.id === window_id ) {
+        window = Object.assign( {}, window, {
+          tab_groups: window.tab_groups.map( tab_group => {
+            // If tab_group contains an active tab or the tab_id, return a copy with active toggled
+            if( tab_group.tabs.some( tab => tab.active || tab.id === tab_id ) ) {
+              tab_group = Object.assign( {}, tab_group, {
+                tabs: tab_group.tabs.map( tab => {
+                  if( tab.id === tab_id ) {
+                    return Object.assign( {}, tab, {
+                      active: true
+                    })
+                  }
+                  if( tab.active ) {
+                    return Object.assign( {}, tab, {
+                      active: false
+                    })
+                  }
+                  return tab
+                })
+              })
+            }
+            return tab_group
+          })
+        })
+      }
+      return window
+    })
+  })
 }
 
 export function addTab( state, { tab, tab_group_id } ) {
-  // If tab_group_id is not defined, use the window's active_tab_group_id instead
-  if( typeof tab_group_id === 'undefined') {
-    const window = state.windows.find( ( window ) => window.id === tab.windowId )
-    if( window ) {
-      tab_group_id = window.active_tab_group_id
-    }
-    if( ! tab_group_id ) {
-      // @todo throw error
-      console.error("addTab: window doesn't have active group")
-      return state
-    }
-  }
+  return Object.assign( {}, state, {
+    windows: state.windows.map( window => {
+      if( window.id !== tab.windowId ) {
+        return window
+      }
 
-  // Find the tab_group by id
-  const tab_group_index = state.tab_groups.findIndex( ( tab_group ) => tab_group.id === tab_group_id )
-  if( tab_group_index === -1 ) {
-    // @todo throw error
-    console.error('addTab: tab_group_id not found')
-    return state
-  }
-
-  // Create new object
-  const tab_group = Object.assign( {}, state.tab_groups[ tab_group_index ] )
-  // @todo use tab.index to determine order
-  tab_group.tabs = [
-    ...tab_group.tabs,
-    tab
-  ]
-  tab_group.tabs_count++
-
-  const tab_groups = [ ...state.tab_groups ]
-  tab_groups[ tab_group_index ] = tab_group
-
-  return {
-    tab_groups,
-    windows: updateWindowsTabGroup( state.windows, tab_group )
-  }
-}
-
-function removeTabFromGroup( tab_group, tab_id ) {
-  const tab_index = tab_group.tabs.findIndex( ( tab ) => tab.id === tab_id )
-  if( tab_index === -1 ) {
-    return tab_group
-  }
-  tab_group = Object.assign( {}, tab_group )
-  tab_group.tabs = tab_group.tabs.slice( 0 )
-  tab_group.tabs_count--
-  tab_group.tabs.splice( tab_index, 1 )
-  return tab_group
-}
-
-export function removeTab( state, { tab_id } ) {
-  const tab_groups = []
-  let updated_tab_group = null
-
-  state.tab_groups.forEach( ( tab_group ) => {
-    const new_tab_group = removeTabFromGroup( tab_group, tab_id )
-    if( new_tab_group !== tab_group ) {
-      updated_tab_group = new_tab_group
-    }
-    tab_groups.push( new_tab_group )
+      let i = 0
+      return Object.assign( {}, window, {
+        tab_groups: window.tab_groups.map( tab_group => {
+          if( 0 <= tab.index - i && tab.index - i <= tab_group.tabs_count ) {
+            tab_group = Object.assign( {}, tab_group, {
+              tabs: [ ...tab_group.tabs ],
+              tabs_count: tab_group.tabs_count + 1
+            })
+            tab_group.tabs.splice( tab.index - i, 0, tab )
+          }
+          i += tab_group.tabs_count
+          return tab_group
+        })
+      })
+    })
   })
-
-  return {
-    tab_groups,
-    windows: updateWindowsTabGroup( state.windows, updated_tab_group )
-  }
 }
 
-function updateTabFromGroup( tab_group, updated_tab ) {
-  const tab_index = tab_group.tabs.findIndex( ( tab ) => tab.id === updated_tab.id )
-  if( tab_index === -1 ) {
-    return tab_group
-  }
-  tab_group = Object.assign( {}, tab_group )
-  tab_group.tabs = tab_group.tabs.slice( 0 )
-  tab_group.tabs[ tab_index ] = updated_tab
-  return tab_group
+export function removeTab( state, { tab_id, window_id } ) {
+  return Object.assign( {}, state, {
+    windows: state.windows.map( window => {
+      if( window.id !== window_id ) {
+        return window
+      }
+      return Object.assign( {}, window, {
+        tab_groups: window.tab_groups.map( tab_group => {
+          const tab_index = tab_group.tabs.findIndex( tab => tab.id === tab_id )
+          if( tab_index > -1 ) {
+            // @todo what to do with empty groups
+            tab_group = Object.assign( {}, tab_group, {
+              tabs: [ ...tab_group.tabs ]
+            })
+            tab_group.tabs.splice( tab_index, 1 )
+            tab_group.tabs_count--
+          }
+          return tab_group
+        })
+      })
+    })
+  })
 }
 
 export function updateTab( state, { tab, change_info } ) {
   // @todo change use the nature of change_info to ignore changes
-  let updated_tab_group = null
-  const tab_groups = state.tab_groups.map( ( tab_group ) => {
-    const new_tab_group = updateTabFromGroup( tab_group, tab )
-    if( new_tab_group !== tab_group ) {
-      updated_tab_group = new_tab_group
+  return Object.assign( {}, state, {
+    windows: state.windows.map( window => {
+      if( window.id !== tab.windowId ) {
+        return window
+      }
+      return Object.assign( {}, window, {
+        tab_groups: window.tab_groups.map( tab_group => {
+          const tab_index = tab_group.tabs.findIndex( _tab => _tab.id === tab.id )
+          if( tab_index > -1 ) {
+            tab_group = Object.assign( {}, tab_group, {
+              tabs: [ ...tab_group.tabs ]
+            })
+            tab_group.tabs[ tab_index ] = tab
+          }
+          return tab_group
+        })
+      })
+    })
+  })
+}
+
+export function moveTab( state, { tab_id, window_id, index } ) {
+  const windows = state.windows.map( window => {
+    if( window.id !== window_id ) {
+      return window
     }
-    return new_tab_group
+
+    let moved_tab = null
+
+    const tab_groups = window.tab_groups.map( tab_group => {
+      const tab_index = tab_group.tabs.findIndex( tab => tab.id === tab_id )
+      if( tab_index > -1 ) {
+        tab_group = Object.assign( {}, tab_group, {
+          tabs: [ ...tab_group.tabs ]
+        })
+        moved_tab = tab_group.tabs.splice( tab_index, 1 )[ 0 ]
+        tab_group.tabs_count--
+      }
+      return tab_group
+    })
+
+    // Scan tab_groups to find place to move tab to
+    if( moved_tab ) {
+      for( let i = 0, j = 0; j < tab_groups.length; j++ ) {
+        if( index - i <= tab_groups[ j ].tabs_count ) {
+          tab_groups[ j ] = Object.assign( {}, tab_groups[ j ], {
+            tabs: [ ...tab_groups[ j ].tabs ],
+            tabs_count: tab_groups[ j ].tabs_count + 1
+          })
+          tab_groups[ j ].tabs.splice( index - i, 0, moved_tab )
+          break
+        }
+        i += tab_groups[ j ].tabs_count
+      }
+    }
+
+    return Object.assign( {}, window, {
+      tab_groups
+    })
   })
 
-  return {
-    tab_groups,
-    windows: updateWindowsTabGroup( state.windows, updated_tab_group )
+  return Object.assign( {}, state, {
+    windows
+  })
+}
+
+export function attachTab( state, { tab_id, window_id, index } ) {
+  const tab_index = state.orphan_tabs.findIndex( tab => tab.id === tab_id )
+  if( tab_index === -1 ) {
+    // If the window that is being detached from is closing, this event is fired before the detach
+    // @todo find tab and move it
+    return state
   }
+
+  const orphan_tabs = [ ...state.orphan_tabs ]
+  const tab = Object.assign( {}, orphan_tabs.splice( tab_index, 1 )[ 0 ], {
+    windowId: window_id,
+    index
+  })
+
+  return Object.assign( addTab( state, { tab } ), {
+    orphan_tabs
+  })
 }
 
-export function moveTab( state, { tab_id, change_info } ) {
-  return state
-}
+export function detachTab( state, { tab_id, window_id, index } ) {
+  let orphan_tab = null
 
-export function attachTab( state, { tab_id, change_info } ) {
-  return state
-}
+  const windows = state.windows.map( window => {
+    if( window.id !== window_id ) {
+      return window
+    }
+    return Object.assign( {}, window, {
+      tab_groups: window.tab_groups.map( tab_group => {
+        const tab_index = tab_group.tabs.findIndex( tab => tab.id === tab_id )
+        if( tab_index > -1 ) {
+          tab_group = Object.assign( {}, tab_group, {
+            tabs: [ ...tab_group.tabs ]
+          })
+          orphan_tab = tab_group.tabs.splice( tab_index, 1 )[ 0 ]
+        }
+        return tab_group
+      })
+    })
+  })
 
-export function detachTab( state, { tab_id, change_info } ) {
-  return state
+  const new_state = Object.assign( {}, state, {
+    windows
+  })
+
+  if( orphan_tab ) {
+    new_state.orphan_tabs = [ ...new_state.orphan_tabs, orphan_tab ]
+  }
+
+  return new_state
 }
 
 export default function App( state = initial_state, action ) {
   switch( action.type ) {
     case INIT:
       return init( state, action )
+    case TAB_ACTIVATE:
+      return activateTab( state, action )
     case TAB_ADD:
       return addTab( state, action )
     case TAB_REMOVE:

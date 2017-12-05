@@ -2,6 +2,7 @@ import { createStore } from 'redux'
 
 import App, { init } from './store/reducers.mjs'
 import {
+  activateTab,
   addTab,
   removeTab,
   updateTab,
@@ -45,6 +46,15 @@ window.store = new Promise( ( resolve, reject ) => {
       onError
     )
 
+  browser.tabs.onActivated.addListener( ( { tabId, windowId } ) => {
+    // @todo can start process to capture image here
+    // tabs.captureVisibleTab()
+    console.info('tabs.onActivated', tabId, windowId)
+    if( store ) {
+      store.dispatch( activateTab( tabId, windowId ) )
+    }
+  })
+
   // Attach listeners for changes to tabs
 
   browser.tabs.onCreated.addListener( ( tab ) => {
@@ -54,31 +64,31 @@ window.store = new Promise( ( resolve, reject ) => {
     }
   })
 
-  browser.tabs.onRemoved.addListener( ( tab_id, remove_info ) => {
-    console.info('tabs.onRemoved', tab_id, remove_info)
+  browser.tabs.onRemoved.addListener( ( tab_id, { windowId, isWindowClosing } ) => {
+    console.info('tabs.onRemoved', tab_id, windowId)
     if( store ) {
-      store.dispatch( removeTab( tab_id ) )
+      store.dispatch( removeTab( tab_id, windowId ) )
     }
   })
 
   browser.tabs.onMoved.addListener( ( tab_id, { windowId, fromIndex, toIndex } ) => {
     console.info('tabs.onMoved', tab_id, windowId, fromIndex, toIndex)
     if( store ) {
-      store.dispatch( moveTab( tab_id, { window_id: windowId, from_index: fromIndex, to_index: toIndex } ) )
+      store.dispatch( moveTab( tab_id, windowId, toIndex ) )
     }
   })
 
   browser.tabs.onAttached.addListener( ( tab_id, { newWindowId, newPosition } ) => {
     console.info('tabs.onAttached', tab_id, newWindowId, newPosition)
     if( store ) {
-      store.dispatch( attachTab( tab_id, { window_id: newWindowId, index: newPosition } ) )
+      store.dispatch( attachTab( tab_id, newWindowId, newPosition ) )
     }
   })
 
   browser.tabs.onDetached.addListener( ( tab_id, { oldWindowId, oldPosition } ) => {
     console.info('tabs.onDetached', tab_id, oldWindowId, oldPosition)
     if( store ) {
-      store.dispatch( detachTab( tab_id, { window_id: oldWindowId, index: oldPosition } ) )
+      store.dispatch( detachTab( tab_id, oldWindowId, oldPosition ) )
     }
   })
 
@@ -97,12 +107,6 @@ window.store = new Promise( ( resolve, reject ) => {
   })
 
   // @todo use browser.sessions.setTabValue( tab_id, key, value ) to store
-
-  browser.tabs.onActivated.addListener( ( { tabId, windowId } ) => {
-    // @todo can start process to capture image here
-    // tabs.captureVisibleTab()
-    console.info('tabs.onActivated', tabId, windowId)
-  })
 
   // @todo add webNavigation permission if this is required
   // browser.webNavigation.onCompleted.addListener( ( event ) => {

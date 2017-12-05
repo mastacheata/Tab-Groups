@@ -1,11 +1,16 @@
 p1
+- remove index & window id from nested tabs
 - content in sidebar
   - create new group
   - toggle groups
+  - hover styles
   - tab close button
   - style for active tab
   - tab search
   - images (favicon)
+  - fade for overflow
+  - mouse hover for title
+- rename tests with leading context
 - fix dead object error on component toggle
 - options
   - storage (sync?)
@@ -41,7 +46,7 @@ p2
 - unit testing
   - https://vuejs.org/v2/guide/unit-testing.html
 - documentation
-- test rollup & typescript integration
+- test rollup & typescript integra?src=hp-btn-promotion
   - https://vuejs.org/v2/guide/typescript.html
 - light and dark themes for actions
 - sidebar
@@ -50,6 +55,7 @@ p2
   - toggle styles
     - background color
     - big vs little icons
+- open main tab groups page with hotkey
 
 p3
 - chrome testing
@@ -60,6 +66,7 @@ p3
 - is bookmark folder option possible?
 - investigate plugin for vscode debugging
 - investigate placeholder thumbnails on mobile new tab page
+- performance testing
 
 other
 - investigate weh

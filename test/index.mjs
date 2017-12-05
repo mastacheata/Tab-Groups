@@ -1,7 +1,11 @@
 import testInit from './store/init'
-import testAddTab from './store/add-tab'
-import testRemoveTab from './store/remove-tab'
+import testTabActivate from './store/tab-activate'
+import testTabAdd from './store/tab-add'
+import testTabRemove from './store/tab-remove'
+import testTabMove from './store/tab-move'
 
 testInit()
-testAddTab()
-testRemoveTab()
+testTabActivate()
+testTabAdd()
+testTabRemove()
+testTabMove()

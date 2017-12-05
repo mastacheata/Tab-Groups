@@ -20,36 +20,49 @@ export const base_new_tab = {
   title: "New Tab"
 }
 
+export function createWindow( window_id, tab_groups ) {
+  // @todo scan through tabs in tab_groups and update windowId and index
+  return {
+    id: window_id,
+    active_tab_group_id: tab_groups[ 0 ].id,
+    tab_groups: tab_groups
+  }
+}
+
+export function createTabGroup( tab_group_id, tabs ) {
+  return {
+    id: tab_group_id,
+    name: `Group ${ tab_group_id }`,
+    tabs,
+    tabs_count: tabs.length
+  }
+}
+
+export function createTab( tab ) {
+  return Object.assign( {}, base_new_tab, tab )
+}
+
 export function getInitialState() {
   const initial_state = {
-    tab_groups: [
-      {
-        id: 1,
-        name: "Group 1",
-        tabs: [
-          Object.assign( {}, base_new_tab, {
+    orphan_tabs: [],
+    windows: [
+      createWindow( 1, [
+        createTabGroup( 1, [
+          createTab({
             id: 1,
             index: 0,
-            windowId: 1
+            windowId: 1,
+            active: true
           }),
-          Object.assign( {}, base_new_tab, {
+          createTab({
             id: 2,
             index: 1,
             windowId: 1
           })
-        ],
-        tabs_count: 2
-      }
+        ])
+      ])
     ]
   }
-
-  initial_state[ 'windows' ] = [
-    {
-      id: 1,
-      active_tab_group_id: 1,
-      tab_groups: [ ...initial_state.tab_groups ]
-    }
-  ]
 
   return initial_state
 }
@@ -57,29 +70,23 @@ export function getInitialState() {
 export function getMultiWindowInitialState() {
   const initial_state = getInitialState()
 
-  initial_state.tab_groups.push({
-    id: 2,
-    name: "Group 1",
-    tabs: [
-      Object.assign( {}, base_new_tab, {
-        id: 3,
-        index: 0,
-        windowId: 2
-      }),
-      Object.assign( {}, base_new_tab, {
-        id: 4,
-        index: 1,
-        windowId: 2
-      })
-    ],
-    tabs_count: 2
-  })
-
-  initial_state.windows.push({
-    id: 2,
-    active_tab_group_id: 2,
-    tab_groups: [ initial_state.tab_groups[ 1 ] ]
-  })
+  initial_state.windows.push(
+    createWindow( 2, [
+      createTabGroup( 2, [
+        createTab({
+          id: 3,
+          index: 0,
+          windowId: 2,
+          active: true
+        }),
+        createTab({
+          id: 4,
+          index: 1,
+          windowId: 2
+        })
+      ])
+    ])
+  )
 
   return initial_state
 }

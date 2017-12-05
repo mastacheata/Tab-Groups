@@ -1,5 +1,5 @@
 <template>
-  <div class="sidebar-tab-view-item" v-on:click="openTab( tab )">
+  <div class="sidebar-tab-view-item" v-on:click="openTab( tab )" v-bind:class="{ active: tab.active }">
     <!-- @todo favicon & preview image -->
     <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
     <br>
@@ -30,6 +30,10 @@ export default {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.sidebar-tab-view-item.active {
+  background-color: #002275; /* Photon Blue 80 */
 }
 
 .sidebar-tab-view-item-title {
