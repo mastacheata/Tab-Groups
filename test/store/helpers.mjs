@@ -1,8 +1,8 @@
 
 export const base_new_tab = {
   id: null,
-  index: null,
-  windowId: null,
+  // index: null,
+  // windowId: null,
   highlighted: false,
   active: false,
   pinned: false,
@@ -20,23 +20,8 @@ export const base_new_tab = {
   title: "New Tab"
 }
 
-export function createWindow( window_id, tab_groups ) {
-  // @todo scan through tabs in tab_groups and update windowId and index
-  return {
-    id: window_id,
-    active_tab_group_id: tab_groups[ 0 ].id,
-    tab_groups: tab_groups
-  }
-}
-
-export function createTabGroup( tab_group_id, tabs ) {
-  return {
-    id: tab_group_id,
-    name: `Group ${ tab_group_id }`,
-    tabs,
-    tabs_count: tabs.length
-  }
-}
+// @todo use main helper version instead
+import { createWindow, createTabGroup } from '../../src/store/helpers.mjs'
 
 export function createTab( tab ) {
   return Object.assign( {}, base_new_tab, tab )
@@ -50,14 +35,10 @@ export function getInitialState() {
         createTabGroup( 1, [
           createTab({
             id: 1,
-            index: 0,
-            windowId: 1,
             active: true
           }),
           createTab({
-            id: 2,
-            index: 1,
-            windowId: 1
+            id: 2
           })
         ])
       ])
@@ -75,14 +56,10 @@ export function getMultiWindowInitialState() {
       createTabGroup( 2, [
         createTab({
           id: 3,
-          index: 0,
-          windowId: 2,
           active: true
         }),
         createTab({
-          id: 4,
-          index: 1,
-          windowId: 2
+          id: 4
         })
       ])
     ])

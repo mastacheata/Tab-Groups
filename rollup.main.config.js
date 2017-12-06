@@ -18,7 +18,17 @@ let plugins = [
     css: './dist/assets/css/app.css'
   }),
   buble({
-    objectAssign: 'Object.assign'
+    objectAssign: 'Object.assign',
+    // target: { firefox: 57 },
+    transforms: {
+      arrow: false,
+      conciseMethodProperty: false,
+      destructuring: false,
+      forOf: false,
+      letConst: false,
+      parameterDestructuring: false,
+      templateString: false
+    }
   }),
   nodeResolve({
     jsnext: true,

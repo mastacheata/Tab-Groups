@@ -1,4 +1,5 @@
 p1
+- state persistence
 - remove index & window id from nested tabs
 - content in sidebar
   - create new group
@@ -9,46 +10,41 @@ p1
   - tab search
   - images (favicon)
   - fade for overflow
-  - mouse hover for title
-- rename tests with leading context
-- fix dead object error on component toggle
+  - status indication
+    - audio playing, muted
+    - pinned
+    - loading
 - options
+  - base styling
   - storage (sync?)
-  - duplicate contents
+  - add reload
+  - toggles
+    - theme
+    - features
+      - search
+      - sync
+- testing for suspend and replace
+- handling if store is not defined on launch
 - action
   - 2nd screen for open tabs
+  - scrollable
   - tab search
-  - close on selection
-- save offline data for tabs
 - find in tabs
   - https://github.com/mdn/webextensions-examples/tree/master/find-across-tabs
-- common css rules
-- fix ellipsis color in sidebar
-- add reload button to settings page
-- tab groups page
+- fix ellipsis color in sidebar or use fade
 - clean up console warnings
 - clear out repo
+- setup browser with old version for comparison
+- determine min version
+- publish
 
 p2
-- save settings and tabs to sync
-  - synced groups
-  - determine what current sync format is, can leverage for shared structure?
+- tab groups page
+  - implement 1 layout
+- update tests for new state schema
 - drag and drop
   - groups in sidebar
   - between windows
-- styling
-  - http://design.firefox.com/photon/visuals/color.html
-  - pull css styles into shared file
-  - toggle dark and light theme
-- localization
-  - https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Internationalization
-  - investigate cleaner way to map localizations in components
-- unit testing
-  - https://vuejs.org/v2/guide/unit-testing.html
-- documentation
-- test rollup & typescript integra?src=hp-btn-promotion
-  - https://vuejs.org/v2/guide/typescript.html
-- light and dark themes for actions
 - sidebar
   - bubbling audio indicator
   - pinned tabs
@@ -56,17 +52,39 @@ p2
     - background color
     - big vs little icons
 - open main tab groups page with hotkey
+- context menus
 
 p3
+- common css rules
+- save settings and tabs to sync
+  - synced groups
+  - determine what current sync format is, can leverage for shared structure?
+- styling
+  - http://design.firefox.com/photon/visuals/color.html
+  - pull css styles into shared file
+  - toggle dark and light theme
+- localization
+  - https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Internationalization
+  - investigate cleaner way to map localizations in components
+- light and dark themes for actions
+
+p4
+- VueJS unit testing
+  - https://vuejs.org/v2/guide/unit-testing.html
+- documentation
+- test rollup & typescript integration
+  - https://vuejs.org/v2/guide/typescript.html
 - chrome testing
   - shared data?
-- container integration?
 - animations
-- move window to group
 - is bookmark folder option possible?
 - investigate plugin for vscode debugging
 - investigate placeholder thumbnails on mobile new tab page
+- 3rd party api documentation
+
+p5
 - performance testing
+- interaction with containers
 
 other
 - investigate weh

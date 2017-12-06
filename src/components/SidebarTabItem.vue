@@ -1,5 +1,5 @@
 <template>
-  <div class="sidebar-tab-view-item" v-on:click="openTab( tab )" v-bind:class="{ active: tab.active }">
+  <div class="sidebar-tab-view-item" v-on:click="openTab( tab )" v-bind:title="tab.title" v-bind:class="{ active: tab.active }">
     <!-- @todo favicon & preview image -->
     <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
     <br>
@@ -33,6 +33,10 @@ export default {
 }
 
 .sidebar-tab-view-item.active {
+  background-color: #002275; /* Photon Blue 80 */
+}
+
+.sidebar-tab-view-item:hover {
   background-color: #002275; /* Photon Blue 80 */
 }
 

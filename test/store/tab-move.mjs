@@ -1,5 +1,6 @@
 import assert from 'assert'
-import { createTab, createTabGroup, createWindow } from './helpers'
+import { createTab } from './helpers'
+import { createTabGroup, createWindow } from '../../src/store/helpers.mjs'
 
 import { moveTab } from '../../src/store/reducers'
 

@@ -9,19 +9,30 @@
     "description": "Description of the extension."
   },
 
+  "tab_group_name_placeholder": {
+    "message": "Group $INDEX$",
+    "description": "This is used as a placeholder name for new groups",
+    "placeholders": {
+      "index": {
+        "content": "$1",
+        "example": "1"
+      }
+    }
+  },
+
   "tab_group_manage": {
     "message": "Manage My Groups",
     "description": "Link to tab group page"
   },
 
-  "open_tab_group_sidebar_action": {
+  "tab_group_sidebar_action": {
     "message": "Open the tab groups sidebar",
     "description": "Open the tab groups sidebar"
   },
 
-  "tab_group_name_placeholder": {
-    "message": "Group $INDEX$",
-    "description": "This is used as a placeholder name for new groups",
+  "tabs_count": {
+    "message": "$INDEX$ tab(s)",
+    "description": "This is used where tab count is displayed",
     "placeholders": {
       "index": {
         "content": "$1",

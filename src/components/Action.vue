@@ -7,15 +7,15 @@
 
       <!-- @todo style classes -->
       <div class="panel-section panel-section-list panel-section-content">
-        <div class="panel-list-item" v-for="tab_group in tab_groups" v-bind:key="tab_group.id" v-bind:class="{ 'active': tab_group.id == 2 }">
-          <div class="text" v-on:click="selectTabGroup( tab_group.id )">
+        <div class="panel-list-item" v-for="tab_group in tab_groups" v-bind:key="tab_group.id" v-bind:class="{ 'active': tab_group.id == active_tab_group_id }">
+          <div class="text" v-on:click="selectTabGroup( tab_group )">
             {{ tab_group.name }}
           </div>
-          <div v-on:click="viewTabGroupTabs( tab_group.id )">
+          <div v-on:click="viewTabGroupTabs( tab_group )">
             <!-- @todo hover effect -->
             <!-- @todo proper plural -->
             <!-- @todo localization -->
-            {{ tab_group.tabs_count }} tab(s)
+            {{ getMessage( 'tabs_count', [ tab_group.tabs_count ] ) }}
           </div>
         </div>
       </div>
@@ -35,6 +35,9 @@
 </template>
 
 <script>
+import { cloneTabGroup } from '../store/helpers.mjs'
+import { activateGroup } from '../store/actions.mjs'
+
 export default {
   name: 'action',
   data() {
@@ -46,14 +49,17 @@ export default {
     }
   },
   created() {
-    window.addEventListener( 'beforeunload', this.unload )
-
     const loadState = ( state ) => {
       const state_window = state.windows.find( ( window ) => window.id === this.window_id )
       if( state_window ) {
         console.info('@todo update data from state', state)
         this.active_tab_group_id = state_window.active_tab_group_id
-        Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...state_window.tab_groups ] )
+
+        // Need to deep clone the objects because Vue extends prototypes when state added to the vm
+        let tab_groups = state_window.tab_groups.map( cloneTabGroup )
+
+        // Use the extended splice to trigger change detection
+        Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...tab_groups ] )
         // @todo what else is required here?
       } else {
         // @todo error
@@ -63,8 +69,11 @@ export default {
     loadState( window.store.getState() )
 
     // Attach listener to background state changes so we can update the data
-    this.unsubscribe = window.store.subscribe( () => {
+    const unsubscribe = window.store.subscribe( () => {
       loadState( window.store.getState() )
+    })
+    window.addEventListener( 'unload', ( event ) => {
+      unsubscribe()
     })
   },
   computed: {
@@ -76,38 +85,45 @@ export default {
     }
   },
   methods: {
+    getMessage: function( key, args ) {
+      return browser.i18n.getMessage( key, args )
+    },
     openOptionsPage: function() {
       browser.runtime.openOptionsPage()
+      window.close()
     },
     openTabGroupPage: function() {
-      const url = browser.extension.getURL( "tab-groups.html" )
+      // Using sidebar for now
+      browser.sidebarAction.open()
+        .then(
+          () => {
+            browser.sidebarAction.setPanel( { panel: browser.extension.getURL( "sidebar.html" ) } )
+            window.close()
+          }
+        )
 
-      browser.tabs.create({ url })
-        .then( () => {
-          // We don't want to sync this URL ever nor clutter the users history
-          browser.history.deleteUrl({ url })
-        })
-        .catch( ( ex ) => {
-          throw ex
-        })
+      // const url = browser.extension.getURL( "tab-groups.html" )
+
+      // browser.tabs.create({ url })
+      //   .then( () => {
+      //     // We don't want to sync this URL ever nor clutter the users history
+      //     browser.history.deleteUrl({ url })
+      //   })
+      //   .catch( ( ex ) => {
+      //     throw ex
+      //   })
     },
-    selectTabGroup: function( tab_group_id ) {
+    selectTabGroup: function( tab_group ) {
       // @todo
-      console.info('Action.selectTabGroup', tab_group_id)
+      console.info('Action.selectTabGroup', tab_group.id)
     },
-    viewTabGroupTabs: function( tab_group_id ) {
+    viewTabGroupTabs: function( tab_group ) {
       // @todo
-      console.info('Action.viewTabGroupTabs', tab_group_id)
+      console.info('Action.viewTabGroupTabs', tab_group.id)
     },
     updateQueryText: function() {
       this.content = this.query_text
       // @todo handle query change with page transition
-    },
-    unload: function() {
-      console.info('calling unsubscribe')
-      if( this.unsubscribe ) {
-        this.unsubscribe()
-      }
     }
   }
 }

@@ -37,7 +37,7 @@
   },
   "commands": {
     "_execute_sidebar_action": {
-      "description": "__MSG_open_tab_group_sidebar_action__",
+      "description": "__MSG_tab_group_sidebar_action__",
       "suggested_key": {
         "default": "Ctrl+Shift+E"
       }

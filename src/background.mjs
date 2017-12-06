@@ -2,6 +2,8 @@ import { createStore } from 'redux'
 
 import App, { init } from './store/reducers.mjs'
 import {
+  addWindow,
+  removeWindow,
   activateTab,
   addTab,
   removeTab,
@@ -46,6 +48,28 @@ window.store = new Promise( ( resolve, reject ) => {
       onError
     )
 
+  // Attach listeners for changes to windows
+
+  browser.windows.onCreated.addListener( ( window ) => {
+    console.info('windows.onCreated', window)
+    if( store && window.type === 'normal' ) {
+      store.dispatch( addWindow( window ) )
+    }
+  })
+
+  browser.windows.onRemoved.addListener( ( window_id ) => {
+    console.info('windows.onRemoved', window_id)
+    if( store ) {
+      store.dispatch( removeWindow( window_id ) )
+    }
+  })
+
+  browser.windows.onFocusChanged.addListener( ( window_id ) => {
+    console.info('windows.onFocusChanged', window_id)
+  })
+
+  // Attach listeners for changes to tabs
+
   browser.tabs.onActivated.addListener( ( { tabId, windowId } ) => {
     // @todo can start process to capture image here
     // tabs.captureVisibleTab()
@@ -54,8 +78,6 @@ window.store = new Promise( ( resolve, reject ) => {
       store.dispatch( activateTab( tabId, windowId ) )
     }
   })
-
-  // Attach listeners for changes to tabs
 
   browser.tabs.onCreated.addListener( ( tab ) => {
     console.info('tabs.onCreated', tab)
