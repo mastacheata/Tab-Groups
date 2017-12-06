@@ -9,7 +9,7 @@
       <div class="panel-section panel-section-list panel-section-content">
         <div class="panel-list-item" v-for="tab_group in tab_groups" v-bind:key="tab_group.id" v-bind:class="{ 'active': tab_group.id == active_tab_group_id }">
           <div class="text" v-on:click="selectTabGroup( tab_group )">
-            {{ tab_group.name }}
+            {{ tab_group.title }}
           </div>
           <div v-on:click="viewTabGroupTabs( tab_group )">
             <!-- @todo hover effect -->

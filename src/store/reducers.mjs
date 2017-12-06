@@ -68,11 +68,14 @@ function _removeTab( state, { tab_id, window_id, index, is_detach } ) {
   return new_state
 }
 
-export function init( state, { tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map } ) {
+export function init( state, { tabs, window_tab_groups_map } ) {
   const window_tabs_map = new Map()
+
+  // @todo use persist state from window_tab_groups_map
 
   // new_tab_group_id the largest id + 1
   let new_tab_group_id = 1
+  // @todo iterate window_tab_groups_map to get id
 
   tabs.forEach( ( tab ) => {
     let window_tabs = window_tabs_map.get( tab.windowId )
@@ -81,50 +84,45 @@ export function init( state, { tabs, tab_groups, tab_group_id_map, window_active
       window_tabs_map.set( tab.windowId, window_tabs )
     }
     window_tabs.push( tab )
-
-    const tab_group_id = tab_group_id_map.get( tab.id )
-    if( tab_group_id >= new_tab_group_id ) {
-      new_tab_group_id = tab_group_id + 1
-    }
   })
 
   const windows = []
-  for( let [ window_id, tabs ] of window_tabs_map.entries() ) {
-    let new_tab_group = {
-      id: new_tab_group_id,
-      name: `Group ${ new_tab_group_id }`,
-      // name: browser.i18n.getMessage( "tab_group_name_placeholder", [ new_tab_group_id ] ),
-      tabs: [],
-      tabs_count: 0
-    }
-    let is_initializing = false
+  for( let [ window_id, window_tabs ] of window_tabs_map.entries() ) {
+    // @todo ensure tabs are in index sorted order
+    // Clone tabs to use as iterator
+    console.info('loading stored state')
+
+    window_tabs = [ ...window_tabs ]
     let window_tab_groups = []
-    for( let tab of tabs ) {
-      let tab_group_id = tab_group_id_map.get( tab.id )
-      if( tab_group_id == null ) {
+    let window_tab_groups_state = window_tab_groups_map.get( window_id )
+    if( window_tab_groups_state ) {
+      for( let tab_group_state of window_tab_groups_state ) {
+        console.info('loading saved group', tab_group_state.id, ' on window', window_id)
+        window_tab_groups.push({
+          id: tab_group_state.id,
+          title: tab_group_state.title,
+          tabs: window_tabs.splice( 0, tab_group_state.tabs_count ),
+          tabs_count: tab_group_state.tabs_count
+        })
+      }
+    } else {
+      let new_tab_group = createTabGroup( new_tab_group_id, [] )
+      let is_initializing = false
+      for( let window_tab of window_tabs ) {
         // Tab is not yet assigned to a group, use the new one
         if( ! is_initializing ) {
           is_initializing = true
-          tab_groups.push( new_tab_group )
           window_tab_groups.push( new_tab_group )
           new_tab_group_id++
         }
-        new_tab_group.tabs.push( tab )
+        new_tab_group.tabs.push( window_tab )
         new_tab_group.tabs_count++
-      } else {
-        // Find the tab group in the collections
-        let tab_group = window_tab_groups.find( ( tab_group ) => tab_group.id === tab_group_id )
-        if( ! tab_group ) {
-          // @todo handle error
-        } else if( window_tab_groups.indexOf( tab_group ) === -1 ) {
-          window_tab_groups.push( tab_group )
-        }
       }
     }
 
     windows.push({
       id: window_id,
-      active_tab_group_id: window_active_tab_group_id_map.get( window_id ) || window_tab_groups[ 0 ].id,
+      active_tab_group_id: window_tab_groups[ 0 ].id,
       tab_groups: window_tab_groups
     })
   }

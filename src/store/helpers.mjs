@@ -10,7 +10,7 @@ export function createWindow( window_id, tab_groups ) {
 export function createTabGroup( tab_group_id, tabs ) {
   return {
     id: tab_group_id,
-    name: typeof browser != 'undefined' ? browser.i18n.getMessage( "tab_group_name_placeholder", [ tab_group_id ] ) : `Group ${ tab_group_id }`,
+    title: typeof browser != 'undefined' ? browser.i18n.getMessage( "tab_group_name_placeholder", [ tab_group_id ] ) : `Group ${ tab_group_id }`,
     tabs,
     tabs_count: tabs.length
   }
@@ -41,4 +41,15 @@ export function getNewTabGroupId( state ) {
     })
   })
   return new_tab_group_id
+}
+
+export function getTabGroupsPersistState( window ) {
+  return window.tab_groups.map( tab_group => {
+    return {
+      id: tab_group.id,
+      title: tab_group.title,
+      tabs_count: tab_group.tabs_count,
+      is_active: tab_group.id === window.active_tab_group_id ? true : undefined
+    }
+  })
 }

@@ -6,7 +6,7 @@
         <div class="sidebar-tab-group-list-item-header">
           <span class="text">
             <span v-on:click="toggleTabGroupOpen( tab_group )">{{ tab_group.is_open ? '–' : '+' }}</span>
-            {{ tab_group.name }}
+            {{ tab_group.title }}
           </span>
 
           <span class="sidebar-tab-group-list-item-header-tab-count">{{ getMessage( 'tabs_count', [ tab_group.tabs_count ] ) }}</span>

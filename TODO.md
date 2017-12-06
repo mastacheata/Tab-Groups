@@ -34,13 +34,14 @@ p1
 - fix ellipsis color in sidebar or use fade
 - clean up console warnings
 - clear out repo
-- setup browser with old version for comparison
+- review @todos
 - determine min version
 - publish
 
 p2
 - tab groups page
   - implement 1 layout
+- load/save backup
 - update tests for new state schema
 - drag and drop
   - groups in sidebar

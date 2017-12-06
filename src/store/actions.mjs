@@ -16,13 +16,11 @@ import {
   TAB_DETACH,
 } from './action-types.mjs'
 
-export function init({ tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map }) {
+export function init({ tabs, window_tab_groups_map }) {
   return {
     type: INIT,
     tabs,
-    tab_groups,
-    tab_group_id_map,
-    window_active_tab_group_id_map
+    window_tab_groups_map
   }
 }
 
