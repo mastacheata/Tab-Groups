@@ -15,7 +15,7 @@ export default {
   ],
   methods: {
     openTab: function( tab ) {
-      console.info('openTab', tab)
+      // Activate the given tab in the window
       browser.tabs.update( tab.id, { active: true } )
     }
   }

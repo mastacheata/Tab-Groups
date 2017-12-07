@@ -1,6 +1,7 @@
 p1
-- state persistence
-- remove index & window id from nested tabs
+- remove index & window id from nested tabs of state
+- move all browser state functions to background.js with event handlers
+- copy is_open from existing data if available
 - content in sidebar
   - create new group
   - toggle groups
@@ -16,8 +17,6 @@ p1
     - loading
 - options
   - base styling
-  - storage (sync?)
-  - add reload
   - toggles
     - theme
     - features
@@ -37,6 +36,7 @@ p1
 - review @todos
 - determine min version
 - publish
+  - fix id
 
 p2
 - tab groups page
@@ -59,6 +59,7 @@ p3
 - common css rules
 - save settings and tabs to sync
   - synced groups
+  - options
   - determine what current sync format is, can leverage for shared structure?
 - styling
   - http://design.firefox.com/photon/visuals/color.html

@@ -90,14 +90,11 @@ export function init( state, { tabs, window_tab_groups_map } ) {
   for( let [ window_id, window_tabs ] of window_tabs_map.entries() ) {
     // @todo ensure tabs are in index sorted order
     // Clone tabs to use as iterator
-    console.info('loading stored state')
-
     window_tabs = [ ...window_tabs ]
     let window_tab_groups = []
     let window_tab_groups_state = window_tab_groups_map.get( window_id )
     if( window_tab_groups_state ) {
       for( let tab_group_state of window_tab_groups_state ) {
-        console.info('loading saved group', tab_group_state.id, ' on window', window_id)
         window_tab_groups.push({
           id: tab_group_state.id,
           title: tab_group_state.title,
@@ -106,18 +103,9 @@ export function init( state, { tabs, window_tab_groups_map } ) {
         })
       }
     } else {
-      let new_tab_group = createTabGroup( new_tab_group_id, [] )
-      let is_initializing = false
-      for( let window_tab of window_tabs ) {
-        // Tab is not yet assigned to a group, use the new one
-        if( ! is_initializing ) {
-          is_initializing = true
-          window_tab_groups.push( new_tab_group )
-          new_tab_group_id++
-        }
-        new_tab_group.tabs.push( window_tab )
-        new_tab_group.tabs_count++
-      }
+      // No state, assign all tabs to new groups
+      window_tab_groups.push( createTabGroup( new_tab_group_id, window_tabs ) )
+      new_tab_group_id++
     }
 
     windows.push({

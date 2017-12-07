@@ -14,7 +14,6 @@
           <div v-on:click="viewTabGroupTabs( tab_group )">
             <!-- @todo hover effect -->
             <!-- @todo proper plural -->
-            <!-- @todo localization -->
             {{ getMessage( 'tabs_count', [ tab_group.tabs_count ] ) }}
           </div>
         </div>
@@ -52,7 +51,6 @@ export default {
     const loadState = ( state ) => {
       const state_window = state.windows.find( ( window ) => window.id === this.window_id )
       if( state_window ) {
-        console.info('@todo update data from state', state)
         this.active_tab_group_id = state_window.active_tab_group_id
 
         // Need to deep clone the objects because Vue extends prototypes when state added to the vm
@@ -114,12 +112,11 @@ export default {
       //   })
     },
     selectTabGroup: function( tab_group ) {
-      // @todo
-      console.info('Action.selectTabGroup', tab_group.id)
+      console.info('@todo selectTabGroup')
+      window.close()
     },
     viewTabGroupTabs: function( tab_group ) {
-      // @todo
-      console.info('Action.viewTabGroupTabs', tab_group.id)
+      console.info('@todo viewTabGroupTabs')
     },
     updateQueryText: function() {
       this.content = this.query_text

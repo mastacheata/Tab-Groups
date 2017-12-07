@@ -2,15 +2,15 @@
   <body class="options">
     <form v-on:submit.prevent>
       <section>
-        <button v-on:click="clearAllData()">Clear All Data</button>
-        <button v-on:click="reset()">Reset</button>
+        <button v-on:click="clearAllData()" class="browser-style">Clear All Data</button>
+        <button v-on:click="reset()" class="browser-style">Reset</button>
       </section>
     </form>
   </body>
 </template>
 
 <script>
-const WINDOW_TAB_GROUPS_KEY = 'tab_groups'
+import { WINDOW_TAB_GROUPS_KEY } from '../store/session-keys.mjs'
 
 export default {
   name: 'options',
@@ -44,7 +44,7 @@ export default {
       }
     },
     reset: function() {
-      console.info('reset')
+      console.info('@todo reset')
     }
   }
 }

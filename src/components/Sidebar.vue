@@ -59,7 +59,6 @@ export default {
     const loadState = ( state ) => {
       const state_window = state.windows.find( window => window.id === this.window_id )
       if( state_window ) {
-        console.info('@todo update data from state', state)
         // @todo if active_tab_group_id has changed, open the new active group
         this.active_tab_group_id = state_window.active_tab_group_id
 
@@ -96,13 +95,11 @@ export default {
       return browser.i18n.getMessage( key, args )
     },
     createTabGroup: function() {
-      console.info('createTabGroup', this.window_id)
       // Create new group with default properties in the store
       window.store.dispatch( createGroup( this.window_id ) )
       // @todo create new tab in the new group
     },
     toggleTabGroupOpen: function( tab_group ) {
-      console.info('toggleTabGroupOpen', tab_group.id)
       tab_group.is_open = ! tab_group.is_open
     }
   }

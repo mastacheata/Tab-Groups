@@ -9,7 +9,8 @@
     "build:cssnano": "cssnano dist/assets/css/app.css dist/assets/css/app.css",
     "dev": "cross-env NODE_ENV=development rollup -cw",
     "test": "node --experimental-modules test/index.mjs",
-    "debug": "./node_modules/.bin/web-ext --source-dir dist run --verbose"
+    "debug": "./node_modules/.bin/web-ext --source-dir dist run --verbose",
+    "package": "cd dist && rm tab-groups.zip && zip tab-groups.zip -r *"
   },
   "author": "Alex McCausland <alex.mccausland@gmail.com>",
   "license": "MPL-2.0",
@@ -25,13 +26,13 @@
     "redux": "^3.7.2"
   },
   "devDependencies": {
-    "autoprefixer": "^7.1.6",
+    "autoprefixer": "^7.2.1",
     "babel-core": "^6.26.0",
     "cross-env": "^5.1.1",
     "cssnano-cli": "^1.0.4",
     "npm-run-all": "^4.1.2",
     "postcss-cli": "^4.0.0",
-    "rollup": "^0.52.0",
+    "rollup": "^0.52.1",
     "rollup-plugin-alias": "^1.4.0",
     "rollup-plugin-async": "^1.2.0",
     "rollup-plugin-buble": "^0.18.0",

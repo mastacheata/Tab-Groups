@@ -12,43 +12,15 @@ import {
   attachTab,
   detachTab,
 } from './store/actions.mjs'
-import {
-  getTabGroupsPersistState
-} from './store/helpers.mjs'
-
-window.process = { env: { NODE_ENV: 'production' } }
+import { getTabGroupsPersistState } from './store/helpers.mjs'
+import { WINDOW_TAB_GROUPS_KEY } from './store/session-keys.mjs'
 
 function onError( error ) {
   console.error( error )
 }
 
-const WINDOW_TAB_GROUPS_KEY = 'tab_groups'
-
 window.store = new Promise( ( resolve, reject ) => {
   let store = null
-
-  // browser.windows.getAll( { populate: true, windowTypes: [ 'normal' ] } )
-  //   .then(
-  //     ( windows ) => {
-  //       console.info('windows', windows)
-  //     },
-  //     onError
-  //   )
-
-  browser.storage.onChanged.addListener( ( changes, area ) => {
-    console.info('storage.onChanged', area, changes)
-  })
-
-  // Clear the storage
-  // browser.storage.local.clear()
-
-  browser.storage.local.get( null )
-    .then(
-      ( results ) => {
-        console.info('storage.local.get', results)
-      },
-      onError
-    )
 
   // Attach listeners for changes to windows
 
@@ -64,10 +36,6 @@ window.store = new Promise( ( resolve, reject ) => {
     if( store ) {
       store.dispatch( removeWindow( window_id ) )
     }
-  })
-
-  browser.windows.onFocusChanged.addListener( ( window_id ) => {
-    console.info('windows.onFocusChanged', window_id)
   })
 
   // Attach listeners for changes to tabs
@@ -116,12 +84,12 @@ window.store = new Promise( ( resolve, reject ) => {
     }
   })
 
-  browser.tabs.onReplaced.addListener( ( added_tab_id, removed_tab_id ) => {
-    console.info('tabs.onReplaced', added_tab_id, removed_tab_id)
-    if( store ) {
-      // @todo
-    }
-  })
+  // @todo
+  // browser.tabs.onReplaced.addListener( ( added_tab_id, removed_tab_id ) => {
+  //   console.info('tabs.onReplaced', added_tab_id, removed_tab_id)
+  //   if( store ) {
+  //   }
+  // })
 
   browser.tabs.onUpdated.addListener( ( tab_id, change_info, tab ) => {
     console.info('tabs.onUpdated', tab_id, change_info, tab)
@@ -130,28 +98,12 @@ window.store = new Promise( ( resolve, reject ) => {
     }
   })
 
-  // @todo use browser.sessions.setTabValue( tab_id, key, value ) to store
-
-  // @todo add webNavigation permission if this is required
-  // browser.webNavigation.onCompleted.addListener( ( event ) => {
-  //   // Filter out any sub-frame related navigation event
-  //   if( event.frameId !== 0 ) {
-  //     return
-  //   }
-
-  //   const url = new URL( event.url )
-  //   console.info('webNavigation.onCompleted', event)
-  // })
-
   // This would be required for integration with other extensions
   // browser.runtime.onMessage.addListener( ( message, sender, sendResponse ) => {
   //   console.info('runtime.onMessage', message, sender, sendResponse)
   // })
 
-  let tab_groups = []
-  let tab_group_ids = []
   const window_ids = []
-
   let tabs
 
   Promise.all([
@@ -159,7 +111,6 @@ window.store = new Promise( ( resolve, reject ) => {
   ]).then(
     ( [ _tabs ] ) => {
       tabs = _tabs
-      console.info('tabs', tabs)
 
       let window_tab_groups = []
       tabs.forEach( ( tab ) => {
@@ -173,31 +124,22 @@ window.store = new Promise( ( resolve, reject ) => {
     }
   ).then(
     ( [ window_tab_groups ] ) => {
-      console.info('window_tab_groups', window_tab_groups)
-
       const window_tab_groups_map = new Map()
       for( let i = 0; i < window_ids.length; i++ ) {
         window_tab_groups_map.set( window_ids[ i ], window_tab_groups[ i ] )
       }
 
       const initial_state = init( null, { tabs, window_tab_groups_map } )
-
       store = createStore( App, initial_state )
 
       let last_state = initial_state
       store.subscribe( () => {
         const state = store.getState()
-        console.info('syncing to persist', state)
 
         for( let i = 0; i < state.windows.length; i++ ) {
-          console.info('checking window', state.windows[ i ].id)
           let saved_tab_groups_state = window_tab_groups_map.get( state.windows[ i ].id )
           let new_tab_groups_state = getTabGroupsPersistState( state.windows[ i ] )
           if( JSON.stringify( saved_tab_groups_state ) != JSON.stringify( new_tab_groups_state ) ) {
-            console.info('change detected')
-            console.info('saved_tab_groups_state', saved_tab_groups_state)
-            console.info('new_tab_groups_state', new_tab_groups_state)
-
             // Write state to map cache and session
             window_tab_groups_map.set( state.windows[ i ].id, new_tab_groups_state )
             browser.sessions.setWindowValue( state.windows[ i ].id, WINDOW_TAB_GROUPS_KEY, new_tab_groups_state )
@@ -205,11 +147,10 @@ window.store = new Promise( ( resolve, reject ) => {
         }
       })
 
-      // browser.storage.local.set( { state } )
       resolve( store )
     }
   ).catch( ( err ) => {
-    console.error( 'error', err )
+    onError( err )
     reject( err )
   })
 })

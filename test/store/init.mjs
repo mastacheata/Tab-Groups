@@ -16,11 +16,9 @@ function testSingleWindowFreshInit() {
       windowId: 1
     })
   ]
-  const tab_groups = []
-  const tab_group_id_map = new Map()
-  const window_active_tab_group_id_map = new Map()
+  const window_tab_groups_map = new Map()
 
-  let initial_state = init( null, { tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map })
+  let initial_state = init( null, { tabs, window_tab_groups_map })
   // assert.equal( initial_state.tab_groups.length, 1 )
   // assert.equal( initial_state.tab_groups[ 0 ].id, 1 )
   // assert.equal( initial_state.tab_groups[ 0 ].name, "Group 1" )
@@ -54,11 +52,9 @@ function testMultiWindowFreshInit() {
       windowId: 2
     })
   ]
-  const tab_groups = []
-  const tab_group_id_map = new Map()
-  const window_active_tab_group_id_map = new Map()
+  const window_tab_groups_map = new Map()
 
-  let initial_state = init( null, { tabs, tab_groups, tab_group_id_map, window_active_tab_group_id_map })
+  let initial_state = init( null, { tabs, window_tab_groups_map })
 
   // assert.equal( initial_state.tab_groups.length, 2 )
   // assert.equal( initial_state.tab_groups[ 0 ].id, 1 )
