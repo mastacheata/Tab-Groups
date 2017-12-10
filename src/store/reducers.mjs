@@ -223,9 +223,7 @@ export function activateTab( state, { tab_id, window_id } ) {
   })
 }
 
-export function addTab( state, { tab, tab_group_id } ) {
-  // @todo tab_group_id is unused
-
+export function addTab( state, { tab } ) {
   let is_window_defined = false
   const windows = state.windows.map( window => {
     if( window.id !== tab.windowId ) {
@@ -292,48 +290,58 @@ export function updateTab( state, { tab, change_info } ) {
   })
 }
 
-export function moveTab( state, { tab_id, window_id, index } ) {
-  const windows = state.windows.map( window => {
-    if( window.id !== window_id ) {
-      return window
-    }
-
-    let moved_tab = null
-
-    const tab_groups = window.tab_groups.map( tab_group => {
-      const tab_index = tab_group.tabs.findIndex( tab => tab.id === tab_id )
-      if( tab_index > -1 ) {
-        tab_group = Object.assign( {}, tab_group, {
-          tabs: [ ...tab_group.tabs ]
-        })
-        moved_tab = tab_group.tabs.splice( tab_index, 1 )[ 0 ]
-        tab_group.tabs_count--
-      }
-      return tab_group
-    })
-
-    // Scan tab_groups to find place to move tab to
-    if( moved_tab ) {
-      for( let i = 0, j = 0; j < tab_groups.length; j++ ) {
-        if( index - i <= tab_groups[ j ].tabs_count ) {
-          tab_groups[ j ] = Object.assign( {}, tab_groups[ j ], {
-            tabs: [ ...tab_groups[ j ].tabs ],
-            tabs_count: tab_groups[ j ].tabs_count + 1
-          })
-          tab_groups[ j ].tabs.splice( index - i, 0, moved_tab )
-          break
-        }
-        i += tab_groups[ j ].tabs_count
-      }
-    }
-
-    return Object.assign( {}, window, {
-      tab_groups
-    })
-  })
-
+export function moveTab( state, { tab_id, window_id, index, tab_group_id } ) {
   return Object.assign( {}, state, {
-    windows
+    windows: state.windows.map( window => {
+      if( window.id !== window_id ) {
+        return window
+      }
+
+      let moved_tab = null
+
+      const tab_groups = window.tab_groups.map( tab_group => {
+        const tab_index = tab_group.tabs.findIndex( tab => tab.id === tab_id )
+        if( tab_index > -1 ) {
+          tab_group = Object.assign( {}, tab_group, {
+            tabs: [ ...tab_group.tabs ]
+          })
+          moved_tab = tab_group.tabs.splice( tab_index, 1 )[ 0 ]
+          tab_group.tabs_count--
+        }
+        return tab_group
+      })
+
+      // Scan tab_groups to find place to move tab to
+      if( moved_tab ) {
+        for( let i = 0, j = 0; j < tab_groups.length; j++ ) {
+          if( tab_group_id != null ) {
+            // If the tab_group_id is passed, override behaviour
+            if( tab_groups[ j ].id === tab_group_id ) {
+              tab_groups[ j ] = Object.assign( {}, tab_groups[ j ], {
+                tabs: [ ...tab_groups[ j ].tabs ],
+                tabs_count: tab_groups[ j ].tabs_count + 1
+              })
+              tab_groups[ j ].tabs.splice( index - i, 0, moved_tab )
+            }
+          } else {
+            // Otherwise determine group by index
+            if( index - i <= tab_groups[ j ].tabs_count ) {
+              tab_groups[ j ] = Object.assign( {}, tab_groups[ j ], {
+                tabs: [ ...tab_groups[ j ].tabs ],
+                tabs_count: tab_groups[ j ].tabs_count + 1
+              })
+              tab_groups[ j ].tabs.splice( index - i, 0, moved_tab )
+              break
+            }
+          }
+          i += tab_groups[ j ].tabs_count
+        }
+      }
+
+      return Object.assign( {}, window, {
+        tab_groups
+      })
+    })
   })
 }
 

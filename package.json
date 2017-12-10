@@ -43,6 +43,7 @@
     "rollup-plugin-serve": "^0.4.2",
     "rollup-plugin-uglify": "^2.0.1",
     "rollup-plugin-vue": "^2.4.0",
+    "tap": "^11.0.0",
     "vue-template-compiler": "^2.5.8",
     "web-ext": "^2.2.2"
   }

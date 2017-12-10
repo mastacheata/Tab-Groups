@@ -1,4 +1,4 @@
-import assert from 'assert'
+import tap from 'tap'
 import { base_new_tab, getInitialState } from './helpers'
 
 import { activateTab } from '../../src/store/reducers'
@@ -13,9 +13,9 @@ function testSingleWindowSingleGroupActivateTab() {
   const new_state = activateTab( state, { tab_id, window_id } )
   const new_window = new_state.windows[ 0 ]
 
-  assert.equal( new_window.tab_groups[ 0 ].tabs.length, 2 )
-  assert.equal( new_window.tab_groups[ 0 ].tabs[ 0 ].active, false )
-  assert.equal( new_window.tab_groups[ 0 ].tabs[ 1 ].active, true )
+  tap.equal( new_window.tab_groups[ 0 ].tabs.length, 2 )
+  tap.equal( new_window.tab_groups[ 0 ].tabs[ 0 ].active, false )
+  tap.equal( new_window.tab_groups[ 0 ].tabs[ 1 ].active, true )
 }
 
 function testSingleWindowMultiGroupActivateTab() {
@@ -48,11 +48,11 @@ function testSingleWindowMultiGroupActivateTab() {
   const new_state = activateTab( state, { tab_id, window_id } )
   const new_window = new_state.windows[ 0 ]
 
-  assert.equal( new_window.tab_groups[ 0 ].tabs.length, 2 )
-  assert.equal( new_window.tab_groups[ 0 ].tabs[ 0 ].active, false )
-  assert.equal( new_window.tab_groups[ 0 ].tabs[ 1 ].active, false )
-  assert.equal( new_window.tab_groups[ 1 ].tabs[ 0 ].active, false )
-  assert.equal( new_window.tab_groups[ 1 ].tabs[ 1 ].active, true )
+  tap.equal( new_window.tab_groups[ 0 ].tabs.length, 2 )
+  tap.equal( new_window.tab_groups[ 0 ].tabs[ 0 ].active, false )
+  tap.equal( new_window.tab_groups[ 0 ].tabs[ 1 ].active, false )
+  tap.equal( new_window.tab_groups[ 1 ].tabs[ 0 ].active, false )
+  tap.equal( new_window.tab_groups[ 1 ].tabs[ 1 ].active, true )
 }
 
 export default function() {

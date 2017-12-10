@@ -20,84 +20,6 @@ function onError( error ) {
 }
 
 window.store = new Promise( ( resolve, reject ) => {
-  let store = null
-
-  // Attach listeners for changes to windows
-
-  browser.windows.onCreated.addListener( ( window ) => {
-    console.info('windows.onCreated', window)
-    if( store && window.type === 'normal' ) {
-      store.dispatch( addWindow( window ) )
-    }
-  })
-
-  browser.windows.onRemoved.addListener( ( window_id ) => {
-    console.info('windows.onRemoved', window_id)
-    if( store ) {
-      store.dispatch( removeWindow( window_id ) )
-    }
-  })
-
-  // Attach listeners for changes to tabs
-
-  browser.tabs.onActivated.addListener( ( { tabId, windowId } ) => {
-    // @todo can start process to capture image here
-    // tabs.captureVisibleTab()
-    console.info('tabs.onActivated', tabId, windowId)
-    if( store ) {
-      store.dispatch( activateTab( tabId, windowId ) )
-    }
-  })
-
-  browser.tabs.onCreated.addListener( ( tab ) => {
-    console.info('tabs.onCreated', tab)
-    if( store ) {
-      store.dispatch( addTab( tab ) )
-    }
-  })
-
-  browser.tabs.onRemoved.addListener( ( tab_id, { windowId, isWindowClosing } ) => {
-    console.info('tabs.onRemoved', tab_id, windowId)
-    if( store ) {
-      store.dispatch( removeTab( tab_id, windowId ) )
-    }
-  })
-
-  browser.tabs.onMoved.addListener( ( tab_id, { windowId, fromIndex, toIndex } ) => {
-    console.info('tabs.onMoved', tab_id, windowId, fromIndex, toIndex)
-    if( store ) {
-      store.dispatch( moveTab( tab_id, windowId, toIndex ) )
-    }
-  })
-
-  browser.tabs.onAttached.addListener( ( tab_id, { newWindowId, newPosition } ) => {
-    console.info('tabs.onAttached', tab_id, newWindowId, newPosition)
-    if( store ) {
-      store.dispatch( attachTab( tab_id, newWindowId, newPosition ) )
-    }
-  })
-
-  browser.tabs.onDetached.addListener( ( tab_id, { oldWindowId, oldPosition } ) => {
-    console.info('tabs.onDetached', tab_id, oldWindowId, oldPosition)
-    if( store ) {
-      store.dispatch( detachTab( tab_id, oldWindowId, oldPosition ) )
-    }
-  })
-
-  // @todo
-  // browser.tabs.onReplaced.addListener( ( added_tab_id, removed_tab_id ) => {
-  //   console.info('tabs.onReplaced', added_tab_id, removed_tab_id)
-  //   if( store ) {
-  //   }
-  // })
-
-  browser.tabs.onUpdated.addListener( ( tab_id, change_info, tab ) => {
-    console.info('tabs.onUpdated', tab_id, change_info, tab)
-    if( store ) {
-      store.dispatch( updateTab( tab, change_info ) )
-    }
-  })
-
   // This would be required for integration with other extensions
   // browser.runtime.onMessage.addListener( ( message, sender, sendResponse ) => {
   //   console.info('runtime.onMessage', message, sender, sendResponse)
@@ -120,19 +42,76 @@ window.store = new Promise( ( resolve, reject ) => {
         }
       })
 
-      return Promise.all( [ Promise.all( window_tab_groups ) ] )
+      return Promise.all( window_tab_groups )
     }
   ).then(
-    ( [ window_tab_groups ] ) => {
+    ( window_tab_groups ) => {
       const window_tab_groups_map = new Map()
       for( let i = 0; i < window_ids.length; i++ ) {
         window_tab_groups_map.set( window_ids[ i ], window_tab_groups[ i ] )
       }
 
       const initial_state = init( null, { tabs, window_tab_groups_map } )
-      store = createStore( App, initial_state )
+      const store = createStore( App, initial_state )
 
-      let last_state = initial_state
+      // Attach listeners for changes to windows
+
+      browser.windows.onCreated.addListener( ( window ) => {
+        console.info('windows.onCreated', window)
+        if( window.type === 'normal' ) {
+          store.dispatch( addWindow( window ) )
+        }
+      })
+
+      browser.windows.onRemoved.addListener( ( window_id ) => {
+        console.info('windows.onRemoved', window_id)
+        store.dispatch( removeWindow( window_id ) )
+      })
+
+      // Attach listeners for changes to tabs
+
+      browser.tabs.onActivated.addListener( ( { tabId, windowId } ) => {
+        // @todo can start process to capture image here
+        // tabs.captureVisibleTab()
+        console.info('tabs.onActivated', tabId, windowId)
+        store.dispatch( activateTab( tabId, windowId ) )
+      })
+
+      browser.tabs.onCreated.addListener( ( tab ) => {
+        console.info('tabs.onCreated', tab)
+        store.dispatch( addTab( tab ) )
+      })
+
+      browser.tabs.onRemoved.addListener( ( tab_id, { windowId, isWindowClosing } ) => {
+        console.info('tabs.onRemoved', tab_id, windowId)
+        store.dispatch( removeTab( tab_id, windowId ) )
+      })
+
+      browser.tabs.onMoved.addListener( ( tab_id, { windowId, fromIndex, toIndex } ) => {
+        console.info('tabs.onMoved', tab_id, windowId, fromIndex, toIndex)
+        store.dispatch( moveTab( tab_id, windowId, toIndex ) )
+      })
+
+      browser.tabs.onAttached.addListener( ( tab_id, { newWindowId, newPosition } ) => {
+        console.info('tabs.onAttached', tab_id, newWindowId, newPosition)
+        store.dispatch( attachTab( tab_id, newWindowId, newPosition ) )
+      })
+
+      browser.tabs.onDetached.addListener( ( tab_id, { oldWindowId, oldPosition } ) => {
+        console.info('tabs.onDetached', tab_id, oldWindowId, oldPosition)
+        store.dispatch( detachTab( tab_id, oldWindowId, oldPosition ) )
+      })
+
+      browser.tabs.onReplaced.addListener( ( added_tab_id, removed_tab_id ) => {
+        console.info('tabs.onReplaced', added_tab_id, removed_tab_id)
+        // @todo
+      })
+
+      browser.tabs.onUpdated.addListener( ( tab_id, change_info, tab ) => {
+        console.info('tabs.onUpdated', tab_id, change_info, tab)
+        store.dispatch( updateTab( tab, change_info ) )
+      })
+
       store.subscribe( () => {
         const state = store.getState()
 
@@ -147,10 +126,10 @@ window.store = new Promise( ( resolve, reject ) => {
         }
       })
 
-      resolve( store )
+      return resolve( store )
     }
   ).catch( ( err ) => {
     onError( err )
-    reject( err )
+    return reject( err )
   })
 })

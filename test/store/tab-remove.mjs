@@ -1,4 +1,4 @@
-import assert from 'assert'
+import tap from 'tap'
 import { base_new_tab, getInitialState } from './helpers'
 
 import { removeTab } from '../../src/store/reducers'
@@ -10,10 +10,10 @@ function testRemoveFirstTab() {
 
   state = removeTab( state, { tab_id } )
 
-  // assert.equal( state.tab_groups.length, 1 )
-  // assert.equal( state.tab_groups[ 0 ].tabs.length, 1 )
-  // assert.equal( state.tab_groups[ 0 ].tabs_count, state.tab_groups[ 0 ].tabs.length )
-  // assert.equal( state.windows[ 0 ].tab_groups[ 0 ], state.tab_groups[ 0 ] )
+  // tap.equal( state.tab_groups.length, 1 )
+  // tap.equal( state.tab_groups[ 0 ].tabs.length, 1 )
+  // tap.equal( state.tab_groups[ 0 ].tabs_count, state.tab_groups[ 0 ].tabs.length )
+  // tap.equal( state.windows[ 0 ].tab_groups[ 0 ], state.tab_groups[ 0 ] )
 }
 
 function testRemoveMiddleTab() {
@@ -56,10 +56,10 @@ function testRemoveMiddleTab() {
 
   state = removeTab( state, { tab_id } )
 
-  // assert.equal( state.tab_groups.length, 1 )
-  // assert.equal( state.tab_groups[ 0 ].tabs.length, 2 )
-  // assert.equal( state.tab_groups[ 0 ].tabs_count, state.tab_groups[ 0 ].tabs.length )
-  // assert.equal( state.windows[ 0 ].tab_groups[ 0 ], state.tab_groups[ 0 ] )
+  // tap.equal( state.tab_groups.length, 1 )
+  // tap.equal( state.tab_groups[ 0 ].tabs.length, 2 )
+  // tap.equal( state.tab_groups[ 0 ].tabs_count, state.tab_groups[ 0 ].tabs.length )
+  // tap.equal( state.windows[ 0 ].tab_groups[ 0 ], state.tab_groups[ 0 ] )
 }
 
 function testRemoveLastTab() {
@@ -101,10 +101,10 @@ function testRemoveLastTab() {
 
   state = removeTab( state, { tab_id } )
 
-  // assert.equal( state.tab_groups.length, 1 )
-  // assert.equal( state.tab_groups[ 0 ].tabs.length, 2 )
-  // assert.equal( state.tab_groups[ 0 ].tabs_count, state.tab_groups[ 0 ].tabs.length )
-  // assert.equal( state.windows[ 0 ].tab_groups[ 0 ], state.tab_groups[ 0 ] )
+  // tap.equal( state.tab_groups.length, 1 )
+  // tap.equal( state.tab_groups[ 0 ].tabs.length, 2 )
+  // tap.equal( state.tab_groups[ 0 ].tabs_count, state.tab_groups[ 0 ].tabs.length )
+  // tap.equal( state.windows[ 0 ].tab_groups[ 0 ], state.tab_groups[ 0 ] )
 }
 
 export default function() {
