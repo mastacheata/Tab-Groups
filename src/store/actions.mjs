@@ -1,7 +1,10 @@
 import {
   INIT,
+  CONFIG_UPDATE,
   WINDOW_ADD,
   WINDOW_REMOVE,
+  WINDOW_SEARCH_START,
+  WINDOW_SEARCH_FINISH,
   GROUP_ACTIVATE,
   GROUP_CREATE,
   GROUP_REMOVE,
@@ -135,5 +138,29 @@ export function detachTab( tab_id, window_id, index ) {
     tab_id,
     window_id,
     index
+  }
+}
+
+export function startSearch( window_id, search_text ) {
+  return {
+    type: WINDOW_SEARCH_START,
+    window_id,
+    search_text
+  }
+}
+
+export function finishSearch( window_id, search_text, matching_tab_ids ) {
+  return {
+    type: WINDOW_SEARCH_FINISH,
+    window_id,
+    search_text,
+    matching_tab_ids
+  }
+}
+
+export function updateConfig( config ) {
+  return {
+    type: CONFIG_UPDATE,
+    config
   }
 }

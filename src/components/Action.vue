@@ -1,31 +1,29 @@
 <template>
-  <body class="action">
+  <body class="action" :class="theme">
     <div class="panel">
       <div class="panel-section panel-section-search">
         <input v-model="query_text" on-keyup="updateQueryText | debounce 400" :placeholder="__MSG_tab_search_placeholder__"/>
       </div>
 
-      <!-- @todo style classes -->
       <div class="panel-section panel-section-list panel-section-content">
-        <div class="panel-list-item" v-for="tab_group in tab_groups" v-bind:key="tab_group.id" v-bind:class="{ 'active': tab_group.id == active_tab_group_id }">
-          <div class="text" v-on:click="selectTabGroup( tab_group )">
+        <div class="panel-list-item" v-for="tab_group in tab_groups" :key="tab_group.id" :class="{ 'active': tab_group.id == active_tab_group_id }">
+          <div class="text" @click="selectTabGroup( tab_group )">
             {{ tab_group.title }}
           </div>
-          <div v-on:click="viewTabGroupTabs( tab_group )">
+          <div @click="viewTabGroupTabs( tab_group )">
             <!-- @todo hover effect -->
-            <!-- @todo proper plural -->
-            {{ getMessage( 'tabs_count', [ tab_group.tabs_count ] ) }}
+            {{ getCountMessage( 'tabs', tab_group.tabs_count ) }}
           </div>
         </div>
       </div>
 
       <div class="panel-section panel-section-footer">
-        <div class="panel-section-footer-button" v-on:click="openTabGroupPage()">
+        <div class="panel-section-footer-button" @click="openTabGroupPage()">
           <i class="icon icon-tab-groups"></i>
           <span class="text">{{ __MSG_tab_group_manage__ }}</span>
         </div>
         <div class="panel-section-footer-separator"></div>
-        <div class="panel-section-footer-button panel-section-footer-button-options" v-on:click="openOptionsPage()">
+        <div class="panel-section-footer-button panel-section-footer-button-options" @click="openOptionsPage()">
           <i class="icon icon-options"></i>
         </div>
       </div>
@@ -36,6 +34,7 @@
 <script>
 import { cloneTabGroup } from '../store/helpers.mjs'
 import { activateGroup } from '../store/actions.mjs'
+import { getCountMessage } from './helpers.mjs'
 
 export default {
   name: 'action',
@@ -44,7 +43,8 @@ export default {
       window_id: window.current_window_id,
       active_tab_group_id: null,
       tab_groups: [
-      ]
+      ],
+      theme: null
     }
   },
   created() {
@@ -58,7 +58,8 @@ export default {
 
         // Use the extended splice to trigger change detection
         Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...tab_groups ] )
-        // @todo what else is required here?
+
+        this.theme = state.config.theme
       } else {
         // @todo error
       }
@@ -83,9 +84,7 @@ export default {
     }
   },
   methods: {
-    getMessage: function( key, args ) {
-      return browser.i18n.getMessage( key, args )
-    },
+    getCountMessage,
     openOptionsPage: function() {
       browser.runtime.openOptionsPage()
       window.close()
@@ -155,7 +154,7 @@ export default {
   max-height: 32px;
 }
 
-.panel-list-item.active {
+.light .panel-list-item.active {
   background-color: rgba(0, 0, 0, 0.06);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   border-top: 1px solid rgba(0, 0, 0, 0.1);
@@ -179,12 +178,12 @@ export default {
   margin-right: 4px;
 }
 
-.icon-tab-groups {
+.light .icon-tab-groups {
   /* @todo high resolution if available */
   background-image: url( /icons/action.png );
 }
 
-.icon-options {
+.light .icon-options {
   /* @todo high resolution if available */
   background-image: url( /icons/options.png );
 }

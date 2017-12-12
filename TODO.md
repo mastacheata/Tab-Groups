@@ -1,16 +1,11 @@
 p1
 - remove index & window id from nested tabs of state
 - move all browser state functions to background.js with event handlers
-- copy is_open from existing data if available
+- copy `is_open` from existing data if available
 - content in sidebar
-  - create new group
+  - create new group [hover]
   - toggle groups
-  - hover styles
-  - tab close button
-  - style for active tab
-  - tab search
   - images (favicon)
-  - fade for overflow
   - status indication
     - audio playing, muted
     - pinned
@@ -18,12 +13,10 @@ p1
 - options
   - base styling
   - toggles
-    - theme
     - features
       - search
       - sync
 - testing for suspend and replace
-- handling if store is not defined on launch
 - action
   - 2nd screen for open tabs
   - scrollable
@@ -49,6 +42,10 @@ p2
 - sidebar
   - bubbling audio indicator
   - pinned tabs
+  - tab search clear
+  - tab close button
+  - fade for overflow
+  - ui style for suspended tabs
   - toggle styles
     - background color
     - big vs little icons
@@ -64,7 +61,6 @@ p3
 - styling
   - http://design.firefox.com/photon/visuals/color.html
   - pull css styles into shared file
-  - toggle dark and light theme
 - localization
   - https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Internationalization
   - investigate cleaner way to map localizations in components
@@ -86,6 +82,7 @@ p4
 
 p5
 - performance testing
+  - virtual scroll
 - interaction with containers
 
 other

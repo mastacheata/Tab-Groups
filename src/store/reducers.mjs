@@ -2,6 +2,8 @@ import {
   INIT,
   WINDOW_ADD,
   WINDOW_REMOVE,
+  WINDOW_SEARCH_START,
+  WINDOW_SEARCH_FINISH,
   GROUP_CREATE,
   GROUP_REMOVE,
   GROUP_UPDATE,
@@ -13,6 +15,7 @@ import {
   TAB_MOVE,
   TAB_ATTACH,
   TAB_DETACH,
+  CONFIG_UPDATE,
 } from './action-types.mjs'
 
 import {
@@ -21,13 +24,26 @@ import {
   getNewTabGroupId,
 } from './helpers.mjs'
 
+export const default_config = {
+  theme: 'light'
+}
+
 const initial_state = {
+  config: default_config,
   orphan_tabs: [],
   windows: []
 }
 
+function findTabGroupId( tab_groups, tab_id ) {
+  let tab_group = tab_groups.find( tab_group => tab_group.tabs.some( tab => tab.id === tab_id ) )
+  if( tab_group ) {
+    return tab_group.id
+  }
+  return null
+}
+
 function findTabWindowId( windows, tab_id ) {
-  let window = windows.find( window => window.tab_groups.some( tab_group => tab_group.tabs.some( tab => tab.id === tab_id ) ) )
+  let window = windows.find( window => findTabGroup( window.tab_groups, tab_id ) )
   if( window ) {
     return window.id
   }
@@ -68,7 +84,7 @@ function _removeTab( state, { tab_id, window_id, index, is_detach } ) {
   return new_state
 }
 
-export function init( state, { tabs, window_tab_groups_map } ) {
+export function init( state, { config, tabs, window_tab_groups_map } ) {
   const window_tabs_map = new Map()
 
   // @todo use persist state from window_tab_groups_map
@@ -95,11 +111,12 @@ export function init( state, { tabs, window_tab_groups_map } ) {
     let window_tab_groups_state = window_tab_groups_map.get( window_id )
     if( window_tab_groups_state ) {
       for( let tab_group_state of window_tab_groups_state ) {
+        const tabs = window_tabs.splice( 0, tab_group_state.tabs_count )
         window_tab_groups.push({
           id: tab_group_state.id,
           title: tab_group_state.title,
-          tabs: window_tabs.splice( 0, tab_group_state.tabs_count ),
-          tabs_count: tab_group_state.tabs_count
+          tabs,
+          tabs_count: tabs.length
         })
       }
     } else {
@@ -116,6 +133,7 @@ export function init( state, { tabs, window_tab_groups_map } ) {
   }
 
   const init_state = {
+    config: config || initial_state.config,
     orphan_tabs: initial_state.orphan_tabs,
     windows
       /*
@@ -160,6 +178,71 @@ export function addWindow( state, { window } ) {
 export function removeWindow( state, { window_id } ) {
   return Object.assign( {}, state, {
     windows: state.windows.filter( window => window.id !== window_id )
+  })
+}
+
+export function startWindowSearch( state, { window_id, search_text } ) {
+  return Object.assign( {}, state, {
+    windows: state.windows.map( window => {
+      if( window.id !== window_id ) {
+        return window
+      }
+
+      let tab_groups = window.tab_groups
+      if( window.search_text ) {
+        tab_groups = tab_groups.map( tab_group => {
+          return Object.assign( {}, tab_group, {
+            tabs: tab_group.tabs.map( tab => {
+              if( ! tab.is_matched ) {
+                return tab
+              }
+              const new_tab = {}
+              for( let key in tab ) {
+                if( key !== 'is_matched' ) {
+                  new_tab[ key ] = tab[ key ]
+                }
+              }
+              return new_tab
+            })
+          })
+        })
+      }
+
+      return Object.assign( {}, window, {
+        search_text,
+        search_resolved: !search_text,
+        tab_groups
+      })
+    })
+  })
+}
+
+export function finishWindowSearch( state, { window_id, search_text, matching_tab_ids } ) {
+  return Object.assign( {}, state, {
+    windows: state.windows.map( window => {
+      if( window.id !== window_id || window.search_text !== search_text || matching_tab_ids.length === 0 ) {
+        return window
+      }
+
+      return Object.assign( {}, window, {
+        search_resolved: true,
+        tab_groups: window.tab_groups.map( tab_group => {
+          if( ! tab_group.tabs.some( tab => matching_tab_ids.indexOf( tab.id ) > -1 ) ) {
+            return tab_group
+          }
+          return Object.assign( {}, tab_group, {
+            tabs: tab_group.tabs.map( tab => {
+              if( matching_tab_ids.indexOf( tab.id ) === -1 ) {
+                return tab
+              }
+              return Object.assign( {}, tab, {
+                is_matched: true
+              })
+            })
+          })
+        })
+      })
+    })
   })
 }
 
@@ -373,14 +456,26 @@ export function detachTab( state, { tab_id, window_id, index } ) {
   return _removeTab( state, { tab_id, window_id, index, is_detach: true } )
 }
 
+export function updateConfig( state, { config } ) {
+  return Object.assign( {}, state, {
+    config
+  })
+}
+
 export default function App( state = initial_state, action ) {
   switch( action.type ) {
     case INIT:
       return init( state, action )
+    case CONFIG_UPDATE:
+      return updateConfig( state, action )
     case WINDOW_ADD:
       return addWindow( state, action )
     case WINDOW_REMOVE:
       return removeWindow( state, action )
+    case WINDOW_SEARCH_START:
+      return startWindowSearch( state, action )
+    case WINDOW_SEARCH_FINISH:
+      return finishWindowSearch( state, action )
     case GROUP_CREATE:
       return createGroup( state, action )
     case GROUP_REMOVE:

@@ -30,13 +30,24 @@
     "description": "Open the tab groups sidebar"
   },
 
-  "tabs_count": {
-    "message": "$INDEX$ tab(s)",
+  "tabs_count_singular": {
+    "message": "$INDEX$ tab",
     "description": "This is used where tab count is displayed",
     "placeholders": {
       "index": {
         "content": "$1",
         "example": "1"
+      }
+    }
+  },
+
+  "tabs_count_plural": {
+    "message": "$INDEX$ tabs",
+    "description": "This is used where tab count is displayed",
+    "placeholders": {
+      "index": {
+        "content": "$1",
+        "example": "2"
       }
     }
   },

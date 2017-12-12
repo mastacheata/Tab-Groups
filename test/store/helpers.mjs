@@ -20,7 +20,6 @@ export const base_new_tab = {
   title: "New Tab"
 }
 
-// @todo use main helper version instead
 import { createWindow, createTabGroup } from '../../src/store/helpers.mjs'
 
 export function createTab( tab ) {

@@ -11,6 +11,7 @@
   },
   "permissions": [
     "contextualIdentities",
+    "find",
     "sessions",
     "storage",
     "tabs",

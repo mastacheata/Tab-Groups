@@ -1,18 +1,23 @@
 <template>
-  <body class="sidebar">
-    <div v-on:click="createTabGroup()">Create New Group</div>
+  <body class="sidebar" :class="theme">
+    <div class="sidebar-header">
+      <!-- @todo create icon -->
+      <div class="sidebar-header-new_group" @click="createTabGroup()">New Group</div>
+      <!-- @todo create icon -->
+      <input class="sidebar-header-search" type="search" @input="onUpdateSearchText( search_text )" v-model="search_text" :placeholder="__MSG_tab_search_placeholder__"/>
+    </div>
     <div class="sidebar-tab-group-list">
-      <div class="sidebar-tab-group-list-item" v-for="tab_group in tab_groups" v-bind:key="tab_group.id">
+      <div class="sidebar-tab-group-list-item" v-for="tab_group in tab_groups" :key="tab_group.id">
         <div class="sidebar-tab-group-list-item-header">
           <span class="text">
             <span v-on:click="toggleTabGroupOpen( tab_group )">{{ tab_group.is_open ? '–' : '+' }}</span>
             {{ tab_group.title }}
           </span>
 
-          <span class="sidebar-tab-group-list-item-header-tab-count">{{ getMessage( 'tabs_count', [ tab_group.tabs_count ] ) }}</span>
+          <span class="sidebar-tab-group-list-item-header-tab-count">{{ getCountMessage( 'tabs', tab_group.tabs_count ) }}</span>
         </div>
         <div v-if="tab_group.is_open" class="sidebar-tab-group-tabs-list">
-          <SidebarTabItem class="sidebar-tab-group-tabs-list-item" v-bind:tab="tab" v-for="tab in tab_group.tabs" v-bind:key="tab.id"/>
+          <SidebarTabItem class="sidebar-tab-group-tabs-list-item" :tab="tab" v-for="tab in tab_group.tabs" :key="tab.id" v-if="! search_text || ! search_resolved || tab.is_matched"/>
         </div>
       </div>
     </div>
@@ -20,9 +25,10 @@
 </template>
 
 <script>
-import SidebarTabItem from './SidebarTabItem.vue'
 import { createGroup } from '../store/actions.mjs'
 import { cloneTabGroup } from '../store/helpers.mjs'
+import { debounce, getCountMessage } from './helpers.mjs'
+import SidebarTabItem from './SidebarTabItem.vue'
 
 export default {
   name: 'sidebar',
@@ -34,6 +40,8 @@ export default {
       window_id: window.current_window_id,
       active_tab_group_id: null,
       is_tab_group_open: {},
+      search_text: '',
+      search_resolved: true,
       tab_groups: [
         // {
         //   id: 1,
@@ -52,7 +60,8 @@ export default {
         //     }
         //   ]
         // }
-      ]
+      ],
+      theme: null
     }
   },
   created() {
@@ -61,6 +70,9 @@ export default {
       if( state_window ) {
         // @todo if active_tab_group_id has changed, open the new active group
         this.active_tab_group_id = state_window.active_tab_group_id
+
+        this.search_text = state_window.search_text
+        this.search_resolved = state_window.search_resolved
 
         // Need to deep clone the objects because Vue extends prototypes when state added to the vm
         let tab_groups = state_window.tab_groups.map( cloneTabGroup )
@@ -71,7 +83,8 @@ export default {
 
         // Use the extended splice to trigger change detection
         Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...tab_groups ] )
-        // @todo what else is required here?
+
+        this.theme = state.config.theme
       } else {
         // @todo error
       }
@@ -87,18 +100,22 @@ export default {
       unsubscribe()
     })
   },
-  // ready() {
-  // },
+  computed: {
+    __MSG_tab_search_placeholder__: function() {
+      return browser.i18n.getMessage( "tab_search_placeholder" )
+    }
+  },
   methods: {
-    // @todo this is duplicated with Action
-    getMessage: function( key, args ) {
-      return browser.i18n.getMessage( key, args )
-    },
+    getCountMessage,
     createTabGroup: function() {
       // Create new group with default properties in the store
       window.store.dispatch( createGroup( this.window_id ) )
       // @todo create new tab in the new group
     },
+    onUpdateSearchText: debounce( function( search_text ) {
+      console.info('runSearch', search_text)
+      window.background.runSearch( this.window_id, search_text )
+    }, 250 ),
     toggleTabGroupOpen: function( tab_group ) {
       tab_group.is_open = ! tab_group.is_open
     }
@@ -108,8 +125,61 @@ export default {
 
 <style scoped>
 .sidebar {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+.sidebar.dark {
   color: #fff; /* Photon White */
-  background-color: #202340; /* Photon Ink 80 */
+  background-color: #0c0c0d; /* Dark Theme header background */
+}
+
+.sidebar.light {
+  color: #0f1126; /* Photon Ink 90 */
+  background-color: white;
+}
+
+.sidebar-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.light .sidebar-header {
+  background-color: #f5f6f7; /* Light Theme header active tab background */
+}
+
+.dark .sidebar-header {
+  background-color: #323234; /* Dark Theme header active tab background */
+}
+
+.sidebar-header-new_group {
+  flex: 1;
+  padding: 4px 8px;
+}
+
+.sidebar-header-search {
+  flex: 0;
+  padding: 4px 8px;
+  margin: 4px;
+  border-radius: 2px;
+  max-width: 50%;
+}
+
+.light .sidebar-header-search {
+  background-color: #fff; /* Photon White */
+  color: #0f1126; /* Photon Ink 90 */
+  border: 1px solid #ccc;
+}
+
+.dark .sidebar-header-search {
+  background-color: #474749; /* Dark Theme awesome bar background */
+  color: #fff; /* Photon White */
+  border: none;
 }
 
 .sidebar-tab-group-list {

@@ -1,5 +1,5 @@
 <template>
-  <div class="sidebar-tab-view-item" v-on:click="openTab( tab )" v-bind:title="tab.title" v-bind:class="{ active: tab.active }">
+  <div class="sidebar-tab-view-item" @click.middle="closeTab( tab )" @click.left="openTab( tab )" :title="tab.title" :class="{ active: tab.active }">
     <!-- @todo favicon & preview image -->
     <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
     <br>
@@ -17,6 +17,10 @@ export default {
     openTab: function( tab ) {
       // Activate the given tab in the window
       browser.tabs.update( tab.id, { active: true } )
+    },
+    closeTab: function( tab ) {
+      // Close the given tab
+      browser.tabs.remove( [ tab.id ] )
     }
   }
 }
@@ -26,25 +30,48 @@ export default {
 .sidebar-tab-view-item {
   padding: 10px;
   width: 100%;
-  background-color: #202340; /* Photon Ink 80 */
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.sidebar-tab-view-item.active {
-  background-color: #002275; /* Photon Blue 80 */
+.light .sidebar-tab-view-item.active {
+  background-color: #f5f6f7; /* Light Theme header active tab background */
 }
 
-.sidebar-tab-view-item:hover {
-  background-color: #002275; /* Photon Blue 80 */
+.light .sidebar-tab-view-item:hover {
+  background-color: #cccdcf; /* Light Theme header tab hover background */
 }
 
-.sidebar-tab-view-item-title {
+.light .sidebar-tab-view-item.active:hover {
+  background-color: #f5f6f7; /* Light Theme header active tab background */
+}
+
+.light .sidebar-tab-view-item-title {
+  color: black;
+}
+
+.light .sidebar-tab-view-item-url {
+  color: #737373; /* Photon Grey 50 */
+}
+
+.dark .sidebar-tab-view-item.active {
+  background-color: #323234; /* Dark Theme header active tab background */
+}
+
+.dark .sidebar-tab-view-item:hover {
+  background-color: #252526; /* Dark Theme header tab hover background */
+}
+
+.dark .sidebar-tab-view-item.active:hover {
+  background-color: #323234; /* Dark Theme header active tab background */
+}
+
+.dark .sidebar-tab-view-item-title {
   color: #fff; /* Photon White */
 }
 
-.sidebar-tab-view-item-url {
+.dark .sidebar-tab-view-item-url {
   color: #737373; /* Photon Grey 50 */
 }
 </style>

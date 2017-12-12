@@ -1,6 +1,6 @@
-import { createStore } from 'redux'
+import createStore from 'redux/es/createStore'
 
-import App, { init } from './store/reducers.mjs'
+import App, { init, default_config } from './store/reducers.mjs'
 import {
   addWindow,
   removeWindow,
@@ -11,9 +11,12 @@ import {
   moveTab,
   attachTab,
   detachTab,
+  startSearch,
+  finishSearch,
 } from './store/actions.mjs'
 import { getTabGroupsPersistState } from './store/helpers.mjs'
-import { WINDOW_TAB_GROUPS_KEY } from './store/session-keys.mjs'
+import { LOCAL_CONFIG_KEY, WINDOW_TAB_GROUPS_KEY } from './store/session-keys.mjs'
+import { updateConfig } from './store/actions.mjs';
 
 function onError( error ) {
   console.error( error )
@@ -26,12 +29,14 @@ window.store = new Promise( ( resolve, reject ) => {
   // })
 
   const window_ids = []
-  let tabs
+  let config, tabs
 
   Promise.all([
+    browser.storage.local.get( LOCAL_CONFIG_KEY ),
     browser.tabs.query( {} )
   ]).then(
-    ( [ _tabs ] ) => {
+    ( [ storage, _tabs ] ) => {
+      config = storage[ LOCAL_CONFIG_KEY ] || default_config
       tabs = _tabs
 
       let window_tab_groups = []
@@ -51,8 +56,15 @@ window.store = new Promise( ( resolve, reject ) => {
         window_tab_groups_map.set( window_ids[ i ], window_tab_groups[ i ] )
       }
 
-      const initial_state = init( null, { tabs, window_tab_groups_map } )
+      const initial_state = init( null, { config, tabs, window_tab_groups_map } )
       const store = createStore( App, initial_state )
+
+      browser.storage.onChanged.addListener( ( changes, area ) => {
+        console.info('storage.onChanged', area, changes)
+        if( area === 'local' && changes[ LOCAL_CONFIG_KEY ] ) {
+          store.dispatch( updateConfig( changes[ LOCAL_CONFIG_KEY ].newValue || default_config ) )
+        }
+      })
 
       // Attach listeners for changes to windows
 
@@ -111,6 +123,48 @@ window.store = new Promise( ( resolve, reject ) => {
         console.info('tabs.onUpdated', tab_id, change_info, tab)
         store.dispatch( updateTab( tab, change_info ) )
       })
+
+      window.runSearch = ( window_id, search_text ) => {
+        console.info('runSearch', window_id, search_text)
+        const state = store.getState()
+        const window = state.windows.find( window => window.id === window_id )
+
+        if( ! window ) {
+          // @todo error
+          return
+        }
+
+        // Update the store with the search
+        store.dispatch( startSearch( window_id, search_text ) )
+
+        const search_tabs = []
+        const matching_tab_ids = []
+
+        window.tab_groups.forEach( tab_group => {
+          tab_group.tabs.forEach( tab => {
+            search_tabs.push( browser.find.find( search_text, { tabId: tab.id } )
+              .then(
+                ( { count } ) => {
+                  if( count > 0 ) {
+                    matching_tab_ids.push( tab.id )
+                  }
+                },
+                ( err ) => {
+                  // @todo handle error
+                }
+              )
+            )
+          })
+        })
+
+        Promise.all( search_tabs )
+          .then(
+            () => {
+              console.info('finished', search_text, matching_tab_ids)
+              store.dispatch( finishSearch( window_id, search_text, matching_tab_ids ) )
+            }
+          )
+      }
 
       store.subscribe( () => {
         const state = store.getState()
