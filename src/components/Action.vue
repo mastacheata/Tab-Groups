@@ -2,7 +2,7 @@
   <body class="action" :class="theme">
     <div class="panel">
       <div class="panel-section panel-section-search">
-        <input v-model="query_text" on-keyup="updateQueryText | debounce 400" :placeholder="__MSG_tab_search_placeholder__"/>
+        <input type="search" @input="onUpdateSearchText( search_text )" v-model="search_text" :placeholder="__MSG_tab_search_placeholder__"/>
       </div>
 
       <div class="panel-section panel-section-list panel-section-content">
@@ -34,7 +34,7 @@
 <script>
 import { cloneTabGroup } from '../store/helpers.mjs'
 import { activateGroup } from '../store/actions.mjs'
-import { getCountMessage } from './helpers.mjs'
+import { debounce, getCountMessage } from './helpers.mjs'
 
 export default {
   name: 'action',
@@ -42,6 +42,8 @@ export default {
     return {
       window_id: window.current_window_id,
       active_tab_group_id: null,
+      search_text: '',
+      search_resolved: true,
       tab_groups: [
       ],
       theme: null
@@ -52,6 +54,9 @@ export default {
       const state_window = state.windows.find( ( window ) => window.id === this.window_id )
       if( state_window ) {
         this.active_tab_group_id = state_window.active_tab_group_id
+
+        this.search_text = state_window.search_text
+        this.search_resolved = state_window.search_resolved
 
         // Need to deep clone the objects because Vue extends prototypes when state added to the vm
         let tab_groups = state_window.tab_groups.map( cloneTabGroup )
@@ -85,30 +90,34 @@ export default {
   },
   methods: {
     getCountMessage,
+    onUpdateSearchText: debounce( function( search_text ) {
+      console.info('runSearch', search_text)
+      window.background.runSearch( this.window_id, search_text )
+    }, 250 ),
     openOptionsPage: function() {
       browser.runtime.openOptionsPage()
       window.close()
     },
     openTabGroupPage: function() {
       // Using sidebar for now
-      browser.sidebarAction.open()
-        .then(
-          () => {
-            browser.sidebarAction.setPanel( { panel: browser.extension.getURL( "sidebar.html" ) } )
-            window.close()
-          }
-        )
+      // browser.sidebarAction.open()
+      //   .then(
+      //     () => {
+      //       browser.sidebarAction.setPanel( { panel: browser.extension.getURL( "sidebar.html" ) } )
+      //       window.close()
+      //     }
+      //   )
 
-      // const url = browser.extension.getURL( "tab-groups.html" )
+      const url = browser.extension.getURL( "tab-groups.html" )
 
-      // browser.tabs.create({ url })
-      //   .then( () => {
-      //     // We don't want to sync this URL ever nor clutter the users history
-      //     browser.history.deleteUrl({ url })
-      //   })
-      //   .catch( ( ex ) => {
-      //     throw ex
-      //   })
+      browser.tabs.create({ url })
+        .then( () => {
+          // We don't want to sync this URL ever nor clutter the users history
+          browser.history.deleteUrl({ url })
+        })
+        .catch( ( ex ) => {
+          throw ex
+        })
     },
     selectTabGroup: function( tab_group ) {
       console.info('@todo selectTabGroup')
@@ -116,10 +125,6 @@ export default {
     },
     viewTabGroupTabs: function( tab_group ) {
       console.info('@todo viewTabGroupTabs')
-    },
-    updateQueryText: function() {
-      this.content = this.query_text
-      // @todo handle query change with page transition
     }
   }
 }

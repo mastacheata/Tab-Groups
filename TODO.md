@@ -1,4 +1,5 @@
 p1
+- checkout mozilla irc
 - remove index & window id from nested tabs of state
 - move all browser state functions to background.js with event handlers
 - copy `is_open` from existing data if available
@@ -19,6 +20,8 @@ p1
 - testing for suspend and replace
 - action
   - 2nd screen for open tabs
+  - 2nd screen for config
+    - rename group
   - scrollable
   - tab search
 - find in tabs
@@ -27,6 +30,7 @@ p1
 - clean up console warnings
 - clear out repo
 - review @todos
+- context menu for move tab
 - determine min version
 - publish
   - fix id
@@ -47,7 +51,6 @@ p2
   - fade for overflow
   - ui style for suspended tabs
   - toggle styles
-    - background color
     - big vs little icons
 - open main tab groups page with hotkey
 - context menus
@@ -65,10 +68,12 @@ p3
   - https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Internationalization
   - investigate cleaner way to map localizations in components
 - light and dark themes for actions
+- filter for playing audio
 
 p4
 - VueJS unit testing
   - https://vuejs.org/v2/guide/unit-testing.html
+- integration tests
 - documentation
 - test rollup & typescript integration
   - https://vuejs.org/v2/guide/typescript.html
