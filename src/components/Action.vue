@@ -18,7 +18,7 @@
       </div>
 
       <div class="panel-section panel-section-footer">
-        <div class="panel-section-footer-button" @click="openTabGroupPage()">
+        <div class="panel-section-footer-button" @click="openTabGroupsPage()">
           <i class="icon icon-tab-groups"></i>
           <span class="text">{{ __MSG_tab_group_manage__ }}</span>
         </div>
@@ -35,6 +35,12 @@
 import { cloneTabGroup } from '../store/helpers.mjs'
 import { activateGroup } from '../store/actions.mjs'
 import { debounce, getCountMessage } from './helpers.mjs'
+import {
+  getMessage,
+  openOptionsPage,
+  openTabGroupsPage,
+  runTabSearch,
+} from '../integrations/index.mjs'
 
 export default {
   name: 'action',
@@ -82,43 +88,23 @@ export default {
   },
   computed: {
     __MSG_tab_group_manage__: function() {
-      return browser.i18n.getMessage( "tab_group_manage" )
+      return getMessage( "tab_group_manage" )
     },
     __MSG_tab_search_placeholder__: function() {
-      return browser.i18n.getMessage( "tab_search_placeholder" )
+      return getMessage( "tab_search_placeholder" )
     }
   },
   methods: {
     getCountMessage,
     onUpdateSearchText: debounce( function( search_text ) {
       console.info('runSearch', search_text)
-      window.background.runSearch( this.window_id, search_text )
+      runTabSearch( window.store, this.window_id, search_text )
     }, 250 ),
     openOptionsPage: function() {
-      browser.runtime.openOptionsPage()
+      openOptionsPage()
       window.close()
     },
-    openTabGroupPage: function() {
-      // Using sidebar for now
-      // browser.sidebarAction.open()
-      //   .then(
-      //     () => {
-      //       browser.sidebarAction.setPanel( { panel: browser.extension.getURL( "sidebar.html" ) } )
-      //       window.close()
-      //     }
-      //   )
-
-      const url = browser.extension.getURL( "tab-groups.html" )
-
-      browser.tabs.create({ url })
-        .then( () => {
-          // We don't want to sync this URL ever nor clutter the users history
-          browser.history.deleteUrl({ url })
-        })
-        .catch( ( ex ) => {
-          throw ex
-        })
-    },
+    openTabGroupsPage,
     selectTabGroup: function( tab_group ) {
       console.info('@todo selectTabGroup')
       window.close()

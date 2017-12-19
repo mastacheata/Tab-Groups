@@ -11,16 +11,30 @@ import {
   startSearch,
   finishSearch,
   updateConfig,
-} from './actions.mjs'
-import { default_config } from './reducers.mjs'
-import { LOCAL_CONFIG_KEY, WINDOW_TAB_GROUPS_KEY } from './session-keys.mjs'
+} from '../../store/actions.mjs'
+import { default_config } from '../../store/reducers.mjs'
+
+const LOCAL_CONFIG_KEY = 'config'
+const WINDOW_TAB_GROUPS_KEY = 'tab_groups'
+
+// LOCALIZATION
+
+/**
+ * Get a localized version of the message
+ * @param message_name Key in the localizations file
+ * @param substitutions
+ */
+export function getMessage( message_name, substitutions ) {
+  return browser.i18n.getMessage( message_name, substitutions )
+}
+
+// BROWSER STATE
 
 /**
  * Bind change events for the browser to dispatch operations on the store
- * @param browser The browser global, passed for testing
  * @param store The redux store
  */
-export function bindBrowserEvents( browser, store ) {
+export function bindBrowserEvents( store ) {
   // @todo need way to turn of console
 
   // This would be required for integration with other extensions
@@ -96,14 +110,13 @@ export function bindBrowserEvents( browser, store ) {
 
 /**
  * Load the state of the browser to structure for reducers/init
- * @param browser The browser global, passed for testing
  */
-export function loadBrowserState( browser ) {
+export function loadBrowserState() {
   const window_ids = []
   let config, tabs
 
   return Promise.all([
-    browser.storage.local.get( LOCAL_CONFIG_KEY ),
+    browser.storage ? browser.storage.local.get( LOCAL_CONFIG_KEY ) : null,
     browser.tabs.query( {} )
   ]).then(
     ( [ storage, _tabs ] ) => {
@@ -133,13 +146,106 @@ export function loadBrowserState( browser ) {
 }
 
 /**
+ * Save value to the window session
+ * @param window_id
+ * @param tab_groups_state
+ */
+export function setWindowTabGroupsState( window_id, tab_groups_state ) {
+  browser.sessions.setWindowValue( window_id, WINDOW_TAB_GROUPS_KEY, tab_groups_state )
+}
+
+/**
+ * Set the current theme by id
+ * @param theme_id
+ * @todo is there a safe async way to do this?
+ */
+export function setTheme( theme_id ) {
+  return browser.storage.local.get( LOCAL_CONFIG_KEY )
+    .then(
+      ( local_storage ) => {
+        let config = local_storage[ LOCAL_CONFIG_KEY ]
+        if( ! config ) {
+          local_storage[ LOCAL_CONFIG_KEY ] = config = {}
+        }
+        config[ 'theme' ] = theme_id
+        return browser.storage.local.set( local_storage )
+      }
+    )
+}
+
+/**
+ * Remove all values stored in the browser
+ * @param store
+ * @todo should this return a promise?
+ */
+export function resetBrowserState( store ) {
+  const state = store.getState()
+  const window_ids = state.windows.map( window => window.id )
+
+  for( let window_id of window_ids ) {
+    browser.sessions.removeWindowValue( window_id, WINDOW_TAB_GROUPS_KEY )
+  }
+
+  browser.storage.local.clear()
+}
+
+// NAVIGATION
+
+/**
+ * Navigate to the options page
+ */
+export function openOptionsPage() {
+  browser.runtime.openOptionsPage()
+}
+
+/**
+ * Open the extension tab groups page in new tab
+ */
+export function openTabGroupsPage() {
+  // Using sidebar for now
+  // browser.sidebarAction.open()
+  //   .then(
+  //     () => {
+  //       browser.sidebarAction.setPanel( { panel: browser.extension.getURL( "sidebar.html" ) } )
+  //       window.close()
+  //     }
+  //   )
+
+  const url = browser.extension.getURL( "tab-groups.html" )
+
+  browser.tabs.create({ url })
+    .then( () => {
+      // We don't want to sync this URL ever nor clutter the users history
+      browser.history.deleteUrl({ url })
+    })
+}
+
+// TABS
+
+/**
+ * Activate the given tab in the window
+ * @param tab_id
+ * @todo should this include the window_id?
+ */
+export function setTabActive( tab_id ) {
+  return browser.tabs.update( tab_id, { active: true } )
+}
+
+/**
+ * Close the given tab
+ * @param tab_id
+ */
+export function closeTab( tab_id ) {
+  return browser.tabs.remove( [ tab_id ] )
+}
+
+/**
  * Run a text search for tabs in a window and dispatch start and finish to the store
- * @param browser
  * @param store
  * @param window_id
  * @param search_text
  */
-export function runSearch( browser, store, window_id, search_text ) {
+export function runTabSearch( store, window_id, search_text ) {
   console.info('runSearch', window_id, search_text)
   const state = store.getState()
   const window = state.windows.find( _window => _window.id === window_id )

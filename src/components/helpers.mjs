@@ -1,4 +1,8 @@
 
+import {
+  getMessage
+} from '../integrations/index.mjs'
+
 /**
  * Delay execution of function, use only most recent args.  Works to wrap method on component
  * @param fn Function to delay
@@ -22,5 +26,5 @@ export function debounce( fn, delay ) {
  * @param count The count for the property
  */
 export function getCountMessage( key, count ) {
-  return browser.i18n.getMessage( `${ key }_count_${ count === 1 ? 'singular' : 'plural' }`, [ count ] )
+  return getMessage( `${ key }_count_${ count === 1 ? 'singular' : 'plural' }`, [ count ] )
 }

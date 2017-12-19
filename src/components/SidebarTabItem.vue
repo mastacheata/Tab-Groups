@@ -8,6 +8,11 @@
 </template>
 
 <script>
+import {
+  setTabActive,
+  closeTab,
+} from '../integrations/index.mjs'
+
 export default {
   name: 'sidebar-tab-item',
   props: [
@@ -15,12 +20,10 @@ export default {
   ],
   methods: {
     openTab: function( tab ) {
-      // Activate the given tab in the window
-      browser.tabs.update( tab.id, { active: true } )
+      setTabActive( tab.id )
     },
     closeTab: function( tab ) {
-      // Close the given tab
-      browser.tabs.remove( [ tab.id ] )
+      closeTab( tab.id )
     }
   }
 }

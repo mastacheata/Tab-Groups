@@ -1,7 +1,6 @@
 p1
 - checkout mozilla irc
 - remove index & window id from nested tabs of state
-- move all browser state functions to background.js with event handlers
 - copy `is_open` from existing data if available
 - content in sidebar
   - create new group [hover]

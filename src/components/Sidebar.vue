@@ -27,6 +27,7 @@
 <script>
 import { createGroup } from '../store/actions.mjs'
 import { cloneTabGroup } from '../store/helpers.mjs'
+import { getMessage } from '../integrations/index.mjs'
 import { debounce, getCountMessage } from './helpers.mjs'
 import SidebarTabItem from './SidebarTabItem.vue'
 
@@ -102,7 +103,7 @@ export default {
   },
   computed: {
     __MSG_tab_search_placeholder__: function() {
-      return browser.i18n.getMessage( "tab_search_placeholder" )
+      return getMessage( "tab_search_placeholder" )
     }
   },
   methods: {

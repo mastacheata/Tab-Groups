@@ -35,7 +35,10 @@
 </template>
 
 <script>
-import { LOCAL_CONFIG_KEY, WINDOW_TAB_GROUPS_KEY } from '../store/session-keys.mjs'
+import {
+  resetBrowserState,
+  setTheme,
+} from '../integrations/index.mjs'
 
 export default {
   name: 'options',
@@ -71,11 +74,7 @@ export default {
   },
   methods: {
     clearAllData: function() {
-      for( let window_id of this.window_ids ) {
-        browser.sessions.removeWindowValue( window_id, WINDOW_TAB_GROUPS_KEY )
-      }
-
-      browser.storage.local.clear()
+      resetBrowserState( window.store )
     },
     reset: function() {
       console.info('@todo reset')
@@ -84,17 +83,7 @@ export default {
       this.selected_section = section_id
     },
     selectTheme: function( theme_id ) {
-      browser.storage.local.get( LOCAL_CONFIG_KEY )
-        .then(
-          ( local_storage ) => {
-            let config = local_storage[ LOCAL_CONFIG_KEY ]
-            if( ! config ) {
-              local_storage[ LOCAL_CONFIG_KEY ] = config = {}
-            }
-            config[ 'theme' ] = theme_id
-            browser.storage.local.set( local_storage )
-          }
-        )
+      setTheme( theme_id )
     }
   }
 }

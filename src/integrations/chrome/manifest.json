@@ -1,0 +1,32 @@
+{
+  "manifest_version": 2,
+  "name": "__MSG_extension_name__",
+  "description": "__MSG_extension_description__",
+  "version": "3.0.0",
+  "permissions": [
+    "sessions",
+    "storage",
+    "tabs",
+    "unlimitedStorage"
+  ],
+  "default_locale": "en",
+  "background": {
+    "scripts": [ "background.js" ]
+  },
+  "browser_action": {
+    "default_icon": "icons/action-inverted.png",
+    "default_title": "__MSG_extension_name__",
+    "default_popup": "action.html"
+  },
+  "options_ui": {
+    "page": "options.html"
+  },
+  "commands": {
+    "_execute_sidebar_action": {
+      "description": "__MSG_tab_group_sidebar_action__",
+      "suggested_key": {
+        "default": "Ctrl+Shift+E"
+      }
+    }
+  }
+}
