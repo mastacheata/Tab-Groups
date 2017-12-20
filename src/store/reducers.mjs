@@ -142,7 +142,7 @@ export function init( state, { config, tabs, window_tab_groups_map } ) {
       tab_groups: [
         {
           id,
-          name,
+          title,
           active_tab_id,
           tabs,
         }
@@ -264,8 +264,25 @@ export function removeGroup( state, { tab_group_id, window_id } ) {
   return state
 }
 
-export function updateGroup( state, { tab_group, window_id, change_info } ) {
-  return state
+export function updateGroup( state, { tab_group_id, window_id, change_info } ) {
+  return Object.assign( {}, state, {
+    windows: state.windows.map( window => {
+      if( window.id !== window_id ) {
+        return window
+      }
+      return Object.assign( {}, window, {
+        tab_groups: window.tab_groups.map( tab_group => {
+          if( tab_group.id === tab_group_id ) {
+            if( change_info.title && change_info.title !== tab_group.title ) {
+              // @todo validation
+            }
+            tab_group = Object.assign( {}, tab_group, change_info )
+          }
+          return tab_group
+        })
+      })
+    })
+  })
 }
 
 export function moveGroup( state, { tab_group_id, window_id, index } ) {

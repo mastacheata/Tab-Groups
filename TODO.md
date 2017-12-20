@@ -1,4 +1,18 @@
 p1
+- tab groups page
+  - implement 1 layout
+    - tab group list
+      - hover state
+      - selected state
+      - close group
+      - preview image
+    - tab group header
+      - tab count
+      - add configure option
+    - tabs list
+      - preview image
+      - loading indicator
+  - shouldn't be included as tab in tab group
 - checkout mozilla irc
 - remove index & window id from nested tabs of state
 - copy `is_open` from existing data if available
@@ -20,11 +34,7 @@ p1
 - action
   - 2nd screen for open tabs
   - 2nd screen for config
-    - rename group
   - scrollable
-  - tab search
-- find in tabs
-  - https://github.com/mdn/webextensions-examples/tree/master/find-across-tabs
 - fix ellipsis color in sidebar or use fade
 - clean up console warnings
 - clear out repo
@@ -35,8 +45,6 @@ p1
   - fix id
 
 p2
-- tab groups page
-  - implement 1 layout
 - load/save backup
 - update tests for new state schema
 - drag and drop
@@ -53,6 +61,7 @@ p2
     - big vs little icons
 - open main tab groups page with hotkey
 - context menus
+- add interval to detect state drift
 
 p3
 - common css rules

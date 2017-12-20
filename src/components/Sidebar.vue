@@ -27,7 +27,10 @@
 <script>
 import { createGroup } from '../store/actions.mjs'
 import { cloneTabGroup } from '../store/helpers.mjs'
-import { getMessage } from '../integrations/index.mjs'
+import {
+  getMessage,
+  runTabSearch,
+} from '../integrations/index.mjs'
 import { debounce, getCountMessage } from './helpers.mjs'
 import SidebarTabItem from './SidebarTabItem.vue'
 
@@ -115,7 +118,7 @@ export default {
     },
     onUpdateSearchText: debounce( function( search_text ) {
       console.info('runSearch', search_text)
-      window.background.runSearch( this.window_id, search_text )
+      runTabSearch( window.store, this.window_id, search_text )
     }, 250 ),
     toggleTabGroupOpen: function( tab_group ) {
       tab_group.is_open = ! tab_group.is_open

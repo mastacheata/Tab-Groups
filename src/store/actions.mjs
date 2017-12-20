@@ -64,10 +64,10 @@ export function removeGroup( tab_group_id, window_id ) {
   }
 }
 
-export function updateGroup( tab_group, window_id, change_info ) {
+export function updateGroup( tab_group_id, window_id, change_info ) {
   return {
     type: GROUP_UPDATE,
-    tab_group,
+    tab_group_id,
     window_id,
     change_info
   }

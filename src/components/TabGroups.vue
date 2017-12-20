@@ -1,16 +1,37 @@
 <template>
-  <body class="tab-groups">
-    <div class="page">
-      <div v-on:click="createTabGroup()">New Group</div>
-    </div>
+  <body class="tab-groups" :class="theme">
+    <TabGroupsSingleView></TabGroupsSingleView>
   </body>
 </template>
 
 <script>
+import TabGroupsSingleView from './TabGroupsSingleView.vue'
+
 export default {
-  name: 'page',
+  name: 'tab-groups',
+  components: {
+    TabGroupsSingleView
+  },
   data() {
-    return {}
+    return {
+      theme: null
+    }
+  },
+  created() {
+    const loadState = ( state ) => {
+      this.theme = state.config.theme
+    }
+
+    // @todo this code is duplicated
+    loadState( window.store.getState() )
+
+    // Attach listener to background state changes so we can update the data
+    const unsubscribe = window.store.subscribe( () => {
+      loadState( window.store.getState() )
+    })
+    window.addEventListener( 'unload', ( event ) => {
+      unsubscribe()
+    })
   },
   methods: {
     createTabGroup: function() {
