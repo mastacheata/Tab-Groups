@@ -53,7 +53,7 @@
   },
 
   "tab_search_placeholder": {
-    "message": "Search for a tab…",
+    "message": "Search tabs…",
     "description": "Placeholder for tab search field"
   }
 }

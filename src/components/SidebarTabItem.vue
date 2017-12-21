@@ -35,7 +35,7 @@ export default {
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis;
+  text-overflow: clip;
 }
 
 .light .sidebar-tab-view-item.active {

@@ -2,8 +2,6 @@ p1
 - tab groups page
   - implement 1 layout
     - tab group list
-      - hover state
-      - selected state
       - close group
       - preview image
     - tab group header
@@ -12,6 +10,7 @@ p1
     - tabs list
       - preview image
       - loading indicator
+      - if dragging, don't set active tag
   - shouldn't be included as tab in tab group
 - checkout mozilla irc
 - remove index & window id from nested tabs of state
@@ -35,7 +34,7 @@ p1
   - 2nd screen for open tabs
   - 2nd screen for config
   - scrollable
-- fix ellipsis color in sidebar or use fade
+- text overflow gradient
 - clean up console warnings
 - clear out repo
 - review @todos
@@ -88,6 +87,8 @@ p4
 - chrome testing
   - shared data?
 - animations
+  - tab group page list scroll
+  - sidebar list actions
 - is bookmark folder option possible?
 - investigate plugin for vscode debugging
 - investigate placeholder thumbnails on mobile new tab page

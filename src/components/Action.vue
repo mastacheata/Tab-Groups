@@ -104,7 +104,10 @@ export default {
       openOptionsPage()
       window.close()
     },
-    openTabGroupsPage,
+    openTabGroupsPage: function() {
+      openTabGroupsPage()
+      window.close()
+    },
     selectTabGroup: function( tab_group ) {
       console.info('@todo selectTabGroup')
       window.close()
