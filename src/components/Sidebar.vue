@@ -2,11 +2,11 @@
   <body class="sidebar" :class="theme">
     <div class="sidebar-header">
       <!-- @todo create icon -->
-      <div class="sidebar-header-new_group" @click="createTabGroup()">New Group</div>
+      <div class="sidebar-header-new_group" @click.left="createTabGroup()" @click.right="$event.preventDefault()">New Group</div>
       <!-- @todo create icon -->
       <input class="sidebar-header-search" type="search" @input="onUpdateSearchText( search_text )" v-model="search_text" :placeholder="__MSG_tab_search_placeholder__"/>
     </div>
-    <div class="sidebar-tab-group-list">
+    <div class="sidebar-tab-group-list" @click.right="$event.preventDefault()">
       <div class="sidebar-tab-group-list-item" v-for="tab_group in tab_groups" :key="tab_group.id">
         <div class="sidebar-tab-group-list-item-header">
           <span class="text">
@@ -26,7 +26,7 @@
 
 <script>
 import { createGroup } from '../store/actions.mjs'
-import { cloneTabGroup } from '../store/helpers.mjs'
+import { cloneTabGroup, cloneTab } from '../store/helpers.mjs'
 import {
   getMessage,
   runTabSearch,
@@ -46,6 +46,7 @@ export default {
       is_tab_group_open: {},
       search_text: '',
       search_resolved: true,
+      pinned_tabs: [],
       tab_groups: [
         // {
         //   id: 1,
@@ -87,6 +88,12 @@ export default {
 
         // Use the extended splice to trigger change detection
         Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...tab_groups ] )
+
+        // Need to deep clone the objects because Vue extends prototypes when state added to the vm
+        let pinned_tabs = state.window.pinned_tabs.map( cloneTab )
+
+        // Use the extended splice to trigger change detection
+        Object.getPrototypeOf( this.pinned_tabs ).splice.apply( this.pinned_tabs, [ 0, this.pinned_tabs.length, ...pinned_tabs ] )
 
         this.theme = state.config.theme
       } else {

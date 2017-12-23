@@ -155,22 +155,37 @@ export function setWindowTabGroupsState( window_id, tab_groups_state ) {
 }
 
 /**
+ * Load the config values
+ */
+export function getConfig() {
+  return browser.storage.local.get( LOCAL_CONFIG_KEY )
+    .then( local_storage => local_storage[ LOCAL_CONFIG_KEY ] || {} )
+}
+
+/**
+ * Set the value for a key in the config
+ * @param key
+ * @param value
+ * @todo should allow multiple key/value pairs
+ * @todo is there a better async way of doing this?
+ */
+export function setConfig( key, value ) {
+  return getConfig()
+    .then(
+      ( config ) => {
+        config[ key ] = value
+        return browser.storage.local.set( local_storage )
+      }
+    )
+}
+
+/**
  * Set the current theme by id
  * @param theme_id
  * @todo is there a safe async way to do this?
  */
 export function setTheme( theme_id ) {
-  return browser.storage.local.get( LOCAL_CONFIG_KEY )
-    .then(
-      ( local_storage ) => {
-        let config = local_storage[ LOCAL_CONFIG_KEY ]
-        if( ! config ) {
-          local_storage[ LOCAL_CONFIG_KEY ] = config = {}
-        }
-        config[ 'theme' ] = theme_id
-        return browser.storage.local.set( local_storage )
-      }
-    )
+  setConfig( 'theme', theme_id )
 }
 
 /**

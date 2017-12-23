@@ -104,9 +104,21 @@ export function init( state, { config, tabs, window_tab_groups_map } ) {
 
   const windows = []
   for( let [ window_id, window_tabs ] of window_tabs_map.entries() ) {
-    // @todo ensure tabs are in index sorted order
-    // Clone tabs to use as iterator
-    window_tabs = [ ...window_tabs ]
+    // @todo ensure tabs are in index sorted order, with the pinned tabs first
+    // @todo this should be based on config setting
+
+    let pinned_tabs
+    // Find the first non-pinned tab
+    const tabs_start_index = window_tabs.findIndex( tab => ! tab.pinned )
+    if( tabs_start_index === -1 ) {
+      // All the tabs are pinned
+      pinned_tabs = [ ...window_tabs ]
+      window_tabs = []
+    } else {
+      pinned_tabs = window_tabs.slice( 0, tabs_start_index )
+      window_tabs = window_tabs.slice( tabs_start_index )
+    }
+
     let window_tab_groups = []
     let window_tab_groups_state = window_tab_groups_map.get( window_id )
     if( window_tab_groups_state ) {
@@ -128,6 +140,7 @@ export function init( state, { config, tabs, window_tab_groups_map } ) {
     windows.push({
       id: window_id,
       active_tab_group_id: window_tab_groups[ 0 ].id,
+      pinned_tabs,
       tab_groups: window_tab_groups
     })
   }
@@ -368,6 +381,8 @@ export function removeTab( state, { tab_id, window_id } ) {
 }
 
 export function updateTab( state, { tab, change_info } ) {
+  // @todo if change_info contains 'pinned'
+
   // @todo change use the nature of change_info to ignore changes
   return Object.assign( {}, state, {
     windows: state.windows.map( window => {
@@ -393,6 +408,7 @@ export function updateTab( state, { tab, change_info } ) {
 export function moveTab( state, { tab_id, window_id, index, tab_group_id } ) {
   return Object.assign( {}, state, {
     windows: state.windows.map( window => {
+      // @todo if window_id is not defined, auto-detect
       if( window.id !== window_id ) {
         return window
       }

@@ -1,110 +1,83 @@
 import tap from 'tap'
-import { base_new_tab, getInitialState } from './helpers'
+import { createTab, getInitialState } from './helpers'
 
 import { removeTab } from '../../src/store/reducers'
+import { createWindow, createTabGroup } from '../../src/store/helpers'
 
 function testRemoveFirstTab() {
   let state = getInitialState()
 
   let tab_id = state.windows[ 0 ].tab_groups[ 0 ].tabs[ 0 ].id
 
-  state = removeTab( state, { tab_id } )
+  state = removeTab( state, { tab_id, window_id: state.windows[ 0 ].id } )
 
-  // tap.equal( state.tab_groups.length, 1 )
-  // tap.equal( state.tab_groups[ 0 ].tabs.length, 1 )
-  // tap.equal( state.tab_groups[ 0 ].tabs_count, state.tab_groups[ 0 ].tabs.length )
-  // tap.equal( state.windows[ 0 ].tab_groups[ 0 ], state.tab_groups[ 0 ] )
+  tap.equal( state.windows[ 0 ].tab_groups.length, 1 )
+  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 1 )
+  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs_count, state.windows[ 0 ].tab_groups[ 0 ].tabs.length )
 }
 
 function testRemoveMiddleTab() {
-  let tab_groups = [
-    {
-      id: 1,
-      name: "Group 1",
-      tabs: [
-        Object.assign( {}, base_new_tab, {
-          id: 1,
-          index: 0,
-          windowId: 3
-        }),
-        Object.assign( {}, base_new_tab, {
-          id: 2,
-          index: 1,
-          windowId: 3
-        }),
-        Object.assign( {}, base_new_tab, {
-          id: 3,
-          index: 2,
-          windowId: 3
-        })
-      ],
-      tabs_count: 3
-    }
-  ]
+  const window_id = 1
   let state = {
-    tab_groups,
     windows: [
-      {
-        id: 3,
-        active_tab_group_id: tab_groups[ 0 ].id,
-        tab_groups: [ ...tab_groups ]
-      }
+      createWindow( window_id, [
+        createTabGroup( 1, [
+          createTab({
+            id: 1,
+            index: 0
+          }),
+          createTab({
+            id: 2,
+            index: 1
+          }),
+          createTab({
+            id: 3,
+            index: 2
+          })
+        ])
+      ])
     ]
   }
 
-  let tab_id = state.tab_groups[ 0 ].tabs[ 1 ].id
+  let tab_id = state.windows[ 0 ].tab_groups[ 0 ].tabs[ 1 ].id
 
-  state = removeTab( state, { tab_id } )
+  state = removeTab( state, { tab_id, window_id } )
 
-  // tap.equal( state.tab_groups.length, 1 )
-  // tap.equal( state.tab_groups[ 0 ].tabs.length, 2 )
-  // tap.equal( state.tab_groups[ 0 ].tabs_count, state.tab_groups[ 0 ].tabs.length )
-  // tap.equal( state.windows[ 0 ].tab_groups[ 0 ], state.tab_groups[ 0 ] )
+  tap.equal( state.windows[ 0 ].tab_groups.length, 1 )
+  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 2 )
+  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs_count, state.windows[ 0 ].tab_groups[ 0 ].tabs.length )
 }
 
 function testRemoveLastTab() {
-  let tab_groups = [
-    {
-      id: 1,
-      name: "Group 1",
-      tabs: [
-        Object.assign( {}, base_new_tab, {
-          id: 1,
-          index: 0,
-          windowId: 3
-        }),
-        Object.assign( {}, base_new_tab, {
-          id: 2,
-          index: 1,
-          windowId: 3
-        }),
-        Object.assign( {}, base_new_tab, {
-          id: 3,
-          index: 2,
-          windowId: 3
-        })
-      ],
-      tabs_count: 3
-    }
-  ]
+  let window_id = 1
   let state = {
     windows: [
-      {
-        id: 3,
-        active_tab_group_id: tab_groups[ 0 ].id,
-        tab_groups: [ ...tab_groups ]
-      }
+      createWindow( window_id, [
+        createTabGroup( 1, [
+          createTab({
+            id: 1,
+            index: 0
+          }),
+          createTab({
+            id: 2,
+            index: 1
+          }),
+          createTab({
+            id: 3,
+            index: 2
+          })
+        ])
+      ])
     ]
   }
 
   let tab_id = state.windows[ 0 ].tab_groups[ 0 ].tabs[ state.windows[ 0 ].tab_groups[ 0 ].tabs.length - 1 ].id
 
-  state = removeTab( state, { tab_id } )
+  state = removeTab( state, { tab_id, window_id } )
 
-  // tap.equal( state.tab_groups.length, 1 )
-  // tap.equal( state.tab_groups[ 0 ].tabs.length, 2 )
-  // tap.equal( state.tab_groups[ 0 ].tabs_count, state.tab_groups[ 0 ].tabs.length )
-  // tap.equal( state.windows[ 0 ].tab_groups[ 0 ], state.tab_groups[ 0 ] )
+  tap.equal( state.windows[ 0 ].tab_groups.length, 1 )
+  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 2 )
+  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs_count, state.windows[ 0 ].tab_groups[ 0 ].tabs.length )
 }
 
 export default function() {

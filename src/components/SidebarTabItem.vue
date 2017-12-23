@@ -1,5 +1,7 @@
 <template>
-  <div class="sidebar-tab-view-item" @click.middle="closeTab( tab )" @click.left="openTab( tab )" :title="tab.title" :class="{ active: tab.active }">
+  <div class="sidebar-tab-view-item" :class="{ active: tab.active }" :title="tab.title"
+       @click.left="openTab( tab )" @click.middle="closeTab( tab )"
+  >
     <!-- @todo favicon & preview image -->
     <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
     <br>

@@ -5,6 +5,7 @@ import testTabRemove from './store/tab-remove'
 import testTabMove from './store/tab-move'
 import testWindowAdd from './store/window-add'
 import testWindowSearch from './store/window-search'
+import testPinnedTabs from './store/pinned-tabs'
 
 testInit()
 testTabActivate()
@@ -13,3 +14,4 @@ testTabRemove()
 testTabMove()
 testWindowAdd()
 testWindowSearch()
+testPinnedTabs()
