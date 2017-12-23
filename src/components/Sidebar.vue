@@ -6,6 +6,14 @@
       <!-- @todo create icon -->
       <input class="sidebar-header-search" type="search" @input="onUpdateSearchText( search_text )" v-model="search_text" :placeholder="__MSG_tab_search_placeholder__"/>
     </div>
+    <div class="sidebar-tabs-pinned-list" @click.right="$event.preventDefault()">
+      <div class="sidebar-tabs-pinned-list-item" :class="{ active: tab.active }" :title="tab.title"
+          v-for="tab in pinned_tabs" :key="tab.id"
+          @click.left="openTab( tab )" @click.middle="closeTab( tab )"
+      >
+        <img class="sidebar-tabs-pinned-list-item-icon" :src="tab.favIconUrl"/>
+      </div>
+    </div>
     <div class="sidebar-tab-group-list" @click.right="$event.preventDefault()">
       <div class="sidebar-tab-group-list-item" v-for="tab_group in tab_groups" :key="tab_group.id">
         <div class="sidebar-tab-group-list-item-header">
@@ -29,6 +37,8 @@ import { createGroup } from '../store/actions.mjs'
 import { cloneTabGroup, cloneTab } from '../store/helpers.mjs'
 import {
   getMessage,
+  setTabActive,
+  closeTab,
   runTabSearch,
 } from '../integrations/index.mjs'
 import { debounce, getCountMessage } from './helpers.mjs'
@@ -71,6 +81,8 @@ export default {
   },
   created() {
     const loadState = ( state ) => {
+      this.theme = state.config.theme
+
       const state_window = state.windows.find( window => window.id === this.window_id )
       if( state_window ) {
         // @todo if active_tab_group_id has changed, open the new active group
@@ -90,12 +102,10 @@ export default {
         Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...tab_groups ] )
 
         // Need to deep clone the objects because Vue extends prototypes when state added to the vm
-        let pinned_tabs = state.window.pinned_tabs.map( cloneTab )
+        let pinned_tabs = state_window.pinned_tabs.map( cloneTab )
 
         // Use the extended splice to trigger change detection
         Object.getPrototypeOf( this.pinned_tabs ).splice.apply( this.pinned_tabs, [ 0, this.pinned_tabs.length, ...pinned_tabs ] )
-
-        this.theme = state.config.theme
       } else {
         // @todo error
       }
@@ -122,6 +132,12 @@ export default {
       // Create new group with default properties in the store
       window.store.dispatch( createGroup( this.window_id ) )
       // @todo create new tab in the new group
+    },
+    openTab: function( tab ) {
+      setTabActive( tab.id )
+    },
+    closeTab: function( tab ) {
+      closeTab( tab.id )
     },
     onUpdateSearchText: debounce( function( search_text ) {
       console.info('runSearch', search_text)
@@ -191,6 +207,59 @@ export default {
   background-color: #474749; /* Dark Theme awesome bar background */
   color: #fff; /* Photon White */
   border: none;
+}
+
+.sidebar-tabs-pinned-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 28px);
+  grid-auto-columns: min-content;
+  grid-auto-rows: max-content;
+}
+
+.light .sidebar-tabs-pinned-list {
+}
+
+.dark .sidebar-tabs-pinned-list {
+}
+
+.sidebar-tabs-pinned-list-item {
+  padding: 2px;
+}
+
+.dark .sidebar-tabs-pinned-list-item {
+}
+
+.sidebar-tabs-pinned-list-item {
+  padding: 2px;
+}
+
+.light .sidebar-tabs-pinned-list-item.active {
+  background-color: #f5f6f7; /* Light Theme header active tab background */
+}
+
+.light .sidebar-tabs-pinned-list-item:hover {
+  background-color: #cccdcf; /* Light Theme header tab hover background */
+}
+
+.light .sidebar-tabs-pinned-list-item.active:hover {
+  background-color: #f5f6f7; /* Light Theme header active tab background */
+}
+
+.dark .sidebar-tabs-pinned-list-item.active {
+  background-color: #323234; /* Dark Theme header active tab background */
+}
+
+.dark .sidebar-tabs-pinned-list-item:hover {
+  background-color: #252526; /* Dark Theme header tab hover background */
+}
+
+.dark .sidebar-tabs-pinned-list-item.active:hover {
+  background-color: #323234; /* Dark Theme header active tab background */
+}
+
+.sidebar-tabs-pinned-list-item-icon {
+  width: 24px;
+  height: 24px;
 }
 
 .sidebar-tab-group-list {

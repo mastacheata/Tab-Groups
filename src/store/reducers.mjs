@@ -50,27 +50,38 @@ function findTabWindowId( windows, tab_id ) {
   return null
 }
 
-function _removeTab( state, { tab_id, window_id, index, is_detach } ) {
+function _removeTab( state, { tab_id, window_id, index, is_detach, is_pin } ) {
   // @todo use index to optimize the lookup process if set
   let orphan_tab = null
 
   const windows = state.windows.map( window => {
-    if( window.id !== window_id ) {
-      return window
-    }
-    return Object.assign( {}, window, {
-      tab_groups: window.tab_groups.map( tab_group => {
-        const tab_index = tab_group.tabs.findIndex( tab => tab.id === tab_id )
-        if( tab_index > -1 ) {
-          tab_group = Object.assign( {}, tab_group, {
-            tabs: [ ...tab_group.tabs ],
-            tabs_count: tab_group.tabs_count - 1
-          })
-          orphan_tab = tab_group.tabs.splice( tab_index, 1 )[ 0 ]
-        }
-        return tab_group
+    if( window.id === window_id ) {
+      window = Object.assign( {}, window, {
+        pinned_tabs: window.pinned_tabs.filter( tab => {
+          if( tab.id === tab_id ) {
+            orphan_tab = tab
+            return false
+          }
+          return true
+        }),
+        tab_groups: window.tab_groups.map( tab_group => {
+          const tab_index = tab_group.tabs.findIndex( tab => tab.id === tab_id )
+          if( tab_index > -1 ) {
+            tab_group = Object.assign( {}, tab_group, {
+              tabs: [ ...tab_group.tabs ],
+              tabs_count: tab_group.tabs_count - 1
+            })
+            orphan_tab = tab_group.tabs.splice( tab_index, 1 )[ 0 ]
+          }
+          return tab_group
+        })
       })
-    })
+
+      if( is_pin && orphan_tab ) {
+        window.pinned_tabs = [ ...window.pinned_tabs, orphan_tab ]
+      }
+    }
+    return window
   })
 
   const new_state = Object.assign( {}, state, {
@@ -377,11 +388,19 @@ export function addTab( state, { tab } ) {
 }
 
 export function removeTab( state, { tab_id, window_id } ) {
-  return _removeTab( state, { tab_id, window_id, is_detach: false } )
+  return _removeTab( state, { tab_id, window_id } )
 }
 
 export function updateTab( state, { tab, change_info } ) {
   // @todo if change_info contains 'pinned'
+  if( change_info.hasOwnProperty( 'pinned' ) ) {
+    console.info('detected pin change')
+    if( change_info.pinned ) {
+      return _removeTab( state, { tab_id: tab.id, window_id: tab.windowId, is_pin: true } )
+    } else {
+      // @todo move from pinned to active group
+    }
+  }
 
   // @todo change use the nature of change_info to ignore changes
   return Object.assign( {}, state, {
@@ -429,6 +448,7 @@ export function moveTab( state, { tab_id, window_id, index, tab_group_id } ) {
 
       // Scan tab_groups to find place to move tab to
       if( moved_tab ) {
+        // @todo this is broken by pinned tabs
         for( let i = 0, j = 0; j < tab_groups.length; j++ ) {
           if( tab_group_id != null ) {
             // If the tab_group_id is passed, override behaviour

@@ -174,6 +174,8 @@ export function setConfig( key, value ) {
     .then(
       ( config ) => {
         config[ key ] = value
+        const local_storage = {}
+        local_storage[ LOCAL_CONFIG_KEY ] = config
         return browser.storage.local.set( local_storage )
       }
     )
