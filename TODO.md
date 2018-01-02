@@ -1,39 +1,55 @@
 p1
-- tab groups page
-  - implement 1 layout
-    - tab group list
-      - close group
-      - preview image
-    - tab group header
-      - tab count
-      - add configure option
-    - tabs list
-      - preview image
-      - loading indicator
-      - if dragging, don't set active tag
+- add pin tests
+  - fix tab pinning
+  - fix move when there are pinned tabs
+- tab groups page - 1st layout
+  - min height for cards based on current window size to prevent layout issues
+  - rescale images based on resize
+  - tab group list
+    - close group
+    - add new group icon, droppable
+  - tab group header
+    - tab count
+    - add configure option
+  - tabs list
+    - loading indicator
+    - if dragging, don't set active tag
   - shouldn't be included as tab in tab group
+- drag and drop
+  - standardize drop data as URI
+  - handle external url list drop
+- preview image
+  - add debounce task after transition to complete if active
 - checkout mozilla irc
 - remove index & window id from nested tabs of state
 - copy `is_open` from existing data if available
-- content in sidebar
-  - create new group [hover]
-  - toggle groups
+- sidebar
+  - create new group [hover, icon]
+  - pinned tabs
   - images (favicon)
+  - drag and drop
+    - tab to group
+    - tab order
+    - group order
+    - pinned tab to group
   - status indication
     - audio playing, muted
     - pinned
     - loading
+  - arrow key navigation with selected state
 - options
   - base styling
   - toggles
     - features
       - search
       - sync
+  - fix field tabbing
 - testing for suspend and replace
 - action
   - 2nd screen for open tabs
   - 2nd screen for config
   - scrollable
+  - dark theme
 - text overflow gradient
 - clean up console warnings
 - clear out repo
@@ -51,7 +67,6 @@ p2
   - between windows
 - sidebar
   - bubbling audio indicator
-  - pinned tabs
   - tab search clear
   - tab close button
   - fade for overflow
@@ -76,6 +91,7 @@ p3
   - investigate cleaner way to map localizations in components
 - light and dark themes for actions
 - filter for playing audio
+- recover with history
 
 p4
 - VueJS unit testing

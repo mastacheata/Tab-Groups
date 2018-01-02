@@ -1,3 +1,4 @@
+import tap from 'tap'
 
 export const base_new_tab = {
   id: null,
@@ -20,7 +21,7 @@ export const base_new_tab = {
   title: "New Tab"
 }
 
-import { createWindow, createTabGroup } from '../../src/store/helpers.mjs'
+import { createWindow, createTabGroup, findTab } from '../../src/store/helpers.mjs'
 
 export function createTab( tab ) {
   return Object.assign( {}, base_new_tab, tab )
@@ -65,4 +66,14 @@ export function getMultiWindowInitialState() {
   )
 
   return initial_state
+}
+
+function testFindTab( t ) {
+  let state = getInitialState()
+  let tab = findTab( state, state.windows[ 0 ].id, state.windows[ 0 ].tab_groups[ 0 ].tabs[ 0 ].id )
+  console.info('tab', tab)
+}
+
+export default function() {
+  tap.test( testFindTab )
 }

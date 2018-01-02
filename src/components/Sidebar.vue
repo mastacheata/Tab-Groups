@@ -2,11 +2,11 @@
   <body class="sidebar" :class="theme">
     <div class="sidebar-header">
       <!-- @todo create icon -->
-      <div class="sidebar-header-new_group" @click.left="createTabGroup()" @click.right="$event.preventDefault()">New Group</div>
+      <div class="sidebar-header-new_group" @click.left="createTabGroup()" @click.right.prevent>New Group</div>
       <!-- @todo create icon -->
       <input class="sidebar-header-search" type="search" @input="onUpdateSearchText( search_text )" v-model="search_text" :placeholder="__MSG_tab_search_placeholder__"/>
     </div>
-    <div class="sidebar-tabs-pinned-list" @click.right="$event.preventDefault()">
+    <div class="sidebar-tabs-pinned-list" @click.right.prevent>
       <div class="sidebar-tabs-pinned-list-item" :class="{ active: tab.active }" :title="tab.title"
           v-for="tab in pinned_tabs" :key="tab.id"
           @click.left="openTab( tab )" @click.middle="closeTab( tab )"
@@ -14,9 +14,9 @@
         <img class="sidebar-tabs-pinned-list-item-icon" :src="tab.favIconUrl"/>
       </div>
     </div>
-    <div class="sidebar-tab-group-list" @click.right="$event.preventDefault()">
+    <div class="sidebar-tab-group-list" @click.right.prevent>
       <div class="sidebar-tab-group-list-item" v-for="tab_group in tab_groups" :key="tab_group.id">
-        <div class="sidebar-tab-group-list-item-header">
+        <div class="sidebar-tab-group-list-item-header" @dragover.prevent>
           <span class="text">
             <span v-on:click="toggleTabGroupOpen( tab_group )">{{ tab_group.is_open ? '–' : '+' }}</span>
             {{ tab_group.title }}
@@ -128,22 +128,24 @@ export default {
   },
   methods: {
     getCountMessage,
-    createTabGroup: function() {
+    createTabGroup() {
       // Create new group with default properties in the store
       window.store.dispatch( createGroup( this.window_id ) )
       // @todo create new tab in the new group
     },
-    openTab: function( tab ) {
+    openTab( tab ) {
       setTabActive( tab.id )
     },
-    closeTab: function( tab ) {
+    closeTab( tab ) {
       closeTab( tab.id )
+    },
+    onTabGroupDrop( event ) {
     },
     onUpdateSearchText: debounce( function( search_text ) {
       console.info('runSearch', search_text)
       runTabSearch( window.store, this.window_id, search_text )
     }, 250 ),
-    toggleTabGroupOpen: function( tab_group ) {
+    toggleTabGroupOpen( tab_group ) {
       tab_group.is_open = ! tab_group.is_open
     }
   }

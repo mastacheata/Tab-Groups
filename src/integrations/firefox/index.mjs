@@ -5,17 +5,27 @@ import {
   addTab,
   removeTab,
   updateTab,
+  updateTabImage,
   moveTab,
+  moveTabToGroup,
   attachTab,
   detachTab,
   startSearch,
   finishSearch,
   updateConfig,
 } from '../../store/actions.mjs'
+import {
+  findTab
+} from '../../store/helpers.mjs'
 import { default_config } from '../../store/reducers.mjs'
 
 const LOCAL_CONFIG_KEY = 'config'
 const WINDOW_TAB_GROUPS_KEY = 'tab_groups'
+const TAB_PREVIEW_IMAGE_KEY = 'preview_image'
+
+const TAB_PREVIEW_IMAGE_DETAILS = {
+  format: 'png'
+}
 
 // LOCALIZATION
 
@@ -35,7 +45,7 @@ export function getMessage( message_name, substitutions ) {
  * @param store The redux store
  */
 export function bindBrowserEvents( store ) {
-  // @todo need way to turn of console
+  // @todo need way to turn off console
 
   // This would be required for integration with other extensions
   // browser.runtime.onMessage.addListener( ( message, sender, sendResponse ) => {
@@ -66,10 +76,20 @@ export function bindBrowserEvents( store ) {
   // Attach listeners for changes to tabs
 
   browser.tabs.onActivated.addListener( ( { tabId, windowId } ) => {
-    // @todo can start process to capture image here
-    // tabs.captureVisibleTab()
     console.info('tabs.onActivated', tabId, windowId)
     store.dispatch( activateTab( tabId, windowId ) )
+
+    // Start background task to get preview image
+    browser.tabs.captureVisibleTab( windowId, TAB_PREVIEW_IMAGE_DETAILS )
+      .then(
+        ( preview_image_uri ) => {
+          store.dispatch( updateTabImage( tabId, windowId, preview_image_uri ) )
+          const tab = findTab( store.getState(), windowId, tabId )
+          if( tab && tab.preview_image ) {
+            setTabPreviewState( tab.id, tab.preview_image )
+          }
+        }
+      )
   })
 
   browser.tabs.onCreated.addListener( ( tab ) => {
@@ -123,21 +143,27 @@ export function loadBrowserState() {
       config = storage[ LOCAL_CONFIG_KEY ] || default_config
       tabs = _tabs
 
+      const browser_tab_preview_images = []
+
       let window_tab_groups = []
-      tabs.forEach( ( tab ) => {
+      tabs.forEach( tab => {
+        browser_tab_preview_images.push( getTabPreviewState( tab.id ) )
         if( window_ids.indexOf( tab.windowId ) === -1 ) {
           window_ids.push( tab.windowId )
           window_tab_groups.push( browser.sessions.getWindowValue( tab.windowId, WINDOW_TAB_GROUPS_KEY ) )
         }
       })
 
-      return Promise.all( window_tab_groups )
+      return Promise.all( [ Promise.all( browser_tab_preview_images ), Promise.all( window_tab_groups ) ] )
     }
   ).then(
-    ( window_tab_groups ) => {
+    ( [ tab_preview_images, window_tab_groups ] ) => {
       const window_tab_groups_map = new Map()
       for( let i = 0; i < window_ids.length; i++ ) {
         window_tab_groups_map.set( window_ids[ i ], window_tab_groups[ i ] )
+      }
+      for( let i = 0; i < tabs.length; i++ ) {
+        tabs[ i ].preview_image = tab_preview_images[ i ]
       }
       // This is the same structure from reducers.init
       return { config, tabs, window_tab_groups_map }
@@ -151,7 +177,24 @@ export function loadBrowserState() {
  * @param tab_groups_state
  */
 export function setWindowTabGroupsState( window_id, tab_groups_state ) {
-  browser.sessions.setWindowValue( window_id, WINDOW_TAB_GROUPS_KEY, tab_groups_state )
+  return browser.sessions.setWindowValue( window_id, WINDOW_TAB_GROUPS_KEY, tab_groups_state )
+}
+
+/**
+ * Fetch the preview image for a tab from session storage
+ * @param tab_id
+ */
+export function getTabPreviewState( tab_id ) {
+  return browser.sessions.getTabValue( tab_id, TAB_PREVIEW_IMAGE_KEY )
+}
+
+/**
+ * Save the tab preview image and details to the
+ * @param tab_id
+ * @param preview_image
+ */
+export function setTabPreviewState( tab_id, preview_image ) {
+  return browser.sessions.setTabValue( tab_id, TAB_PREVIEW_IMAGE_KEY, preview_image )
 }
 
 /**
@@ -187,7 +230,15 @@ export function setConfig( key, value ) {
  * @todo is there a safe async way to do this?
  */
 export function setTheme( theme_id ) {
-  setConfig( 'theme', theme_id )
+  return setConfig( 'theme', theme_id )
+}
+
+function resetWindowState( window ) {
+  return browser.sessions.removeWindowValue( window.id, WINDOW_TAB_GROUPS_KEY )
+}
+
+function resetTabState( tab ) {
+  return browser.sessions.removeTabValue( tab.id, TAB_PREVIEW_IMAGE_KEY )
 }
 
 /**
@@ -197,11 +248,22 @@ export function setTheme( theme_id ) {
  */
 export function resetBrowserState( store ) {
   const state = store.getState()
-  const window_ids = state.windows.map( window => window.id )
 
-  for( let window_id of window_ids ) {
-    browser.sessions.removeWindowValue( window_id, WINDOW_TAB_GROUPS_KEY )
+  if( state.orphan_tabs ) {
+    window.pinned_tabs.forEach( resetTabState )
   }
+
+  state.windows.forEach( window => {
+    resetWindowState( window )
+
+    if( window.pinned_tabs ) {
+      window.pinned_tabs.forEach( resetTabState )
+    }
+
+    window.tab_groups.forEach( tab_group => {
+      tab_group.tabs.forEach( resetTabState )
+    })
+  })
 
   browser.storage.local.clear()
 }
@@ -254,6 +316,44 @@ export function setTabActive( tab_id ) {
  */
 export function closeTab( tab_id ) {
   return browser.tabs.remove( [ tab_id ] )
+}
+
+/**
+ * Move tabs to a different group
+ * @param store
+ * @param tab_ids
+ * @param window_id
+ * @param tab_group_id
+ */
+export function moveTabsToGroup( store, tab_ids, window_id, tab_group_id, index ) {
+  console.info('moveTabsToGroup', tab_ids, window_id, tab_group_id, index)
+  let index_offset = 0
+  const state = store.getState()
+  const window = state.windows.find( window => window.id == window_id )
+  if( ! window ) {
+    // @todo error
+    return
+  }
+
+  if( window.pinned_tabs ) {
+    index_offset += window.pinned_tabs.length
+  }
+  for( let tab_group of window.tab_groups ) {
+    if( tab_group_id === tab_group.id ) {
+      if( index == null ) {
+        index = index_offset + tab_group.tabs_count
+      } else {
+        index += index_offset
+      }
+      for( let tab_id of tab_ids ) {
+        store.dispatch( moveTabToGroup( tab_id, window_id, tab_group_id ) )
+      }
+      break
+    }
+    index_offset += tab_group.tabs_count
+  }
+
+  browser.tabs.move( tab_ids, { index } )
 }
 
 /**

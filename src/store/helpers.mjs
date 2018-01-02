@@ -3,6 +3,7 @@ export function createWindow( window_id, tab_groups ) {
   return {
     id: window_id,
     active_tab_group_id: tab_groups[ 0 ].id,
+    pinned_tabs: [],
     tab_groups: tab_groups
   }
 }
@@ -23,9 +24,33 @@ export function cloneTabGroup( tab_group ) {
 }
 
 export function cloneTab( tab ) {
-  return Object.assign( {}, tab, {
-    mutedInfo: Object.assign( {}, tab.mutedInfo )
-  })
+  tab = Object.assign( {}, tab )
+  if( tab.mutedInfo ) {
+    tab.mutedInfo = Object.assign( {}, tab.mutedInfo )
+  }
+  if( tab.preview_image ) {
+    tab.preview_image = Object.assign( {}, tab.preview_image )
+  }
+  return tab
+}
+
+/**
+ * Find a tab in the state
+ * @param state
+ */
+export function findTab( state, window_id, tab_id ) {
+  for( let window of state.windows ) {
+    if( window.id === window_id ) {
+      for( let tab_group of window.tab_groups ) {
+        for( let tab of tab_group.tabs ) {
+          if( tab.id === tab_id ) {
+            return tab
+          }
+        }
+      }
+    }
+  }
+  return null
 }
 
 /**
@@ -53,3 +78,28 @@ export function getTabGroupsPersistState( window ) {
     }
   })
 }
+
+/**
+ * Map the browsers tab representation to the one stored on the state object
+ * @param tab The browser representation for a tab
+ * @returns The tab representation that will be stored in the state
+ */
+export function getTabState( tab ) {
+  return {
+    id: tab.id,
+    active: tab.active,
+    pinned: tab.pinned,
+    // highlighted?
+    status: tab.status,
+    last_accessed: tab.lastAccessed,
+    discarded: tab.discarded,
+    // openerTabId?
+    // audible?  may want to merge to object
+    // mutedInfo.muted?
+    favicon_url: tab.favIconUrl,
+    url: tab.url,
+    title: tab.title,
+    // @todo store preview image with width and height
+  }
+}
+

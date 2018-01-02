@@ -1,7 +1,11 @@
 <template>
-  <div class="page tab-groups-single-view" @dragend="onParentDragEnd( $event )">
+  <div class="page tab-groups-single-view">
     <section class="tab-groups-list-pane" @wheel="onTabGroupWheel( $event )">
-      <article class="tab-groups-list-item" v-for="tab_group in tab_groups" :key="tab_group.id" @click.left="selectTabGroup( tab_group )" :class="{ active: tab_group.id === selected_tab_group.id }">
+      <article class="tab-groups-list-item" :class="{ active: tab_group.id === selected_tab_group.id }"
+          v-for="tab_group in tab_groups" :key="tab_group.id"
+          @click.left="selectTabGroup( tab_group )"
+          draggable="true" @dragenter="onTabGroupDragEnter( tab_group, $event )" @dragover="onTabGroupDragOver( tab_group, $event )" @drop="onTabGroupDrop( tab_group, $event )" @dragend="onTabGroupDragEnd( tab_group, $event )"
+      >
         {{ tab_group.title }}
       </article>
     </section>
@@ -9,19 +13,19 @@
       <div class="tab-group-header-title" contenteditable="true" @blur="onTabGroupNameUpdate">{{ selected_tab_group.title }}</div>
       <span v-if="is_dragging_tab">dragging</span>
     </section>
-    <section class="tab-group-tabs-list-pane">
+    <section class="tab-group-tabs-list-pane" ref="tabs_list_pane">
       <div class="tab-group-tab-card"
            v-for="tab in selected_tab_group.tabs" :key="tab.id"
-           @click.left="selectTab( tab )"  @click.middle="closeTab( tab )"
-           draggable="true" @dragstart="onTabDragStart( tab, $event )" @dragend="onTabDragEnd( tab, $event )"
+           @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
+           draggable="true" @dragstart="onTabDragStart( tab, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
       >
-        <svg class="tab-group-tab-card-content">
+        <svg class="tab-group-tab-card-content" :height="tab.preview_image ? (( card_width_px / tab.preview_image.width ) * tab.preview_image.height + 16 || '0') + 'px' : 'auto'">
+          <image v-if="tab.preview_image" :xlink:href="tab.preview_image.uri" x="8px" y="8px" :width="(card_width_px || '0') + 'px'" :height="(( card_width_px / tab.preview_image.width ) * tab.preview_image.height || '0') + 'px'"/>
           <g class="favicon">
-            <circle cx="0" cy="0" r="32"/>
+            <circle cx="12px" cy="12px" r="16px"/>
             <!-- @todo clipPath for image with circle -->
             <image :xlink:href="tab.favIconUrl" x="0" y="0" height="24px" width="24px"/>
           </g>
-          <!-- @todo embed preview image -->
         </svg>
         <div class="tab-group-tab-title">{{ tab.title }}</div>
       </div>
@@ -33,6 +37,7 @@
 import {
   createGroup,
   updateGroup,
+  moveTabToGroup,
 } from '../store/actions.mjs'
 import { cloneTabGroup } from '../store/helpers.mjs'
 import {
@@ -42,6 +47,11 @@ import {
   runTabSearch,
 } from '../integrations/index.mjs'
 import { debounce, getCountMessage } from './helpers.mjs'
+import {
+  onTabGroupDragEnter,
+  onTabGroupDragOver,
+  onTabGroupDrop,
+} from './droppable.mjs'
 
 export default {
   name: 'tab-groups-single-view',
@@ -51,6 +61,7 @@ export default {
       window_id: window.current_window_id,
       selected_tab_group: null,
       tab_groups: [],
+      card_width_px: 0,
       theme: null
     }
   },
@@ -92,6 +103,14 @@ export default {
       unsubscribe()
     })
   },
+  mounted() {
+    this.$nextTick( () => {
+      const tab_card_els = this.$refs.tabs_list_pane.getElementsByClassName( 'tab-group-tab-card' )
+      if( tab_card_els.length ) {
+        this.card_width_px = tab_card_els[ 0 ].offsetWidth - 16
+      }
+    })
+  },
   methods: {
     createTabGroup() {
     },
@@ -123,14 +142,22 @@ export default {
       console.info('onTabDragStart', tab, event)
       event.dataTransfer.dropEffect = "move"
       this.is_dragging_tab = true
-    },
-    onParentDragEnd( tab, event ) {
-      console.info('onParentDragEnd', tab, event)
-      this.is_dragging_tab = false
+      event.dataTransfer.setData( 'text/plain', `tab:${ tab.id }` )
+      event.dataTransfer.effectAllowed = 'move'
     },
     onTabDragEnd( tab, event ) {
       console.info('onTabDragEnd', tab, event)
       this.is_dragging_tab = false
+    },
+    onTabDrop( tab, event ) {
+      console.info('onTabDrop', tab, event)
+    },
+    onTabGroupDragEnter,
+    onTabGroupDragOver,
+    onTabGroupDrop,
+    onTabGroupDragEnd( tab_group, event ) {
+      console.info('onTabGroupDragEnd', event)
+      event.preventDefault()
     }
   }
 }
@@ -228,7 +255,7 @@ export default {
   padding: 8px;
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   grid-auto-columns: min-content;
   grid-auto-rows: max-content;
   overflow-y: auto;

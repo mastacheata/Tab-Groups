@@ -14,6 +14,7 @@ import {
   TAB_ADD,
   TAB_REMOVE,
   TAB_UPDATE,
+  TAB_UPDATE_IMAGE,
   TAB_MOVE,
   TAB_ATTACH,
   TAB_DETACH,
@@ -114,12 +115,30 @@ export function updateTab( tab, change_info ) {
   }
 }
 
+export function updateTabImage( tab_id, window_id, preview_image_uri ) {
+  return {
+    type: TAB_UPDATE_IMAGE,
+    tab_id,
+    window_id,
+    preview_image_uri
+  }
+}
+
 export function moveTab( tab_id, window_id, index ) {
   return {
     type: TAB_MOVE,
     tab_id,
     window_id,
     index
+  }
+}
+
+export function moveTabToGroup( tab_id, window_id, tab_group_id ) {
+  return {
+    type: TAB_MOVE,
+    tab_id,
+    window_id,
+    tab_group_id
   }
 }
 

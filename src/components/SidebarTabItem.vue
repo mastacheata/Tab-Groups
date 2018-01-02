@@ -1,11 +1,14 @@
 <template>
-  <div class="sidebar-tab-view-item" :class="{ active: tab.active }" :title="tab.title"
-       @click.left="openTab( tab )" @click.middle="closeTab( tab )"
-  >
-    <!-- @todo favicon & preview image -->
-    <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
-    <br>
-    <span class="sidebar-tab-view-item-url">{{ tab.url }}</span>
+  <div class="sidebar-tab-view-item-container">
+    <div class="sidebar-tab-view-item" :class="{ active: tab.active }" :title="tab.title"
+        @click.left="openTab" @click.middle="closeTab"
+        draggable="true" @drag="onTabDrag" @dragstart="onTabDragStart" @dragenter="onTabDragEnter" @dragover="onTabDragOver" @dragexit="onTabDragExit" @dragleave="onTabDragLeave" @dragend="onTabDragEnd" @drop="onTabDrop"
+    >
+      <!-- @todo favicon & preview image -->
+      <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
+      <br>
+      <span class="sidebar-tab-view-item-url">{{ tab.url }}</span>
+    </div>
   </div>
 </template>
 
@@ -21,17 +24,48 @@ export default {
     'tab'
   ],
   methods: {
-    openTab: function( tab ) {
-      setTabActive( tab.id )
+    openTab() {
+      setTabActive( this.tab.id )
     },
-    closeTab: function( tab ) {
-      closeTab( tab.id )
+    closeTab() {
+      closeTab( this.tab.id )
+    },
+    onTabDrag( event ) {
+      console.info('onTabDrag', event)
+    },
+    onTabDragStart( event ) {
+      console.info('onTabDragStart', event)
+      event.dataTransfer.setData( 'text/plain', `tab:${ this.tab.id }` )
+      event.dataTransfer.effectAllowed = 'move'
+    },
+    onTabDragEnter( event ) {
+      console.info('onTabDragEnter', event)
+    },
+    onTabDragExit( event ) {
+      console.info('onTabDragExit', event)
+    },
+    onTabDragLeave( event ) {
+      console.info('onTabDragLeave', event)
+    },
+    onTabDragOver( event ) {
+      console.info('onTabDragOver', event)
+      event.dataTransfer.dropEffect = 'move'
+    },
+    onTabDragEnd( event ) {
+      console.info('onTabDragEnd', event)
+    },
+    onTabDrop( event ) {
+      console.info('onTabDrop', event, event.dataTransfer.getData( 'text/plain' ) )
     }
   }
 }
 </script>
 
 <style scoped>
+.sidebar-tab-view-item-container {
+  width: 100%;
+}
+
 .sidebar-tab-view-item {
   padding: 10px;
   width: 100%;

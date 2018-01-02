@@ -12,6 +12,7 @@ import {
   TAB_ADD,
   TAB_REMOVE,
   TAB_UPDATE,
+  TAB_UPDATE_IMAGE,
   TAB_MOVE,
   TAB_ATTACH,
   TAB_DETACH,
@@ -394,11 +395,36 @@ export function removeTab( state, { tab_id, window_id } ) {
 export function updateTab( state, { tab, change_info } ) {
   // @todo if change_info contains 'pinned'
   if( change_info.hasOwnProperty( 'pinned' ) ) {
-    console.info('detected pin change')
     if( change_info.pinned ) {
       return _removeTab( state, { tab_id: tab.id, window_id: tab.windowId, is_pin: true } )
     } else {
-      // @todo move from pinned to active group
+      // Remove the tab from the pinned tabs
+      const windows = state.windows.map( window => {
+        if( window.id !== tab.windowId ) {
+          return window
+        }
+
+        let i = 0
+        return Object.assign( {}, window, {
+          pinned_tabs: window.pinned_tabs.filter( _tab => _tab.id !== tab.id ),
+          tab_groups: window.tab_groups.map( tab_group => {
+            if( 0 <= tab.index - i && tab.index - i <= tab_group.tabs_count ) {
+              // @todo if next tab_group is empty, add tab to it instead
+              tab_group = Object.assign( {}, tab_group, {
+                tabs: [ ...tab_group.tabs ],
+                tabs_count: tab_group.tabs_count + 1
+              })
+              tab_group.tabs.splice( tab.index - i, 0, tab )
+            }
+            i += tab_group.tabs_count
+            return tab_group
+          })
+        })
+      })
+
+      return Object.assign( {}, state, {
+        windows
+      })
     }
   }
 
@@ -408,6 +434,7 @@ export function updateTab( state, { tab, change_info } ) {
       if( window.id !== tab.windowId ) {
         return window
       }
+      // @todo check for the tab in the pinned tabs
       return Object.assign( {}, window, {
         tab_groups: window.tab_groups.map( tab_group => {
           const tab_index = tab_group.tabs.findIndex( _tab => _tab.id === tab.id )
@@ -416,6 +443,38 @@ export function updateTab( state, { tab, change_info } ) {
               tabs: [ ...tab_group.tabs ]
             })
             tab_group.tabs[ tab_index ] = tab
+          }
+          return tab_group
+        })
+      })
+    })
+  })
+}
+
+export function updateTabImage( state, { tab_id, window_id, preview_image_uri } ) {
+  return Object.assign( {}, state, {
+    windows: state.windows.map( window => {
+      if( window.id !== window_id ) {
+        return window
+      }
+      return Object.assign( {}, window, {
+        tab_groups: window.tab_groups.map( tab_group => {
+          const tab_index = tab_group.tabs.findIndex( _tab => _tab.id === tab_id )
+          if( tab_index > -1 ) {
+            tab_group = Object.assign( {}, tab_group, {
+              tabs: [ ...tab_group.tabs ]
+            })
+
+            const preview_image = {
+              width: tab_group.tabs[ tab_index ].width,
+              height: tab_group.tabs[ tab_index ].height,
+              uri: preview_image_uri
+            }
+
+            // Clone tab, update image
+            tab_group.tabs[ tab_index ] = Object.assign( {}, tab_group.tabs[ tab_index ], {
+              preview_image
+            })
           }
           return tab_group
         })
@@ -545,6 +604,8 @@ export default function App( state = initial_state, action ) {
       return removeTab( state, action )
     case TAB_UPDATE:
       return updateTab( state, action )
+    case TAB_UPDATE_IMAGE:
+      return updateTabImage( state, action )
     case TAB_MOVE:
       return moveTab( state, action )
     case TAB_ATTACH:
@@ -552,6 +613,7 @@ export default function App( state = initial_state, action ) {
     case TAB_DETACH:
       return detachTab( state, action )
     default:
+      console.warn('unknown action type', action.type)
       return state
   }
 }
