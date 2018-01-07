@@ -19,9 +19,9 @@ let config = {
   input: './src/background.mjs',
   output: {
     file: './dist/background.js',
-    format: 'umd'
+    format: 'umd',
+    sourcemap: true,
   },
-  sourcemap: true,
   plugins: plugins
 }
 

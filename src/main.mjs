@@ -10,8 +10,9 @@ Promise.all([
   browser.runtime.getBackgroundPage()
     .then( ( background ) => {
       // Save a reference to the background script so it can be accessed syncronously
+      // @todo don't think this is required
       window.background = background
-      return background.store
+      return background.getStore()
     })
 ])
 .then( ( [ current_window, store ] ) => {

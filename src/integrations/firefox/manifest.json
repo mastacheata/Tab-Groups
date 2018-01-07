@@ -16,6 +16,7 @@
     "sessions",
     "storage",
     "tabs",
+    "theme",
     "unlimitedStorage"
   ],
   "default_locale": "en",

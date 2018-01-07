@@ -12,7 +12,7 @@ function onError( error ) {
   console.error( error )
 }
 
-window.store = loadBrowserState()
+const store_promise = loadBrowserState()
   .then(
     ( browser_state ) => {
       const { window_tab_groups_map } = browser_state
@@ -40,3 +40,7 @@ window.store = loadBrowserState()
     onError( err )
     return Promise.reject( err )
   })
+
+window.getStore = function() {
+  return store_promise
+}

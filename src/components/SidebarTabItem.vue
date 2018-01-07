@@ -4,10 +4,12 @@
         @click.left="openTab" @click.middle="closeTab"
         draggable="true" @drag="onTabDrag" @dragstart="onTabDragStart" @dragenter="onTabDragEnter" @dragover="onTabDragOver" @dragexit="onTabDragExit" @dragleave="onTabDragLeave" @dragend="onTabDragEnd" @drop="onTabDrop"
     >
-      <!-- @todo favicon & preview image -->
-      <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
-      <br>
-      <span class="sidebar-tab-view-item-url">{{ tab.url }}</span>
+      <img class="sidebar-tab-view-item-icon" :src="tab.favIconUrl"/>
+      <div>
+        <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
+        <br>
+        <span class="sidebar-tab-view-item-url">{{ tab.url }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -67,11 +69,19 @@ export default {
 }
 
 .sidebar-tab-view-item {
+  display: flex;
+  align-items: center;
   padding: 10px;
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: clip;
+}
+
+.sidebar-tab-view-item-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
 }
 
 .light .sidebar-tab-view-item.active {

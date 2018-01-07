@@ -10,12 +10,13 @@
       </article>
     </section>
     <section class="tab-group-header-pane">
-      <div class="tab-group-header-title" contenteditable="true" @blur="onTabGroupNameUpdate">{{ selected_tab_group.title }}</div>
+      <div class="tab-group-header-title" contenteditable="true" spellcheck="false" @blur="onTabGroupNameUpdate">{{ selected_tab_group.title }}</div>
       <span v-if="is_dragging_tab">dragging</span>
     </section>
     <section class="tab-group-tabs-list-pane" ref="tabs_list_pane">
       <div class="tab-group-tab-card"
            v-for="tab in selected_tab_group.tabs" :key="tab.id"
+           :title="tab.title"
            @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
            draggable="true" @dragstart="onTabDragStart( tab, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
       >

@@ -16,7 +16,9 @@
     </div>
     <div class="sidebar-tab-group-list" @click.right.prevent>
       <div class="sidebar-tab-group-list-item" v-for="tab_group in tab_groups" :key="tab_group.id">
-        <div class="sidebar-tab-group-list-item-header" @dragover.prevent>
+        <div class="sidebar-tab-group-list-item-header"
+            @dragenter="onTabGroupDragEnter( tab_group, $event )" @dragover="onTabGroupDragOver( tab_group, $event )" @drop="onTabGroupDrop( tab_group, $event )" @dragend="onTabGroupDragEnd( tab_group, $event )"
+        >
           <span class="text">
             <span v-on:click="toggleTabGroupOpen( tab_group )">{{ tab_group.is_open ? '–' : '+' }}</span>
             {{ tab_group.title }}
@@ -41,6 +43,11 @@ import {
   closeTab,
   runTabSearch,
 } from '../integrations/index.mjs'
+import {
+  onTabGroupDragEnter,
+  onTabGroupDragOver,
+  onTabGroupDrop,
+} from './droppable.mjs'
 import { debounce, getCountMessage } from './helpers.mjs'
 import SidebarTabItem from './SidebarTabItem.vue'
 
@@ -139,8 +146,9 @@ export default {
     closeTab( tab ) {
       closeTab( tab.id )
     },
-    onTabGroupDrop( event ) {
-    },
+    onTabGroupDragEnter,
+    onTabGroupDragOver,
+    onTabGroupDrop,
     onUpdateSearchText: debounce( function( search_text ) {
       console.info('runSearch', search_text)
       runTabSearch( window.store, this.window_id, search_text )

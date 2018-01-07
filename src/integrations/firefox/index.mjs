@@ -137,9 +137,11 @@ export function loadBrowserState() {
 
   return Promise.all([
     browser.storage ? browser.storage.local.get( LOCAL_CONFIG_KEY ) : null,
-    browser.tabs.query( {} )
+    browser.tabs.query( {} ),
+    // theme.getCurrent is available in firefox 58+
+    browser.theme && browser.theme.getCurrent ? browser.theme.getCurrent() : null
   ]).then(
-    ( [ storage, _tabs ] ) => {
+    ( [ storage, _tabs, theme ] ) => {
       config = storage[ LOCAL_CONFIG_KEY ] || default_config
       tabs = _tabs
 
@@ -346,6 +348,7 @@ export function moveTabsToGroup( store, tab_ids, window_id, tab_group_id, index 
         index += index_offset
       }
       for( let tab_id of tab_ids ) {
+        // @todo should have dispatch operation for multi-move for efficiency
         store.dispatch( moveTabToGroup( tab_id, window_id, tab_group_id ) )
       }
       break
@@ -353,7 +356,7 @@ export function moveTabsToGroup( store, tab_ids, window_id, tab_group_id, index 
     index_offset += tab_group.tabs_count
   }
 
-  browser.tabs.move( tab_ids, { index } )
+  return browser.tabs.move( tab_ids, { index } )
 }
 
 /**

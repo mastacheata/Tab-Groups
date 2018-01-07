@@ -71,7 +71,7 @@ export function getMultiWindowInitialState() {
 function testFindTab( t ) {
   let state = getInitialState()
   let tab = findTab( state, state.windows[ 0 ].id, state.windows[ 0 ].tab_groups[ 0 ].tabs[ 0 ].id )
-  console.info('tab', tab)
+  t.end()
 }
 
 export default function() {

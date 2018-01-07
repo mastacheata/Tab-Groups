@@ -4,8 +4,6 @@ import { createTab } from './helpers'
 import { init, updateTab } from '../../src/store/reducers'
 
 function testSingleWindowFreshInit( t ) {
-  t.plan( 9 )
-
   const tabs = [
     createTab({
       id: 1,
@@ -31,6 +29,7 @@ function testSingleWindowFreshInit( t ) {
   t.equal( initial_state.windows[ 0 ].tab_groups[ 0 ].title, "Group 1" )
   t.equal( initial_state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 1 )
   t.equal( initial_state.windows[ 0 ].tab_groups[ 0 ].tabs_count, initial_state.windows[ 0 ].tab_groups[ 0 ].tabs.length )
+  t.end()
 }
 
 function testSingleWindowFreshPinnedInit() {
@@ -88,7 +87,6 @@ function testPinnedTabs( t ) {
   // Pin another tab
   let tab = Object.assign( {}, state.windows[ 0 ].tab_groups[ 0 ].tabs[ 1 ], { index: 1, pinned: true } )
   state = updateTab( state, { tab, change_info: { pinned: true } } )
-  console.info( JSON.stringify( state ) )
 
   // Ensure added to pinned
   t.equal( state.windows[ 0 ].pinned_tabs.length, 2 )
@@ -99,9 +97,6 @@ function testPinnedTabs( t ) {
   // Unpin a tab
   tab = Object.assign( {}, state.windows[ 0 ].pinned_tabs[ 0 ], { index: 1, pinned: false } )
   state = updateTab( state, { tab, change_info: { pinned: false } } )
-
-
-  console.info( state.windows[ 0 ] )
 
   t.end()
 }

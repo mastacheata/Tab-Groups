@@ -492,15 +492,34 @@ export function moveTab( state, { tab_id, window_id, index, tab_group_id } ) {
       }
 
       let moved_tab = null
+      let index_offset = 0
+
+      function pullTab( tabs ) {
+        const tab_index = tabs.findIndex( tab => tab.id === tab_id )
+        if( tab_index > -1 && index_offset + tab_index !== index ) {
+          tabs = [ ...tabs ]
+          moved_tab = tabs.splice( tab_index, 1 )[ 0 ]
+        }
+        index_offset += tabs.length
+        return tabs
+      }
+
+      if( window.pinned_tabs ) {
+        const pinned_tabs = pullTab( window.pinned_tabs )
+        if( window.pinned_tabs !== pinned_tabs ) {
+          window = Object.assign( {}, window, {
+            pinned_tabs
+          })
+        }
+      }
 
       const tab_groups = window.tab_groups.map( tab_group => {
-        const tab_index = tab_group.tabs.findIndex( tab => tab.id === tab_id )
-        if( tab_index > -1 ) {
+        const tabs = pullTab( tab_group.tabs )
+        if( tabs !== tab_group.tabs ) {
           tab_group = Object.assign( {}, tab_group, {
-            tabs: [ ...tab_group.tabs ]
+            tabs,
+            tabs_count: tabs.length
           })
-          moved_tab = tab_group.tabs.splice( tab_index, 1 )[ 0 ]
-          tab_group.tabs_count--
         }
         return tab_group
       })
@@ -516,7 +535,11 @@ export function moveTab( state, { tab_id, window_id, index, tab_group_id } ) {
                 tabs: [ ...tab_groups[ j ].tabs ],
                 tabs_count: tab_groups[ j ].tabs_count + 1
               })
-              tab_groups[ j ].tabs.splice( index - i, 0, moved_tab )
+              if( index != null ) {
+                tab_groups[ j ].tabs.splice( index - i, 0, moved_tab )
+              } else {
+                tab_groups[ j ].tabs.push( moved_tab )
+              }
             }
           } else {
             // Otherwise determine group by index
