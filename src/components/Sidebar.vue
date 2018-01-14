@@ -48,7 +48,11 @@ import {
   onTabGroupDragOver,
   onTabGroupDrop,
 } from './droppable.mjs'
-import { debounce, getCountMessage } from './helpers.mjs'
+import {
+  debounce,
+  getCountMessage,
+  onStateChange,
+} from './helpers.mjs'
 import SidebarTabItem from './SidebarTabItem.vue'
 
 export default {
@@ -87,7 +91,7 @@ export default {
     }
   },
   created() {
-    const loadState = ( state ) => {
+    onStateChange( state => {
       this.theme = state.config.theme
 
       const state_window = state.windows.find( window => window.id === this.window_id )
@@ -116,16 +120,6 @@ export default {
       } else {
         // @todo error
       }
-    }
-
-    loadState( window.store.getState() )
-
-    // Attach listener to background state changes so we can update the data
-    const unsubscribe = window.store.subscribe( () => {
-      loadState( window.store.getState() )
-    })
-    window.addEventListener( 'unload', ( event ) => {
-      unsubscribe()
     })
   },
   computed: {

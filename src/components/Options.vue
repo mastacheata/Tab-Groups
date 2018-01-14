@@ -39,6 +39,9 @@ import {
   resetBrowserState,
   setTheme,
 } from '../integrations/index.mjs'
+import {
+  onStateChange,
+} from './helpers.mjs'
 
 export default {
   name: 'options',
@@ -52,7 +55,7 @@ export default {
     }
   },
   created() {
-    const loadState = ( state ) => {
+    onStateChange( state => {
       console.info('loadState', state)
       let window_ids = state.windows.map( window => window.id )
 
@@ -60,29 +63,19 @@ export default {
       Object.getPrototypeOf( this.window_ids ).splice.apply( this.window_ids, [ 0, this.window_ids.length, ...window_ids ] )
 
       this.preferences.theme = state.config.theme
-    }
-
-    loadState( window.store.getState() )
-
-    // Attach listener to background state changes so we can update the data
-    const unsubscribe = window.store.subscribe( () => {
-      loadState( window.store.getState() )
-    })
-    window.addEventListener( 'unload', ( event ) => {
-      unsubscribe()
     })
   },
   methods: {
-    clearAllData: function() {
+    clearAllData() {
       resetBrowserState( window.store )
     },
-    reset: function() {
+    reset() {
       console.info('@todo reset')
     },
-    selectSection: function( section_id ) {
+    selectSection( section_id ) {
       this.selected_section = section_id
     },
-    selectTheme: function( theme_id ) {
+    selectTheme( theme_id ) {
       setTheme( theme_id )
     }
   }

@@ -28,3 +28,19 @@ export function debounce( fn, delay ) {
 export function getCountMessage( key, count ) {
   return getMessage( `${ key }_count_${ count === 1 ? 'singular' : 'plural' }`, [ count ] )
 }
+
+/**
+ * Subscribe to changes from the store and add cleanup on window
+ * @param fn
+ */
+export function onStateChange( fn ) {
+  fn( window.store.getState() )
+
+  // Attach listener to background state changes so we can update the data
+  const unsubscribe = window.store.subscribe( () => {
+    fn( window.store.getState() )
+  })
+  window.addEventListener( 'unload', ( event ) => {
+    unsubscribe()
+  })
+}

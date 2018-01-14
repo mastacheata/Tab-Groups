@@ -34,13 +34,17 @@
 <script>
 import { cloneTabGroup } from '../store/helpers.mjs'
 import { activateGroup } from '../store/actions.mjs'
-import { debounce, getCountMessage } from './helpers.mjs'
 import {
   getMessage,
   openOptionsPage,
   openTabGroupsPage,
   runTabSearch,
 } from '../integrations/index.mjs'
+import {
+  debounce,
+  getCountMessage,
+  onStateChange,
+} from './helpers.mjs'
 
 export default {
   name: 'action',
@@ -56,7 +60,7 @@ export default {
     }
   },
   created() {
-    const loadState = ( state ) => {
+    onStateChange( state => {
       const state_window = state.windows.find( ( window ) => window.id === this.window_id )
       if( state_window ) {
         this.active_tab_group_id = state_window.active_tab_group_id
@@ -74,16 +78,6 @@ export default {
       } else {
         // @todo error
       }
-    }
-
-    loadState( window.store.getState() )
-
-    // Attach listener to background state changes so we can update the data
-    const unsubscribe = window.store.subscribe( () => {
-      loadState( window.store.getState() )
-    })
-    window.addEventListener( 'unload', ( event ) => {
-      unsubscribe()
     })
   },
   computed: {
@@ -100,19 +94,19 @@ export default {
       console.info('runSearch', search_text)
       runTabSearch( window.store, this.window_id, search_text )
     }, 250 ),
-    openOptionsPage: function() {
+    openOptionsPage() {
       openOptionsPage()
       window.close()
     },
-    openTabGroupsPage: function() {
+    openTabGroupsPage() {
       openTabGroupsPage()
       window.close()
     },
-    selectTabGroup: function( tab_group ) {
+    selectTabGroup( tab_group ) {
       console.info('@todo selectTabGroup')
       window.close()
     },
-    viewTabGroupTabs: function( tab_group ) {
+    viewTabGroupTabs( tab_group ) {
       console.info('@todo viewTabGroupTabs')
     }
   }

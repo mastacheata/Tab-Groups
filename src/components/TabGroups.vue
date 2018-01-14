@@ -5,6 +5,10 @@
 </template>
 
 <script>
+import {
+  onStateChange,
+} from './helpers.mjs'
+
 import TabGroupsSingleView from './TabGroupsSingleView.vue'
 
 export default {
@@ -18,23 +22,12 @@ export default {
     }
   },
   created() {
-    const loadState = ( state ) => {
+    onStateChange( state => {
       this.theme = state.config.theme
-    }
-
-    // @todo this code is duplicated
-    loadState( window.store.getState() )
-
-    // Attach listener to background state changes so we can update the data
-    const unsubscribe = window.store.subscribe( () => {
-      loadState( window.store.getState() )
-    })
-    window.addEventListener( 'unload', ( event ) => {
-      unsubscribe()
     })
   },
   methods: {
-    createTabGroup: function() {
+    createTabGroup() {
     }
   }
 }
