@@ -50,10 +50,11 @@ export function activateGroup( tab_group_id, window_id ) {
   }
 }
 
-export function createGroup( window_id ) {
+export function createGroup( window_id, tab_group ) {
   return {
     type: GROUP_CREATE,
-    window_id
+    window_id,
+    tab_group
   }
 }
 

@@ -44,6 +44,6 @@ export function onTabGroupDrop( tab_group, event ) {
   if( isTabTransfer( event_data ) ) {
     const tab_id = getTabTransferData( event_data )
     console.info('detected tab drop', tab_id)
-    moveTabsToGroup( window.store, [ tab_id ], this.window_id, tab_group.id )
+    moveTabsToGroup( window.store, [ tab_id ], this.window_id, tab_group ? tab_group.id : null )
   }
 }

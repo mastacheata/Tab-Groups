@@ -1,6 +1,7 @@
 import {
   addWindow,
   removeWindow,
+  createGroup,
   activateTab,
   addTab,
   removeTab,
@@ -15,7 +16,9 @@ import {
   updateConfig,
 } from '../../store/actions.mjs'
 import {
-  findTab
+  createTabGroup,
+  findTab,
+  getNewTabGroupId,
 } from '../../store/helpers.mjs'
 import { default_config } from '../../store/reducers.mjs'
 
@@ -35,7 +38,7 @@ const TAB_PREVIEW_IMAGE_DETAILS = {
  * @param substitutions
  */
 export function getMessage( message_name, substitutions ) {
-  return browser.i18n.getMessage( message_name, substitutions )
+  return typeof browser != 'undefined' ? browser.i18n.getMessage( message_name, substitutions ) : null
 }
 
 // BROWSER STATE
@@ -329,7 +332,6 @@ export function closeTab( tab_id ) {
  */
 export function moveTabsToGroup( store, tab_ids, window_id, tab_group_id, index ) {
   console.info('moveTabsToGroup', tab_ids, window_id, tab_group_id, index)
-  let index_offset = 0
   const state = store.getState()
   const window = state.windows.find( window => window.id == window_id )
   if( ! window ) {
@@ -337,6 +339,14 @@ export function moveTabsToGroup( store, tab_ids, window_id, tab_group_id, index 
     return
   }
 
+  // If tab_group_id is null, create new group
+  if( tab_group_id == null ) {
+    tab_group_id = getNewTabGroupId( state )
+    const tab_group = createTabGroup( tab_group_id, [] )
+    store.dispatch( createGroup( window_id, tab_group ) )
+  }
+
+  let index_offset = 0
   if( window.pinned_tabs ) {
     index_offset += window.pinned_tabs.length
   }
@@ -356,6 +366,7 @@ export function moveTabsToGroup( store, tab_ids, window_id, tab_group_id, index 
     index_offset += tab_group.tabs_count
   }
 
+  // Update the position of the tabs in the browser header
   return browser.tabs.move( tab_ids, { index } )
 }
 

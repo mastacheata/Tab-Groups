@@ -271,8 +271,8 @@ export function finishWindowSearch( state, { window_id, search_text, matching_ta
   })
 }
 
-export function createGroup( state, { window_id } ) {
-  const new_tab_group = createTabGroup( getNewTabGroupId( state ), [] )
+export function createGroup( state, { window_id, tab_group } ) {
+  const new_tab_group = tab_group || createTabGroup( getNewTabGroupId( state ), [] )
   return Object.assign( {}, state, {
     windows: state.windows.map( window => {
       if( window.id !== window_id ) {
@@ -404,7 +404,7 @@ export function updateTab( state, { tab, change_info } ) {
           return window
         }
 
-        let i = 0
+        let i = window.pinned_tabs.length
         return Object.assign( {}, window, {
           pinned_tabs: window.pinned_tabs.filter( _tab => _tab.id !== tab.id ),
           tab_groups: window.tab_groups.map( tab_group => {

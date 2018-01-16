@@ -2,12 +2,15 @@ p1
 - add pin tests
   - fix tab pinning
   - fix move when there are pinned tabs
+- use context properties for icons instead of toggle
+- update icon with context properties
+- add close group
+- fix chrome favicons
 - tab groups page - 1st layout
-  - min height for cards based on current window size to prevent layout issues
-  - rescale images based on resize
   - tab group list
-    - close group
-    - add new group icon, droppable
+    - close group with undo
+    - styling
+    - fix new group icon drop
   - tab group header
     - tab count
     - add configure option
@@ -15,20 +18,18 @@ p1
     - loading indicator
     - if dragging, don't set active tag
   - shouldn't be included as tab in tab group
+  - moving tab group tab to new window causes issues
+  - moving tabs between windows with drag causes issues
 - drag and drop
   - standardize drop data as URI
   - handle external url list drop
 - preview image
   - add debounce task after transition to complete if active
-- checkout mozilla irc
 - remove index & window id from nested tabs of state
 - copy `is_open` from existing data if available
 - sidebar
   - create new group [hover, icon]
-  - pinned tabs
-  - images (favicon)
   - drag and drop
-    - tab to group
     - tab order
     - group order
     - pinned tab to group
@@ -55,16 +56,19 @@ p1
 - clear out repo
 - review @todos
 - context menu for move tab
+  - doesn't look like this is possible
 - determine min version
+- placeholder favicon
 - publish
   - fix id
 
 p2
+- check if possible to use hidden windows as container for extra tabs
 - load/save backup
 - update tests for new state schema
 - drag and drop
   - groups in sidebar
-  - between windows
+  - fix weird overflow bug
 - sidebar
   - bubbling audio indicator
   - tab search clear
@@ -73,11 +77,15 @@ p2
   - ui style for suspended tabs
   - toggle styles
     - big vs little icons
+- tab groups page
+  - arrow key nagivation
+  - bind to hotkey
 - open main tab groups page with hotkey
 - context menus
 - add interval to detect state drift
 
 p3
+- material style animation
 - common css rules
 - save settings and tabs to sync
   - synced groups

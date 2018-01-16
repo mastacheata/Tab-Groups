@@ -1,3 +1,6 @@
+import {
+  getMessage
+} from '../integrations/index.mjs'
 
 export function createWindow( window_id, tab_groups ) {
   return {
@@ -11,10 +14,17 @@ export function createWindow( window_id, tab_groups ) {
 export function createTabGroup( tab_group_id, tabs ) {
   return {
     id: tab_group_id,
-    title: typeof browser != 'undefined' ? browser.i18n.getMessage( "tab_group_name_placeholder", [ tab_group_id ] ) : `Group ${ tab_group_id }`,
+    title: getMessage( 'tab_group_name_placeholder', [ tab_group_id ] ),
     tabs,
     tabs_count: tabs.length
   }
+}
+
+export function cloneWindow( window ) {
+  return Object.assign( {}, window, {
+    pinned_tabs: window.pinned_tabs.map( cloneTab ),
+    tab_groups: window.tab_groups.map( cloneTabGroup )
+  })
 }
 
 export function cloneTabGroup( tab_group ) {

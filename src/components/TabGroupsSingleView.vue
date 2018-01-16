@@ -2,35 +2,53 @@
   <div class="page tab-groups-single-view">
     <section class="tab-groups-list-pane" @wheel="onTabGroupWheel( $event )">
       <article class="tab-groups-list-item" :class="{ active: tab_group.id === selected_tab_group.id }"
-          v-for="tab_group in tab_groups" :key="tab_group.id"
+          v-for="tab_group in state_window.tab_groups" :key="tab_group.id"
           @click.left="selectTabGroup( tab_group )"
           draggable="true" @dragenter="onTabGroupDragEnter( tab_group, $event )" @dragover="onTabGroupDragOver( tab_group, $event )" @drop="onTabGroupDrop( tab_group, $event )" @dragend="onTabGroupDragEnd( tab_group, $event )"
       >
         {{ tab_group.title }}
       </article>
-    </section>
-    <section class="tab-group-header-pane">
-      <div class="tab-group-header-title" contenteditable="true" spellcheck="false" @blur="onTabGroupNameUpdate">{{ selected_tab_group.title }}</div>
-      <span v-if="is_dragging_tab">dragging</span>
-    </section>
-    <section class="tab-group-tabs-list-pane" ref="tabs_list_pane">
-      <div class="tab-group-tab-card"
-           v-for="tab in selected_tab_group.tabs" :key="tab.id"
-           :title="tab.title"
-           @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
-           draggable="true" @dragstart="onTabDragStart( tab, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
+      <article class="tab-groups-list-item"
+          @click.left="createTabGroup()"
+          @dragenter="onTabGroupDragEnter( null, $event )" @dragover="onTabGroupDragOver( null, $event )" @drop="onTabGroupDrop( null, $event )"
       >
-        <svg class="tab-group-tab-card-content" :height="tab.preview_image ? (( card_width_px / tab.preview_image.width ) * tab.preview_image.height + 16 || '0') + 'px' : 'auto'">
-          <image v-if="tab.preview_image" :xlink:href="tab.preview_image.uri" x="8px" y="8px" :width="(card_width_px || '0') + 'px'" :height="(( card_width_px / tab.preview_image.width ) * tab.preview_image.height || '0') + 'px'"/>
-          <g class="favicon">
-            <circle cx="12px" cy="12px" r="16px"/>
-            <!-- @todo clipPath for image with circle -->
-            <image :xlink:href="tab.favIconUrl" x="0" y="0" height="24px" width="24px"/>
-          </g>
-        </svg>
-        <div class="tab-group-tab-title">{{ tab.title }}</div>
-      </div>
+        +
+      </article>
     </section>
+    <div class="tab-groups-main-pane">
+      <section v-if="state_window.pinned_tabs" class="tab-group-pinned-tabs">
+        <div class="tab-group-pinned-tab"
+            v-for="tab in state_window.pinned_tabs" :key="tab.id"
+            @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
+            draggable="true" @dragstart="onTabDragStart( tab, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
+        >
+          <img class="tab-group-pinned-tab-icon" :src="tab.favIconUrl"/>
+        </div>
+      </section>
+      <div class="tab-groups-tabs-pane">
+        <section class="tab-group-tabs-header-pane">
+          <div class="tab-group-header-title" contenteditable="true" spellcheck="false" @blur="onTabGroupNameUpdate">{{ selected_tab_group.title }}</div>
+          <!-- @todo add tab count -->
+        </section>
+        <section class="tab-group-tabs-list-pane">
+          <div class="tab-group-tab-card"
+              v-for="tab in selected_tab_group.tabs" :key="tab.id"
+              :title="tab.title"
+              @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
+              draggable="true" @dragstart="onTabDragStart( tab, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
+          >
+            <!-- @todo add mask on image -->
+            <img v-if="tab.preview_image" class="tab-group-tab-card-preview" :src="tab.preview_image.uri"/>
+            <svg class="tab-group-tab-card-favicon-bg">
+              <circle cx="12px" cy="12px" r="16px"/>
+              <!-- @todo clipPath for image with circle -->
+            </svg>
+            <img class="tab-group-tab-card-favicon" :src="tab.favIconUrl"/>
+            <div class="tab-group-tab-title"><span>{{ tab.title }}</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -40,14 +58,21 @@ import {
   updateGroup,
   moveTabToGroup,
 } from '../store/actions.mjs'
-import { cloneTabGroup } from '../store/helpers.mjs'
+import {
+  cloneTabGroup,
+  cloneWindow,
+} from '../store/helpers.mjs'
 import {
   getMessage,
   closeTab,
   setTabActive,
   runTabSearch,
 } from '../integrations/index.mjs'
-import { debounce, getCountMessage } from './helpers.mjs'
+import {
+  debounce,
+  getCountMessage,
+  onStateChange,
+} from './helpers.mjs'
 import {
   onTabGroupDragEnter,
   onTabGroupDragOver,
@@ -61,59 +86,38 @@ export default {
       is_dragging_tab: false,
       window_id: window.current_window_id,
       selected_tab_group: null,
-      tab_groups: [],
-      card_width_px: 0,
+      state_window: null,
       theme: null
     }
   },
   created() {
-    const loadState = ( state ) => {
+    onStateChange( state => {
       this.theme = state.config.theme
 
-      const state_window = state.windows.find( ( window ) => window.id === this.window_id )
+      const state_window = state.windows.find( window => window.id === this.window_id )
       if( state_window ) {
-        this.active_tab_group_id = state_window.active_tab_group_id
-
         // Need to deep clone the objects because Vue extends prototypes when state added to the vm
-        let tab_groups = state_window.tab_groups.map( cloneTabGroup )
+        this.state_window = cloneWindow( state_window )
 
         if( this.selected_tab_group ) {
-          this.selected_tab_group = tab_groups.find( tab_group => tab_group.id === this.selected_tab_group.id )
+          this.selected_tab_group = this.state_window.tab_groups.find( tab_group => tab_group.id === this.selected_tab_group.id )
         }
 
         if( ! this.selected_tab_group ) {
           // @todo if no selected tab group, use active instead
-          this.selected_tab_group = tab_groups[ 0 ]
+          this.selected_tab_group = this.state_window.tab_groups[ 0 ]
         }
-
-        // Use the extended splice to trigger change detection
-        Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...tab_groups ] )
       } else {
         // @todo error
-      }
-    }
-
-    // @todo this code is duplicated
-    loadState( window.store.getState() )
-
-    // Attach listener to background state changes so we can update the data
-    const unsubscribe = window.store.subscribe( () => {
-      loadState( window.store.getState() )
-    })
-    window.addEventListener( 'unload', ( event ) => {
-      unsubscribe()
-    })
-  },
-  mounted() {
-    this.$nextTick( () => {
-      const tab_card_els = this.$refs.tabs_list_pane.getElementsByClassName( 'tab-group-tab-card' )
-      if( tab_card_els.length ) {
-        this.card_width_px = tab_card_els[ 0 ].offsetWidth - 16
       }
     })
   },
   methods: {
     createTabGroup() {
+      // Create new group with default properties in the store
+      window.store.dispatch( createGroup( this.window_id ) )
+      // @todo create new tab in the new group
+      // @todo activate new group
     },
     selectTabGroup( tab_group ) {
       console.info('selectTabGroup', tab_group)
@@ -175,6 +179,7 @@ export default {
 
 .tab-groups-list-pane {
   width: 100%;
+  height: 80px;
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -229,7 +234,19 @@ export default {
   background-color: #323234; /* Dark Theme header active tab background */
 }
 
-.tab-group-header-pane {
+.tab-group-pinned-tabs {
+  display: grid;
+  grid-template-rows: repeat(auto-fill, 24px);
+  grid-auto-columns: max-content;
+  grid-auto-rows: min-content;
+}
+
+.tab-group-pinned-tab-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.tab-group-tabs-header-pane {
   height: 30px;
   display: flex;
   flex-direction: row;
@@ -237,12 +254,12 @@ export default {
   align-items: center;
 }
 
-.light .tab-group-header-pane {
+.light .tab-group-tabs-header-pane {
   color: #0f1126; /* Photon Ink 90 */
   background-color: #f5f6f7; /* Light Theme header active tab background */
 }
 
-.dark .tab-group-header-pane {
+.dark .tab-group-tabs-header-pane {
   color: #fff; /* Photon White */
   background-color: #323234; /* Dark Theme header active tab background */
 }
@@ -272,7 +289,32 @@ export default {
   background-color: #323234; /* Dark Theme header active tab background */
 }
 
+.tab-groups-main-pane {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+.tab-group-pinned-tabs {
+  flex-grow: 0;
+}
+
+.light .tab-group-pinned-tabs {
+  background-color: #f5f6f7; /* Light Theme header active tab background */
+}
+
+.dark .tab-group-pinned-tabs {
+  background-color: #323234; /* Dark Theme header active tab background */
+}
+
+.tab-groups-tabs-pane {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
 .tab-group-tab-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -284,13 +326,37 @@ export default {
   width: 100%;
 }
 
+.tab-group-tab-card-favicon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24px;
+  height: 24px;
+  /* This is a hack to populate values used in filefox "chrome://" icons */
+  -moz-context-properties: fill, stroke;
+  fill: lime;
+  stroke: purple;
+}
+
+.tab-group-tab-card-favicon-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+}
+
+.tab-group-tab-card-preview {
+  width: 100%;
+}
+
 .tab-group-tab-card-content .favicon circle {
   fill: #323234; /* Dark Theme header active tab background */
 }
 
 .tab-group-tab-title {
-  height: 32px;
   max-width: 100px;
+  padding: 4px;
   text-overflow: clip;
   white-space: nowrap;
   overflow-x: hidden;
