@@ -17,6 +17,13 @@ export function createTabGroup( tab_group_id, tabs ) {
   }
 }
 
+export function cloneWindow( window ) {
+  return Object.assign( {}, window, {
+    pinned_tabs: window.pinned_tabs.map( cloneTab ),
+    tab_groups: window.tab_groups.map( cloneTabGroup )
+  })
+}
+
 export function cloneTabGroup( tab_group ) {
   return Object.assign( {}, tab_group, {
     tabs: tab_group.tabs.map( cloneTab )

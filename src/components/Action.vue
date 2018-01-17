@@ -6,7 +6,7 @@
       </div>
 
       <div class="panel-section panel-section-list panel-section-content">
-        <div class="panel-list-item" v-for="tab_group in tab_groups" :key="tab_group.id" :class="{ 'active': tab_group.id == active_tab_group_id }">
+        <div class="panel-list-item" v-for="tab_group in tab_groups" :key="tab_group.id" :class="{ 'active': tab_group.id === active_tab_group_id }">
           <div class="text" @click="selectTabGroup( tab_group )">
             {{ tab_group.title }}
           </div>
@@ -19,12 +19,14 @@
 
       <div class="panel-section panel-section-footer">
         <div class="panel-section-footer-button" @click="openTabGroupsPage()">
-          <i class="icon icon-tab-groups"></i>
+          <!-- @todo hi-res, context colours -->
+          <img class="icon" src="/icons/action.png"/>
           <span class="text">{{ __MSG_tab_group_manage__ }}</span>
         </div>
         <div class="panel-section-footer-separator"></div>
         <div class="panel-section-footer-button panel-section-footer-button-options" @click="openOptionsPage()">
-          <i class="icon icon-options"></i>
+          <!-- @todo hi-res, context colours -->
+          <img class="icon" src="/icons/options.png"/>
         </div>
       </div>
     </div>
@@ -164,15 +166,5 @@ export default {
   height: 16px;
   width: 16px;
   margin-right: 4px;
-}
-
-.light .icon-tab-groups {
-  /* @todo high resolution if available */
-  background-image: url( /icons/action.png );
-}
-
-.light .icon-options {
-  /* @todo high resolution if available */
-  background-image: url( /icons/options.png );
 }
 </style>

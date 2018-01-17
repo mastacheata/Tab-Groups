@@ -1,4 +1,5 @@
 p1
+- fix handling for chrome urls
 - add pin tests
   - fix tab pinning
   - fix move when there are pinned tabs
@@ -20,7 +21,6 @@ p1
   - handle external url list drop
 - preview image
   - add debounce task after transition to complete if active
-- checkout mozilla irc
 - remove index & window id from nested tabs of state
 - copy `is_open` from existing data if available
 - sidebar
@@ -46,6 +46,7 @@ p1
   - fix field tabbing
 - testing for suspend and replace
 - action
+  - update icons for dynamic colours
   - 2nd screen for open tabs
   - 2nd screen for config
   - scrollable
