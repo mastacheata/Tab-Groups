@@ -1,5 +1,5 @@
 import tap from 'tap'
-import { createTab, getInitialState } from './helpers'
+import { createTestTab, getInitialState } from './helpers'
 
 import { removeTab } from '../../src/store/reducers'
 import { createWindow, createTabGroup } from '../../src/store/helpers'
@@ -22,15 +22,15 @@ function testRemoveMiddleTab() {
     windows: [
       createWindow( window_id, [
         createTabGroup( 1, [
-          createTab({
+          createTestTab({
             id: 1,
             index: 0
           }),
-          createTab({
+          createTestTab({
             id: 2,
             index: 1
           }),
-          createTab({
+          createTestTab({
             id: 3,
             index: 2
           })
@@ -54,15 +54,15 @@ function testRemoveLastTab() {
     windows: [
       createWindow( window_id, [
         createTabGroup( 1, [
-          createTab({
+          createTestTab({
             id: 1,
             index: 0
           }),
-          createTab({
+          createTestTab({
             id: 2,
             index: 1
           }),
-          createTab({
+          createTestTab({
             id: 3,
             index: 2
           })

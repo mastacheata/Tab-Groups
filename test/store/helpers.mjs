@@ -1,6 +1,13 @@
 import tap from 'tap'
 
-export const base_new_tab = {
+import { getTabState } from '../../src/integrations/index.mjs'
+import {
+  createWindow,
+  createTabGroup,
+  findTab,
+} from '../../src/store/helpers.mjs'
+
+export const base_new_browser_tab = {
   id: null,
   // index: null,
   // windowId: null,
@@ -21,9 +28,13 @@ export const base_new_tab = {
   title: "New Tab"
 }
 
-import { createWindow, createTabGroup, findTab } from '../../src/store/helpers.mjs'
+export const base_new_tab = getTabState( base_new_browser_tab )
 
-export function createTab( tab ) {
+export function createBrowserTab( tab ) {
+  return Object.assign( {}, base_new_browser_tab, tab )
+}
+
+export function createTestTab( tab ) {
   return Object.assign( {}, base_new_tab, tab )
 }
 
@@ -33,11 +44,11 @@ export function getInitialState() {
     windows: [
       createWindow( 1, [
         createTabGroup( 1, [
-          createTab({
+          createTestTab({
             id: 1,
             active: true
           }),
-          createTab({
+          createTestTab({
             id: 2
           })
         ])
@@ -54,11 +65,11 @@ export function getMultiWindowInitialState() {
   initial_state.windows.push(
     createWindow( 2, [
       createTabGroup( 2, [
-        createTab({
+        createTestTab({
           id: 3,
           active: true
         }),
-        createTab({
+        createTestTab({
           id: 4
         })
       ])

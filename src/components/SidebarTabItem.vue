@@ -1,10 +1,10 @@
 <template>
   <div class="sidebar-tab-view-item-container">
-    <div class="sidebar-tab-view-item" :class="{ active: tab.active }" :title="tab.title"
+    <div class="sidebar-tab-view-item" :class="{ active: tab.is_active }" :title="tab.title"
         @click.left="openTab" @click.middle="closeTab"
         draggable="true" @drag="onTabDrag" @dragstart="onTabDragStart" @dragenter="onTabDragEnter" @dragover="onTabDragOver" @dragexit="onTabDragExit" @dragleave="onTabDragLeave" @dragend="onTabDragEnd" @drop="onTabDrop"
     >
-      <img class="sidebar-tab-view-item-icon" :src="tab.favIconUrl"/>
+      <img class="sidebar-tab-view-item-icon" :src="tab.fav_icon_url"/>
       <div>
         <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
         <br>

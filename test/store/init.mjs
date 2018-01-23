@@ -1,16 +1,16 @@
 import tap from 'tap'
-import { createTab } from './helpers'
+import { createTestTab } from './helpers'
 
 import { init } from '../../src/store/reducers'
 
 function testSingleWindowFreshInit() {
   const tabs = [
-    createTab({
+    createTestTab({
       id: 1,
       index: 0,
       windowId: 1
     }),
-    createTab({
+    createTestTab({
       id: 2,
       index: 1,
       windowId: 1
@@ -30,22 +30,22 @@ function testSingleWindowFreshInit() {
 
 function testMultiWindowFreshInit() {
   const tabs = [
-    createTab({
+    createTestTab({
       id: 1,
       index: 0,
       windowId: 1
     }),
-    createTab({
+    createTestTab({
       id: 2,
       index: 1,
       windowId: 1
     }),
-    createTab({
+    createTestTab({
       id: 3,
       index: 0,
       windowId: 2
     }),
-    createTab({
+    createTestTab({
       id: 4,
       index: 1,
       windowId: 2

@@ -10,6 +10,7 @@ import {
   GROUP_REMOVE,
   GROUP_UPDATE,
   GROUP_MOVE,
+  TABS_MOVE,
   TAB_ACTIVATE,
   TAB_ADD,
   TAB_REMOVE,
@@ -20,29 +21,29 @@ import {
   TAB_DETACH,
 } from './action-types.mjs'
 
-export function init({ tabs, window_tab_groups_map }) {
+export function initAction({ browser_tabs, window_tab_groups_map }) {
   return {
     type: INIT,
-    tabs,
+    browser_tabs,
     window_tab_groups_map
   }
 }
 
-export function addWindow( window ) {
+export function addWindowAction( window ) {
   return {
     type: WINDOW_ADD,
     window
   }
 }
 
-export function removeWindow( window_id ) {
+export function removeWindowAction( window_id ) {
   return {
     type: WINDOW_REMOVE,
     window_id
   }
 }
 
-export function activateGroup( tab_group_id, window_id ) {
+export function activateGroupAction( tab_group_id, window_id ) {
   return {
     type: GROUP_ACTIVATE,
     tab_group_id,
@@ -50,14 +51,14 @@ export function activateGroup( tab_group_id, window_id ) {
   }
 }
 
-export function createGroup( window_id ) {
+export function createGroupAction( window_id ) {
   return {
     type: GROUP_CREATE,
     window_id
   }
 }
 
-export function removeGroup( tab_group_id, window_id ) {
+export function removeGroupAction( tab_group_id, window_id ) {
   return {
     type: GROUP_REMOVE,
     tab_group_id,
@@ -65,7 +66,7 @@ export function removeGroup( tab_group_id, window_id ) {
   }
 }
 
-export function updateGroup( tab_group_id, window_id, change_info ) {
+export function updateGroupAction( tab_group_id, window_id, change_info ) {
   return {
     type: GROUP_UPDATE,
     tab_group_id,
@@ -74,7 +75,7 @@ export function updateGroup( tab_group_id, window_id, change_info ) {
   }
 }
 
-export function moveGroup( tab_group_id, window_id, index ) {
+export function moveGroupAction( tab_group_id, window_id, index ) {
   return {
     type: GROUP_MOVE,
     tab_group_id,
@@ -83,7 +84,7 @@ export function moveGroup( tab_group_id, window_id, index ) {
   }
 }
 
-export function activateTab( tab_id, window_id ) {
+export function activateTabAction( tab_id, window_id ) {
   return {
     type: TAB_ACTIVATE,
     tab_id,
@@ -91,15 +92,15 @@ export function activateTab( tab_id, window_id ) {
   }
 }
 
-export function addTab( tab, tab_group_id ) {
+export function addTabAction( browser_tab, tab_group_id ) {
   return {
     type: TAB_ADD,
-    tab,
+    browser_tab,
     tab_group_id
   }
 }
 
-export function removeTab( tab_id, window_id ) {
+export function removeTabAction( tab_id, window_id ) {
   return {
     type: TAB_REMOVE,
     tab_id,
@@ -107,15 +108,15 @@ export function removeTab( tab_id, window_id ) {
   }
 }
 
-export function updateTab( tab, change_info ) {
+export function updateTabAction( browser_tab, change_info ) {
   return {
     type: TAB_UPDATE,
-    tab,
+    browser_tab,
     change_info
   }
 }
 
-export function updateTabImage( tab_id, window_id, preview_image_uri ) {
+export function updateTabImageAction( tab_id, window_id, preview_image_uri ) {
   return {
     type: TAB_UPDATE_IMAGE,
     tab_id,
@@ -124,7 +125,15 @@ export function updateTabImage( tab_id, window_id, preview_image_uri ) {
   }
 }
 
-export function moveTab( tab_id, window_id, index ) {
+export function moveTabsToGroupAction( source_tabs_data, target_data ) {
+  return {
+    type: TABS_MOVE,
+    source_tabs_data,
+    target_data,
+  }
+}
+
+export function moveTabAction( tab_id, window_id, index ) {
   return {
     type: TAB_MOVE,
     tab_id,
@@ -133,7 +142,7 @@ export function moveTab( tab_id, window_id, index ) {
   }
 }
 
-export function moveTabToGroup( tab_id, window_id, tab_group_id ) {
+export function moveTabToGroupAction( tab_id, window_id, tab_group_id ) {
   return {
     type: TAB_MOVE,
     tab_id,
@@ -142,7 +151,7 @@ export function moveTabToGroup( tab_id, window_id, tab_group_id ) {
   }
 }
 
-export function attachTab( tab_id, window_id, index ) {
+export function attachTabAction( tab_id, window_id, index ) {
   return {
     type: TAB_ATTACH,
     tab_id,
@@ -151,7 +160,7 @@ export function attachTab( tab_id, window_id, index ) {
   }
 }
 
-export function detachTab( tab_id, window_id, index ) {
+export function detachTabAction( tab_id, window_id, index ) {
   return {
     type: TAB_DETACH,
     tab_id,
@@ -160,7 +169,7 @@ export function detachTab( tab_id, window_id, index ) {
   }
 }
 
-export function startSearch( window_id, search_text ) {
+export function startSearchAction( window_id, search_text ) {
   return {
     type: WINDOW_SEARCH_START,
     window_id,
@@ -168,7 +177,7 @@ export function startSearch( window_id, search_text ) {
   }
 }
 
-export function finishSearch( window_id, search_text, matching_tab_ids ) {
+export function finishSearchAction( window_id, search_text, matching_tab_ids ) {
   return {
     type: WINDOW_SEARCH_FINISH,
     window_id,
@@ -177,7 +186,7 @@ export function finishSearch( window_id, search_text, matching_tab_ids ) {
   }
 }
 
-export function updateConfig( config ) {
+export function updateConfigAction( config ) {
   return {
     type: CONFIG_UPDATE,
     config

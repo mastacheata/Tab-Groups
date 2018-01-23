@@ -3,21 +3,25 @@ import {
   moveTabsToGroup,
 } from '../integrations/index.mjs'
 
-export function setTabTransferData( data_transfer, tab_id ) {
+export function setTabTransferData( data_transfer, window_id, tab_group_id, tab_id ) {
+  const event_data = { window_id, tab_group_id, tab_ids: [ tab_id ] }
+  console.info('setTabTransferData', event_data)
   data_transfer.dropEffect = 'move'
   data_transfer.effectAllowed = 'move'
-  data_transfer.setData( 'text/plain', `tab:${ tab_id }` )
+  data_transfer.setData( 'application/json', JSON.stringify( event_data ) )
 }
 
 // @todo extract helper to pull data transfer type
 function isTabTransfer( event_data ) {
-  return event_data.startsWith( 'tab:' )
+  return event_data && event_data.hasOwnProperty( 'tab_ids' )
 }
 
-function getTabTransferData( event_data ) {
+function getTransferData( data_transfer ) {
+  const event_data = JSON.parse( data_transfer.getData( 'application/json' ) )
   // @todo error guard
-  const tab_id = parseInt( event_data.substr( 4 ) )
-  return tab_id
+  console.info('getTransferData', event_data)
+
+  return event_data
 }
 
 export function onTabGroupDragEnter( tab_group, event ) {
@@ -29,7 +33,7 @@ export function onTabGroupDragEnter( tab_group, event ) {
 
 export function onTabGroupDragOver( tab_group, event ) {
   event.preventDefault()
-  const event_data = event.dataTransfer.getData('text/plain')
+  const event_data = getTransferData( event.dataTransfer )
   console.info('onTabGroupDragOver', tab_group, event)
   if( isTabTransfer( event_data ) ) {
     event.dataTransfer.effectAllowed = 'move'
@@ -39,11 +43,10 @@ export function onTabGroupDragOver( tab_group, event ) {
 
 export function onTabGroupDrop( tab_group, event ) {
   event.preventDefault()
-  const event_data = event.dataTransfer.getData('text/plain')
+  const event_data = getTransferData( event.dataTransfer )
   console.info('onTabGroupDrop', tab_group, event, event_data)
   if( isTabTransfer( event_data ) ) {
-    const tab_id = getTabTransferData( event_data )
-    console.info('detected tab drop', tab_id)
-    moveTabsToGroup( window.store, [ tab_id ], this.window_id, tab_group.id )
+    console.info('detected tab drop', event_data)
+    moveTabsToGroup( window.store, event_data, this.window_id, tab_group.id )
   }
 }

@@ -21,9 +21,9 @@
             v-for="tab in state_window.pinned_tabs" :key="tab.id"
             :title="tab.title"
             @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
-            draggable="true" @dragstart="onTabDragStart( tab, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
+            draggable="true" @dragstart="onTabDragStart( tab, null, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
         >
-          <img class="tab-group-pinned-tab-icon" :src="tab.favIconUrl"/>
+          <img class="tab-group-pinned-tab-icon" :src="tab.fav_icon_url"/>
         </div>
       </section>
       <div class="tab-groups-tabs-pane">
@@ -36,7 +36,7 @@
               v-for="tab in selected_tab_group.tabs" :key="tab.id"
               :title="tab.title"
               @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
-              draggable="true" @dragstart="onTabDragStart( tab, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
+              draggable="true" @dragstart="onTabDragStart( tab, selected_tab_group.id, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
           >
             <!-- @todo add mask on image -->
             <img v-if="tab.preview_image" class="tab-group-tab-card-preview" :src="tab.preview_image.uri"/>
@@ -44,7 +44,7 @@
               <circle cx="12px" cy="12px" r="16px"/>
               <!-- @todo clipPath for image with circle -->
             </svg>
-            <img class="tab-group-tab-card-favicon" :src="tab.favIconUrl"/>
+            <img class="tab-group-tab-card-favicon" :src="tab.fav_icon_url"/>
             <div class="tab-group-tab-title"><span>{{ tab.title }}</span></div>
           </div>
         </section>
@@ -55,9 +55,7 @@
 
 <script>
 import {
-  createGroup,
-  updateGroup,
-  moveTabToGroup,
+  updateGroupAction,
 } from '../store/actions.mjs'
 import {
   cloneWindow,
@@ -75,6 +73,7 @@ import {
   onStateChange,
 } from './helpers.mjs'
 import {
+  setTabTransferData,
   onTabGroupDragEnter,
   onTabGroupDragOver,
   onTabGroupDrop,
@@ -130,7 +129,7 @@ export default {
     },
     onTabGroupNameUpdate( event ) {
       console.info('onTabGroupNameUpdate', event, event.target.textContent)
-      window.store.dispatch( updateGroup( this.selected_tab_group.id, this.window_id, { title: event.target.textContent } ) )
+      window.store.dispatch( updateGroupAction( this.selected_tab_group.id, this.window_id, { title: event.target.textContent } ) )
     },
     onTabGroupWheel( event ) {
       console.info('onTabGroupWheel', event)
@@ -140,12 +139,10 @@ export default {
       console.info('onTabsListWheel', event)
       event.currentTarget.scrollTop += event.deltaY * 12
     },
-    onTabDragStart( tab, event ) {
+    onTabDragStart( tab, tab_group_id, event ) {
       console.info('onTabDragStart', tab, event)
-      event.dataTransfer.dropEffect = "move"
       this.is_dragging_tab = true
-      event.dataTransfer.setData( 'text/plain', `tab:${ tab.id }` )
-      event.dataTransfer.effectAllowed = 'move'
+      setTabTransferData( event.dataTransfer, this.window_id,  )
     },
     onTabDragEnd( tab, event ) {
       console.info('onTabDragEnd', tab, event)
@@ -329,10 +326,6 @@ export default {
   left: 0;
   width: 24px;
   height: 24px;
-  /* This is a hack to populate values used in filefox "chrome://" icons */
-  -moz-context-properties: fill, stroke;
-  fill: lime;
-  stroke: purple;
 }
 
 .tab-group-tab-card-favicon-bg {

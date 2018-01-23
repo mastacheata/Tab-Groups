@@ -1,18 +1,18 @@
 import {
-  addWindow,
-  removeWindow,
-  activateTab,
-  addTab,
-  removeTab,
-  updateTab,
-  updateTabImage,
-  moveTab,
-  moveTabToGroup,
-  attachTab,
-  detachTab,
-  startSearch,
-  finishSearch,
-  updateConfig,
+  addWindowAction,
+  removeWindowAction,
+  activateTabAction,
+  addTabAction,
+  removeTabAction,
+  updateTabAction,
+  updateTabImageAction,
+  moveTabAction,
+  moveTabToGroupAction,
+  attachTabAction,
+  detachTabAction,
+  startSearchAction,
+  finishSearchAction,
+  updateConfigAction,
 } from '../../store/actions.mjs'
 import {
   findTab
@@ -55,7 +55,7 @@ export function bindBrowserEvents( store ) {
   browser.storage.onChanged.addListener( ( changes, area ) => {
     console.info('storage.onChanged', area, changes)
     if( area === 'local' && changes[ LOCAL_CONFIG_KEY ] ) {
-      store.dispatch( updateConfig( changes[ LOCAL_CONFIG_KEY ].newValue || default_config ) )
+      store.dispatch( updateConfigAction( changes[ LOCAL_CONFIG_KEY ].newValue || default_config ) )
     }
   })
 
@@ -64,26 +64,26 @@ export function bindBrowserEvents( store ) {
   browser.windows.onCreated.addListener( ( window ) => {
     console.info('windows.onCreated', window)
     if( window.type === 'normal' ) {
-      store.dispatch( addWindow( window ) )
+      store.dispatch( addWindowAction( window ) )
     }
   })
 
   browser.windows.onRemoved.addListener( ( window_id ) => {
     console.info('windows.onRemoved', window_id)
-    store.dispatch( removeWindow( window_id ) )
+    store.dispatch( removeWindowAction( window_id ) )
   })
 
   // Attach listeners for changes to tabs
 
   browser.tabs.onActivated.addListener( ( { tabId, windowId } ) => {
     console.info('tabs.onActivated', tabId, windowId)
-    store.dispatch( activateTab( tabId, windowId ) )
+    store.dispatch( activateTabAction( tabId, windowId ) )
 
     // Start background task to get preview image
     browser.tabs.captureVisibleTab( windowId, TAB_PREVIEW_IMAGE_DETAILS )
       .then(
         ( preview_image_uri ) => {
-          store.dispatch( updateTabImage( tabId, windowId, preview_image_uri ) )
+          store.dispatch( updateTabImageAction( tabId, windowId, preview_image_uri ) )
           const tab = findTab( store.getState(), windowId, tabId )
           if( tab && tab.preview_image ) {
             setTabPreviewState( tab.id, tab.preview_image )
@@ -92,29 +92,29 @@ export function bindBrowserEvents( store ) {
       )
   })
 
-  browser.tabs.onCreated.addListener( ( tab ) => {
-    console.info('tabs.onCreated', tab)
-    store.dispatch( addTab( tab ) )
+  browser.tabs.onCreated.addListener( ( browser_tab ) => {
+    console.info('tabs.onCreated', browser_tab)
+    store.dispatch( addTabAction( browser_tab ) )
   })
 
   browser.tabs.onRemoved.addListener( ( tab_id, { windowId, isWindowClosing } ) => {
     console.info('tabs.onRemoved', tab_id, windowId)
-    store.dispatch( removeTab( tab_id, windowId ) )
+    store.dispatch( removeTabAction( tab_id, windowId ) )
   })
 
   browser.tabs.onMoved.addListener( ( tab_id, { windowId, fromIndex, toIndex } ) => {
     console.info('tabs.onMoved', tab_id, windowId, fromIndex, toIndex)
-    store.dispatch( moveTab( tab_id, windowId, toIndex ) )
+    store.dispatch( moveTabAction( tab_id, windowId, toIndex ) )
   })
 
   browser.tabs.onAttached.addListener( ( tab_id, { newWindowId, newPosition } ) => {
     console.info('tabs.onAttached', tab_id, newWindowId, newPosition)
-    store.dispatch( attachTab( tab_id, newWindowId, newPosition ) )
+    store.dispatch( attachTabAction( tab_id, newWindowId, newPosition ) )
   })
 
   browser.tabs.onDetached.addListener( ( tab_id, { oldWindowId, oldPosition } ) => {
     console.info('tabs.onDetached', tab_id, oldWindowId, oldPosition)
-    store.dispatch( detachTab( tab_id, oldWindowId, oldPosition ) )
+    store.dispatch( detachTabAction( tab_id, oldWindowId, oldPosition ) )
   })
 
   browser.tabs.onReplaced.addListener( ( added_tab_id, removed_tab_id ) => {
@@ -122,9 +122,9 @@ export function bindBrowserEvents( store ) {
     // @todo
   })
 
-  browser.tabs.onUpdated.addListener( ( tab_id, change_info, tab ) => {
-    console.info('tabs.onUpdated', tab_id, change_info, tab)
-    store.dispatch( updateTab( tab, change_info ) )
+  browser.tabs.onUpdated.addListener( ( tab_id, change_info, browser_tab ) => {
+    console.info('tabs.onUpdated', tab_id, change_info, browser_tab)
+    store.dispatch( updateTabAction( browser_tab, change_info ) )
   })
 }
 
@@ -133,7 +133,7 @@ export function bindBrowserEvents( store ) {
  */
 export function loadBrowserState() {
   const window_ids = []
-  let config, tabs
+  let config, browser_tabs
 
   return Promise.all([
     browser.storage ? browser.storage.local.get( LOCAL_CONFIG_KEY ) : null,
@@ -143,12 +143,12 @@ export function loadBrowserState() {
   ]).then(
     ( [ storage, _tabs, theme ] ) => {
       config = storage[ LOCAL_CONFIG_KEY ] || default_config
-      tabs = _tabs
+      browser_tabs = _tabs
 
       const browser_tab_preview_images = []
 
       let window_tab_groups = []
-      tabs.forEach( tab => {
+      browser_tabs.forEach( tab => {
         browser_tab_preview_images.push( getTabPreviewState( tab.id ) )
         if( window_ids.indexOf( tab.windowId ) === -1 ) {
           window_ids.push( tab.windowId )
@@ -164,13 +164,44 @@ export function loadBrowserState() {
       for( let i = 0; i < window_ids.length; i++ ) {
         window_tab_groups_map.set( window_ids[ i ], window_tab_groups[ i ] )
       }
-      for( let i = 0; i < tabs.length; i++ ) {
-        tabs[ i ].preview_image = tab_preview_images[ i ]
+      for( let i = 0; i < browser_tabs.length; i++ ) {
+        browser_tabs[ i ].preview_image = tab_preview_images[ i ]
       }
       // This is the same structure from reducers.init
-      return { config, tabs, window_tab_groups_map }
+      return { config, browser_tabs, window_tab_groups_map }
     }
   )
+}
+
+/**
+ * Map the browser state for a tab to the representation from the state
+ * @param browser_tab
+ */
+export function getTabState( browser_tab ) {
+  return {
+    id: browser_tab.id,
+    title: browser_tab.title,
+    status: browser_tab.status,
+    url: browser_tab.url,
+    fav_icon_url: getFavIconUrl( browser_tab ),
+    is_active: browser_tab.active,
+    preview_image: {
+      width: browser_tab.width,
+      height: browser_tab.height,
+    },
+    // @todo audio info
+  }
+}
+
+function getFavIconUrl( browser_tab ) {
+  switch( browser_tab.favIconUrl ) {
+    case 'chrome://mozapps/skin/extensions/extensionGeneric-16.svg':
+      return '/icons/extensionGeneric.svg'
+    case 'chrome://branding/content/icon32.png#':
+      return '/icons/icon32.png'
+    default:
+      return browser_tab.favIconUrl
+  }
 }
 
 /**
@@ -236,11 +267,11 @@ export function setTheme( theme_id ) {
 }
 
 function resetWindowState( window ) {
-  return browser.sessions.removeWindowValue( window.id, WINDOW_TAB_GROUPS_KEY )
+  return browser.sessions.removeWindowActionValue( window.id, WINDOW_TAB_GROUPS_KEY )
 }
 
 function resetTabState( tab ) {
-  return browser.sessions.removeTabValue( tab.id, TAB_PREVIEW_IMAGE_KEY )
+  return browser.sessions.removeTabActionValue( tab.id, TAB_PREVIEW_IMAGE_KEY )
 }
 
 /**
@@ -323,12 +354,13 @@ export function closeTab( tab_id ) {
 /**
  * Move tabs to a different group
  * @param store
- * @param tab_ids
+ * @param tabs_data Object with properties window_id, tab_group_id and tab_ids
  * @param window_id
  * @param tab_group_id
  */
-export function moveTabsToGroup( store, tab_ids, window_id, tab_group_id, index ) {
-  console.info('moveTabsToGroup', tab_ids, window_id, tab_group_id, index)
+export function moveTabsToGroup( store, tabs_data, window_id, tab_group_id, index ) {
+  console.info('moveTabsToGroup', tabs_data, window_id, tab_group_id, index)
+  const { tab_ids } = tabs_data
   let index_offset = 0
   const state = store.getState()
   const window = state.windows.find( window => window.id == window_id )
@@ -349,7 +381,7 @@ export function moveTabsToGroup( store, tab_ids, window_id, tab_group_id, index 
       }
       for( let tab_id of tab_ids ) {
         // @todo should have dispatch operation for multi-move for efficiency
-        store.dispatch( moveTabToGroup( tab_id, window_id, tab_group_id ) )
+        store.dispatch( moveTabToGroupAction( tab_id, window_id, tab_group_id ) )
       }
       break
     }
@@ -376,7 +408,7 @@ export function runTabSearch( store, window_id, search_text ) {
   }
 
   // Update the store with the search
-  store.dispatch( startSearch( window_id, search_text ) )
+  store.dispatch( startSearchAction( window_id, search_text ) )
 
   const search_tabs = []
   const matching_tab_ids = []
@@ -402,7 +434,7 @@ export function runTabSearch( store, window_id, search_text ) {
     .then(
       () => {
         console.info('finished', search_text, matching_tab_ids)
-        store.dispatch( finishSearch( window_id, search_text, matching_tab_ids ) )
+        store.dispatch( finishSearchAction( window_id, search_text, matching_tab_ids ) )
       }
     )
 }

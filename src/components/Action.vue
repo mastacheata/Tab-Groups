@@ -35,7 +35,6 @@
 
 <script>
 import { cloneTabGroup } from '../store/helpers.mjs'
-import { activateGroup } from '../store/actions.mjs'
 import {
   getMessage,
   openOptionsPage,

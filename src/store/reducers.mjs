@@ -8,6 +8,7 @@ import {
   GROUP_REMOVE,
   GROUP_UPDATE,
   GROUP_MOVE,
+  TABS_MOVE,
   TAB_ACTIVATE,
   TAB_ADD,
   TAB_REMOVE,
@@ -24,6 +25,10 @@ import {
   createTabGroup,
   getNewTabGroupId,
 } from './helpers.mjs'
+
+import {
+  getTabState,
+} from '../integrations/index.mjs'
 
 export const default_config = {
   theme: 'light'
@@ -49,6 +54,10 @@ function findTabWindowId( windows, tab_id ) {
     return window.id
   }
   return null
+}
+
+function findWindowIndex( windows, window_id ) {
+  return windows.findIndex( window => window.id === window_id )
 }
 
 function _removeTab( state, { tab_id, window_id, index, is_detach, is_pin } ) {
@@ -96,7 +105,7 @@ function _removeTab( state, { tab_id, window_id, index, is_detach, is_pin } ) {
   return new_state
 }
 
-export function init( state, { config, tabs, window_tab_groups_map } ) {
+export function init( state, { config, browser_tabs, window_tab_groups_map } ) {
   const window_tabs_map = new Map()
 
   // @todo use persist state from window_tab_groups_map
@@ -105,13 +114,13 @@ export function init( state, { config, tabs, window_tab_groups_map } ) {
   let new_tab_group_id = 1
   // @todo iterate window_tab_groups_map to get id
 
-  tabs.forEach( ( tab ) => {
-    let window_tabs = window_tabs_map.get( tab.windowId )
+  browser_tabs.forEach( browser_tab => {
+    let window_tabs = window_tabs_map.get( browser_tab.windowId )
     if( ! window_tabs ) {
       window_tabs = []
-      window_tabs_map.set( tab.windowId, window_tabs )
+      window_tabs_map.set( browser_tab.windowId, window_tabs )
     }
-    window_tabs.push( tab )
+    window_tabs.push( getTabState( browser_tab ) )
   })
 
   const windows = []
@@ -348,10 +357,10 @@ export function activateTab( state, { tab_id, window_id } ) {
   })
 }
 
-export function addTab( state, { tab } ) {
+export function addTab( state, { browser_tab } ) {
   let is_window_defined = false
   const windows = state.windows.map( window => {
-    if( window.id !== tab.windowId ) {
+    if( window.id !== browser_tab.windowId ) {
       return window
     }
 
@@ -359,13 +368,13 @@ export function addTab( state, { tab } ) {
     let i = 0
     return Object.assign( {}, window, {
       tab_groups: window.tab_groups.map( tab_group => {
-        if( 0 <= tab.index - i && tab.index - i <= tab_group.tabs_count ) {
+        if( 0 <= browser_tab.index - i && browser_tab.index - i <= tab_group.tabs_count ) {
           // @todo if next tab_group is empty, add tab to it instead
           tab_group = Object.assign( {}, tab_group, {
             tabs: [ ...tab_group.tabs ],
             tabs_count: tab_group.tabs_count + 1
           })
-          tab_group.tabs.splice( tab.index - i, 0, tab )
+          tab_group.tabs.splice( browser_tab.index - i, 0, getTabState( browser_tab ) )
         }
         i += tab_group.tabs_count
         return tab_group
@@ -378,7 +387,7 @@ export function addTab( state, { tab } ) {
   if( ! is_window_defined ) {
     orphan_tabs = [
       ...orphan_tabs,
-      tab
+      browser_tab
     ]
   }
 
@@ -392,29 +401,29 @@ export function removeTab( state, { tab_id, window_id } ) {
   return _removeTab( state, { tab_id, window_id } )
 }
 
-export function updateTab( state, { tab, change_info } ) {
+export function updateTab( state, { browser_tab, change_info } ) {
   // @todo if change_info contains 'pinned'
   if( change_info.hasOwnProperty( 'pinned' ) ) {
     if( change_info.pinned ) {
-      return _removeTab( state, { tab_id: tab.id, window_id: tab.windowId, is_pin: true } )
+      return _removeTab( state, { tab_id: browser_tab.id, window_id: browser_tab.windowId, is_pin: true } )
     } else {
       // Remove the tab from the pinned tabs
       const windows = state.windows.map( window => {
-        if( window.id !== tab.windowId ) {
+        if( window.id !== browser_tab.windowId ) {
           return window
         }
 
         let i = 0
         return Object.assign( {}, window, {
-          pinned_tabs: window.pinned_tabs.filter( _tab => _tab.id !== tab.id ),
+          pinned_tabs: window.pinned_tabs.filter( _tab => _tab.id !== browser_tab.id ),
           tab_groups: window.tab_groups.map( tab_group => {
-            if( 0 <= tab.index - i && tab.index - i <= tab_group.tabs_count ) {
+            if( 0 <= browser_tab.index - i && browser_tab.index - i <= tab_group.tabs_count ) {
               // @todo if next tab_group is empty, add tab to it instead
               tab_group = Object.assign( {}, tab_group, {
                 tabs: [ ...tab_group.tabs ],
                 tabs_count: tab_group.tabs_count + 1
               })
-              tab_group.tabs.splice( tab.index - i, 0, tab )
+              tab_group.tabs.splice( browser_tab.index - i, 0, browser_tab )
             }
             i += tab_group.tabs_count
             return tab_group
@@ -431,18 +440,18 @@ export function updateTab( state, { tab, change_info } ) {
   // @todo change use the nature of change_info to ignore changes
   return Object.assign( {}, state, {
     windows: state.windows.map( window => {
-      if( window.id !== tab.windowId ) {
+      if( window.id !== browser_tab.windowId ) {
         return window
       }
       // @todo check for the tab in the pinned tabs
       return Object.assign( {}, window, {
         tab_groups: window.tab_groups.map( tab_group => {
-          const tab_index = tab_group.tabs.findIndex( _tab => _tab.id === tab.id )
+          const tab_index = tab_group.tabs.findIndex( _tab => _tab.id === browser_tab.id )
           if( tab_index > -1 ) {
             tab_group = Object.assign( {}, tab_group, {
               tabs: [ ...tab_group.tabs ]
             })
-            tab_group.tabs[ tab_index ] = tab
+            tab_group.tabs[ tab_index ] = browser_tab
           }
           return tab_group
         })
@@ -480,6 +489,33 @@ export function updateTabImage( state, { tab_id, window_id, preview_image_uri } 
         })
       })
     })
+  })
+}
+
+export function moveTabs( state, { source_tabs_data, target_data } ) {
+  let { windows, pinned_tabs } = state
+
+  if( source_tabs_data.window_id == null ) {
+    // source is the pinned tabs
+  } else {
+    const source_window_index = findWindowIndex( windows, source_tabs_data.window_id )
+  }
+  const target_window_index = findWindowIndex( windows, target_data.window_id )
+  windows = [ ...windows ]
+
+  if( source_window_index === -1 ) {
+    const pinned_tab_index = pinned_tabs.findIndex( tab => tab.id === sour)
+  } else {
+
+  }
+
+  // @todo pull tabs from source
+  // @todo push tabs to target
+
+  // @todo check pinned tabs
+  // @todo check orphan tabs
+  return Object.assign( {}, state, {
+    windows
   })
 }
 
@@ -619,6 +655,8 @@ export default function App( state = initial_state, action ) {
       return updateGroup( state, action )
     case GROUP_MOVE:
       return moveGroup( state, action )
+    case TABS_MOVE:
+      return moveTabs( state, action )
     case TAB_ACTIVATE:
       return activateTab( state, action )
     case TAB_ADD:

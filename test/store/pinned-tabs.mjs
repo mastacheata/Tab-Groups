@@ -1,17 +1,17 @@
 import tap from 'tap'
-import { createTab } from './helpers'
+import { createTestTab } from './helpers'
 
 import { init, updateTab } from '../../src/store/reducers'
 
 function testSingleWindowFreshInit( t ) {
   const tabs = [
-    createTab({
+    createTestTab({
       id: 1,
       index: 0,
       windowId: 1,
       pinned: true
     }),
-    createTab({
+    createTestTab({
       id: 2,
       index: 1,
       windowId: 1
@@ -34,12 +34,12 @@ function testSingleWindowFreshInit( t ) {
 
 function testSingleWindowFreshPinnedInit() {
   const tabs = [
-    createTab({
+    createTestTab({
       id: 1,
       index: 0,
       windowId: 1
     }),
-    createTab({
+    createTestTab({
       id: 2,
       index: 1,
       windowId: 1
@@ -52,23 +52,23 @@ function testSingleWindowFreshPinnedInit() {
 
 function testPinnedTabs( t ) {
   const tabs = [
-    createTab({
+    createTestTab({
       id: 1,
       index: 0,
       windowId: 1,
       pinned: true
     }),
-    createTab({
+    createTestTab({
       id: 2,
       index: 1,
       windowId: 1
     }),
-    createTab({
+    createTestTab({
       id: 3,
       index: 2,
       windowId: 1
     }),
-    createTab({
+    createTestTab({
       id: 4,
       index: 3,
       windowId: 1

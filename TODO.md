@@ -1,5 +1,8 @@
 p1
 - fix handling for chrome urls
+- revisit tab design
+  - with mobile and new tab page layouts
+  - msg Adam
 - add pin tests
   - fix tab pinning
   - fix move when there are pinned tabs
@@ -57,6 +60,7 @@ p1
 - review @todos
 - context menu for move tab
 - determine min version
+- add notification indicator
 - publish
   - fix id
 
