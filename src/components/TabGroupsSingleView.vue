@@ -55,9 +55,7 @@
 
 <script>
 import {
-  createGroup,
-  updateGroup,
-  moveTabToGroup,
+  updateGroupAction,
 } from '../store/actions.mjs'
 import {
   cloneWindow,
@@ -130,7 +128,7 @@ export default {
     },
     onTabGroupNameUpdate( event ) {
       console.info('onTabGroupNameUpdate', event, event.target.textContent)
-      window.store.dispatch( updateGroup( this.selected_tab_group.id, this.window_id, { title: event.target.textContent } ) )
+      window.store.dispatch( updateGroupAction( this.selected_tab_group.id, this.window_id, { title: event.target.textContent } ) )
     },
     onTabGroupWheel( event ) {
       console.info('onTabGroupWheel', event)

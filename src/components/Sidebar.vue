@@ -35,8 +35,13 @@
 </template>
 
 <script>
-import { createGroup } from '../store/actions.mjs'
-import { cloneTabGroup, cloneTab } from '../store/helpers.mjs'
+import {
+  createGroupAction
+} from '../store/actions.mjs'
+import {
+  cloneTabGroup,
+  cloneTab,
+} from '../store/helpers.mjs'
 import {
   getMessage,
   setTabActive,
@@ -131,7 +136,7 @@ export default {
     getCountMessage,
     createTabGroup() {
       // Create new group with default properties in the store
-      window.store.dispatch( createGroup( this.window_id ) )
+      window.store.dispatch( createGroupAction( this.window_id ) )
       // @todo create new tab in the new group
     },
     openTab( tab ) {
