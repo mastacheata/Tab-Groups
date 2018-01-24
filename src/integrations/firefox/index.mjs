@@ -354,12 +354,13 @@ export function closeTab( tab_id ) {
 /**
  * Move tabs to a different group
  * @param store
- * @param tab_ids
+ * @param tabs_data Object with properties window_id, tab_group_id and tab_ids
  * @param window_id
  * @param tab_group_id
  */
-export function moveTabsToGroup( store, tab_ids, window_id, tab_group_id, index ) {
-  console.info('moveTabsToGroup', tab_ids, window_id, tab_group_id, index)
+export function moveTabsToGroup( store, tabs_data, window_id, tab_group_id, index ) {
+  console.info('moveTabsToGroup', tabs_data, window_id, tab_group_id, index)
+  const { tab_ids } = tabs_data
   let index_offset = 0
   const state = store.getState()
   const window = state.windows.find( window => window.id == window_id )

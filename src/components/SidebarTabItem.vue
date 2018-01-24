@@ -19,10 +19,15 @@ import {
   setTabActive,
   closeTab,
 } from '../integrations/index.mjs'
+import {
+  setTabTransferData,
+} from './droppable.mjs'
 
 export default {
   name: 'sidebar-tab-item',
   props: [
+    'windowId',
+    'tabGroup',
     'tab'
   ],
   methods: {
@@ -36,9 +41,8 @@ export default {
       console.info('onTabDrag', event)
     },
     onTabDragStart( event ) {
-      console.info('onTabDragStart', event)
-      event.dataTransfer.setData( 'text/plain', `tab:${ this.tab.id }` )
-      event.dataTransfer.effectAllowed = 'move'
+      console.info('onTabDragStart', event, this.windowId, this.tabGroup)
+      setTabTransferData( event.dataTransfer, this.windowId, this.tabGroup.id, this.tab.id )
     },
     onTabDragEnter( event ) {
       console.info('onTabDragEnter', event)

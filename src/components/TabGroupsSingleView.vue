@@ -21,7 +21,7 @@
             v-for="tab in state_window.pinned_tabs" :key="tab.id"
             :title="tab.title"
             @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
-            draggable="true" @dragstart="onTabDragStart( tab, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
+            draggable="true" @dragstart="onTabDragStart( tab, null, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
         >
           <img class="tab-group-pinned-tab-icon" :src="tab.fav_icon_url"/>
         </div>
@@ -36,7 +36,7 @@
               v-for="tab in selected_tab_group.tabs" :key="tab.id"
               :title="tab.title"
               @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
-              draggable="true" @dragstart="onTabDragStart( tab, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
+              draggable="true" @dragstart="onTabDragStart( tab, selected_tab_group.id, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
           >
             <!-- @todo add mask on image -->
             <img v-if="tab.preview_image" class="tab-group-tab-card-preview" :src="tab.preview_image.uri"/>
@@ -73,6 +73,7 @@ import {
   onStateChange,
 } from './helpers.mjs'
 import {
+  setTabTransferData,
   onTabGroupDragEnter,
   onTabGroupDragOver,
   onTabGroupDrop,
@@ -138,12 +139,10 @@ export default {
       console.info('onTabsListWheel', event)
       event.currentTarget.scrollTop += event.deltaY * 12
     },
-    onTabDragStart( tab, event ) {
+    onTabDragStart( tab, tab_group_id, event ) {
       console.info('onTabDragStart', tab, event)
-      event.dataTransfer.dropEffect = "move"
       this.is_dragging_tab = true
-      event.dataTransfer.setData( 'text/plain', `tab:${ tab.id }` )
-      event.dataTransfer.effectAllowed = 'move'
+      setTabTransferData( event.dataTransfer, this.window_id, tab_group_id, tab.id )
     },
     onTabDragEnd( tab, event ) {
       console.info('onTabDragEnd', tab, event)

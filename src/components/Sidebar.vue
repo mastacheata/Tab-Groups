@@ -27,7 +27,7 @@
           <span class="sidebar-tab-group-list-item-header-tab-count">{{ getCountMessage( 'tabs', tab_group.tabs_count ) }}</span>
         </div>
         <div v-if="tab_group.is_open" class="sidebar-tab-group-tabs-list">
-          <SidebarTabItem class="sidebar-tab-group-tabs-list-item" :tab="tab" v-for="tab in tab_group.tabs" :key="tab.id" v-if="! search_text || ! search_resolved || tab.is_matched"/>
+          <SidebarTabItem class="sidebar-tab-group-tabs-list-item" :window-id="window_id" :tab-group="tab_group" :tab="tab" v-for="tab in tab_group.tabs" :key="tab.id" v-if="! search_text || ! search_resolved || tab.is_matched"/>
         </div>
       </div>
     </div>

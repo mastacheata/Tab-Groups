@@ -8,6 +8,7 @@ import {
   GROUP_REMOVE,
   GROUP_UPDATE,
   GROUP_MOVE,
+  TABS_MOVE,
   TAB_ACTIVATE,
   TAB_ADD,
   TAB_REMOVE,
@@ -491,6 +492,33 @@ export function updateTabImage( state, { tab_id, window_id, preview_image_uri } 
   })
 }
 
+export function moveTabs( state, { source_tabs_data, target_data } ) {
+  let { windows, pinned_tabs } = state
+
+  if( source_tabs_data.window_id == null ) {
+    // source is the pinned tabs
+  } else {
+    const source_window_index = findWindowIndex( windows, source_tabs_data.window_id )
+  }
+  const target_window_index = findWindowIndex( windows, target_data.window_id )
+  windows = [ ...windows ]
+
+  if( source_window_index === -1 ) {
+    const pinned_tab_index = pinned_tabs.findIndex( tab => tab.id === sour)
+  } else {
+
+  }
+
+  // @todo pull tabs from source
+  // @todo push tabs to target
+
+  // @todo check pinned tabs
+  // @todo check orphan tabs
+  return Object.assign( {}, state, {
+    windows
+  })
+}
+
 export function moveTab( state, { tab_id, window_id, index, tab_group_id } ) {
   return Object.assign( {}, state, {
     windows: state.windows.map( window => {
@@ -627,6 +655,8 @@ export default function App( state = initial_state, action ) {
       return updateGroup( state, action )
     case GROUP_MOVE:
       return moveGroup( state, action )
+    case TABS_MOVE:
+      return moveTabs( state, action )
     case TAB_ACTIVATE:
       return activateTab( state, action )
     case TAB_ADD:

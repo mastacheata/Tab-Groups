@@ -10,6 +10,7 @@ import {
   GROUP_REMOVE,
   GROUP_UPDATE,
   GROUP_MOVE,
+  TABS_MOVE,
   TAB_ACTIVATE,
   TAB_ADD,
   TAB_REMOVE,
@@ -121,6 +122,14 @@ export function updateTabImageAction( tab_id, window_id, preview_image_uri ) {
     tab_id,
     window_id,
     preview_image_uri
+  }
+}
+
+export function moveTabsToGroupAction( source_tabs_data, target_data ) {
+  return {
+    type: TABS_MOVE,
+    source_tabs_data,
+    target_data,
   }
 }
 
