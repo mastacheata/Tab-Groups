@@ -1,36 +1,36 @@
-import tap from 'tap'
-import { createTab, getInitialState } from './helpers'
+import { createTestTab, getInitialState } from './helpers'
 
 import { removeTab } from '../../src/store/reducers'
 import { createWindow, createTabGroup } from '../../src/store/helpers'
 
-function testRemoveFirstTab() {
+function testRemoveFirstTab( t ) {
   let state = getInitialState()
 
   let tab_id = state.windows[ 0 ].tab_groups[ 0 ].tabs[ 0 ].id
 
   state = removeTab( state, { tab_id, window_id: state.windows[ 0 ].id } )
 
-  tap.equal( state.windows[ 0 ].tab_groups.length, 1 )
-  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 1 )
-  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs_count, state.windows[ 0 ].tab_groups[ 0 ].tabs.length )
+  t.equal( state.windows[ 0 ].tab_groups.length, 1 )
+  t.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 1 )
+  t.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs_count, state.windows[ 0 ].tab_groups[ 0 ].tabs.length )
+  t.end()
 }
 
-function testRemoveMiddleTab() {
+function testRemoveMiddleTab( t ) {
   const window_id = 1
   let state = {
     windows: [
       createWindow( window_id, [
         createTabGroup( 1, [
-          createTab({
+          createTestTab({
             id: 1,
             index: 0
           }),
-          createTab({
+          createTestTab({
             id: 2,
             index: 1
           }),
-          createTab({
+          createTestTab({
             id: 3,
             index: 2
           })
@@ -43,26 +43,27 @@ function testRemoveMiddleTab() {
 
   state = removeTab( state, { tab_id, window_id } )
 
-  tap.equal( state.windows[ 0 ].tab_groups.length, 1 )
-  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 2 )
-  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs_count, state.windows[ 0 ].tab_groups[ 0 ].tabs.length )
+  t.equal( state.windows[ 0 ].tab_groups.length, 1 )
+  t.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 2 )
+  t.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs_count, state.windows[ 0 ].tab_groups[ 0 ].tabs.length )
+  t.end()
 }
 
-function testRemoveLastTab() {
+function testRemoveLastTab( t ) {
   let window_id = 1
   let state = {
     windows: [
       createWindow( window_id, [
         createTabGroup( 1, [
-          createTab({
+          createTestTab({
             id: 1,
             index: 0
           }),
-          createTab({
+          createTestTab({
             id: 2,
             index: 1
           }),
-          createTab({
+          createTestTab({
             id: 3,
             index: 2
           })
@@ -75,13 +76,15 @@ function testRemoveLastTab() {
 
   state = removeTab( state, { tab_id, window_id } )
 
-  tap.equal( state.windows[ 0 ].tab_groups.length, 1 )
-  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 2 )
-  tap.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs_count, state.windows[ 0 ].tab_groups[ 0 ].tabs.length )
+  t.equal( state.windows[ 0 ].tab_groups.length, 1 )
+  t.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 2 )
+  t.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs_count, state.windows[ 0 ].tab_groups[ 0 ].tabs.length )
+  t.end()
 }
 
-export default function() {
-  testRemoveFirstTab()
-  testRemoveMiddleTab()
-  testRemoveLastTab()
+export default function( tap ) {
+  tap.test( testRemoveFirstTab )
+  tap.test( testRemoveMiddleTab )
+  tap.test( testRemoveLastTab )
+  tap.end()
 }

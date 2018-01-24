@@ -92,9 +92,9 @@ export function bindBrowserEvents( store ) {
       )
   })
 
-  browser.tabs.onCreated.addListener( ( tab ) => {
-    console.info('tabs.onCreated', tab)
-    store.dispatch( addTabAction( tab ) )
+  browser.tabs.onCreated.addListener( ( browser_tab ) => {
+    console.info('tabs.onCreated', browser_tab)
+    store.dispatch( addTabAction( browser_tab ) )
   })
 
   browser.tabs.onRemoved.addListener( ( tab_id, { windowId, isWindowClosing } ) => {
@@ -122,9 +122,9 @@ export function bindBrowserEvents( store ) {
     // @todo
   })
 
-  browser.tabs.onUpdated.addListener( ( tab_id, change_info, tab ) => {
-    console.info('tabs.onUpdated', tab_id, change_info, tab)
-    store.dispatch( updateTabAction( tab, change_info ) )
+  browser.tabs.onUpdated.addListener( ( tab_id, change_info, browser_tab ) => {
+    console.info('tabs.onUpdated', tab_id, change_info, browser_tab)
+    store.dispatch( updateTabAction( browser_tab, change_info ) )
   })
 }
 
@@ -133,7 +133,7 @@ export function bindBrowserEvents( store ) {
  */
 export function loadBrowserState() {
   const window_ids = []
-  let config, tabs
+  let config, browser_tabs
 
   return Promise.all([
     browser.storage ? browser.storage.local.get( LOCAL_CONFIG_KEY ) : null,
@@ -143,12 +143,12 @@ export function loadBrowserState() {
   ]).then(
     ( [ storage, _tabs, theme ] ) => {
       config = storage[ LOCAL_CONFIG_KEY ] || default_config
-      tabs = _tabs
+      browser_tabs = _tabs
 
       const browser_tab_preview_images = []
 
       let window_tab_groups = []
-      tabs.forEach( tab => {
+      browser_tabs.forEach( tab => {
         browser_tab_preview_images.push( getTabPreviewState( tab.id ) )
         if( window_ids.indexOf( tab.windowId ) === -1 ) {
           window_ids.push( tab.windowId )
@@ -164,13 +164,44 @@ export function loadBrowserState() {
       for( let i = 0; i < window_ids.length; i++ ) {
         window_tab_groups_map.set( window_ids[ i ], window_tab_groups[ i ] )
       }
-      for( let i = 0; i < tabs.length; i++ ) {
-        tabs[ i ].preview_image = tab_preview_images[ i ]
+      for( let i = 0; i < browser_tabs.length; i++ ) {
+        browser_tabs[ i ].preview_image = tab_preview_images[ i ]
       }
       // This is the same structure from reducers.init
-      return { config, tabs, window_tab_groups_map }
+      return { config, browser_tabs, window_tab_groups_map }
     }
   )
+}
+
+/**
+ * Map the browser state for a tab to the representation from the state
+ * @param browser_tab
+ */
+export function getTabState( browser_tab ) {
+  return {
+    id: browser_tab.id,
+    title: browser_tab.title,
+    status: browser_tab.status,
+    url: browser_tab.url,
+    fav_icon_url: getFavIconUrl( browser_tab ),
+    is_active: browser_tab.active,
+    preview_image: {
+      width: browser_tab.width,
+      height: browser_tab.height,
+    },
+    // @todo audio info
+  }
+}
+
+function getFavIconUrl( browser_tab ) {
+  switch( browser_tab.favIconUrl ) {
+    case 'chrome://mozapps/skin/extensions/extensionGeneric-16.svg':
+      return '/icons/extensionGeneric.svg'
+    case 'chrome://branding/content/icon32.png#':
+      return '/icons/icon32.png'
+    default:
+      return browser_tab.favIconUrl
+  }
 }
 
 /**

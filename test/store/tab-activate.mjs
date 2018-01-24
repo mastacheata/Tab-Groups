@@ -1,9 +1,8 @@
-import tap from 'tap'
 import { base_new_tab, getInitialState } from './helpers'
 
 import { activateTab } from '../../src/store/reducers'
 
-function testSingleWindowSingleGroupActivateTab() {
+function testSingleWindowSingleGroupActivateTab( t ) {
   const state = getInitialState()
   const window = state.windows[ 0 ]
 
@@ -13,12 +12,13 @@ function testSingleWindowSingleGroupActivateTab() {
   const new_state = activateTab( state, { tab_id, window_id } )
   const new_window = new_state.windows[ 0 ]
 
-  tap.equal( new_window.tab_groups[ 0 ].tabs.length, 2 )
-  tap.equal( new_window.tab_groups[ 0 ].tabs[ 0 ].active, false )
-  tap.equal( new_window.tab_groups[ 0 ].tabs[ 1 ].active, true )
+  t.equal( new_window.tab_groups[ 0 ].tabs.length, 2 )
+  t.equal( new_window.tab_groups[ 0 ].tabs[ 0 ].is_active, false )
+  t.equal( new_window.tab_groups[ 0 ].tabs[ 1 ].is_active, true )
+  t.end()
 }
 
-function testSingleWindowMultiGroupActivateTab() {
+function testSingleWindowMultiGroupActivateTab( t ) {
   const state = getInitialState()
   const window = state.windows[ 0 ]
 
@@ -48,14 +48,16 @@ function testSingleWindowMultiGroupActivateTab() {
   const new_state = activateTab( state, { tab_id, window_id } )
   const new_window = new_state.windows[ 0 ]
 
-  tap.equal( new_window.tab_groups[ 0 ].tabs.length, 2 )
-  tap.equal( new_window.tab_groups[ 0 ].tabs[ 0 ].active, false )
-  tap.equal( new_window.tab_groups[ 0 ].tabs[ 1 ].active, false )
-  tap.equal( new_window.tab_groups[ 1 ].tabs[ 0 ].active, false )
-  tap.equal( new_window.tab_groups[ 1 ].tabs[ 1 ].active, true )
+  t.equal( new_window.tab_groups[ 0 ].tabs.length, 2 )
+  t.equal( new_window.tab_groups[ 0 ].tabs[ 0 ].is_active, false )
+  t.equal( new_window.tab_groups[ 0 ].tabs[ 1 ].is_active, false )
+  t.equal( new_window.tab_groups[ 1 ].tabs[ 0 ].is_active, false )
+  t.equal( new_window.tab_groups[ 1 ].tabs[ 1 ].is_active, true )
+  t.end()
 }
 
-export default function() {
-  testSingleWindowSingleGroupActivateTab()
-  testSingleWindowMultiGroupActivateTab()
+export default function( tap ) {
+  tap.test( testSingleWindowSingleGroupActivateTab )
+  tap.test( testSingleWindowMultiGroupActivateTab )
+  tap.end()
 }

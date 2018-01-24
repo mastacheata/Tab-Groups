@@ -23,7 +23,7 @@
             @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
             draggable="true" @dragstart="onTabDragStart( tab, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
         >
-          <img class="tab-group-pinned-tab-icon" :src="tab.favIconUrl"/>
+          <img class="tab-group-pinned-tab-icon" :src="tab.fav_icon_url"/>
         </div>
       </section>
       <div class="tab-groups-tabs-pane">
@@ -44,7 +44,7 @@
               <circle cx="12px" cy="12px" r="16px"/>
               <!-- @todo clipPath for image with circle -->
             </svg>
-            <img class="tab-group-tab-card-favicon" :src="tab.favIconUrl"/>
+            <img class="tab-group-tab-card-favicon" :src="tab.fav_icon_url"/>
             <div class="tab-group-tab-title"><span>{{ tab.title }}</span></div>
           </div>
         </section>
@@ -327,10 +327,6 @@ export default {
   left: 0;
   width: 24px;
   height: 24px;
-  /* This is a hack to populate values used in filefox "chrome://" icons */
-  -moz-context-properties: fill, stroke;
-  fill: lime;
-  stroke: purple;
 }
 
 .tab-group-tab-card-favicon-bg {

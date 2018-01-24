@@ -1,5 +1,4 @@
-import tap from 'tap'
-import { createTab } from './helpers'
+import { createTestTab } from './helpers'
 import { createTabGroup, createWindow } from '../../src/store/helpers.mjs'
 
 import { moveTab } from '../../src/store/reducers'
@@ -9,13 +8,13 @@ function testSingleWindowMove( t ) {
     windows: [
       createWindow( 1, [
         createTabGroup( 1, [
-          createTab({ id: 1 }),
-          createTab({ id: 2 }),
-          createTab({ id: 3 })
+          createTestTab({ id: 1 }),
+          createTestTab({ id: 2 }),
+          createTestTab({ id: 3 })
         ]),
         createTabGroup( 2, [
-          createTab({ id: 4 }),
-          createTab({ id: 5 })
+          createTestTab({ id: 4 }),
+          createTestTab({ id: 5 })
         ])
       ])
     ]
@@ -41,9 +40,9 @@ function testMoveToNewGroup( t ) {
     windows: [
       createWindow( 1, [
         createTabGroup( 1, [
-          createTab({ id: 1 }),
-          createTab({ id: 2 }),
-          createTab({ id: 3 })
+          createTestTab({ id: 1 }),
+          createTestTab({ id: 2 }),
+          createTestTab({ id: 3 })
         ]),
         createTabGroup( 2, [
         ])
@@ -66,7 +65,8 @@ function testMoveToNewGroup( t ) {
   t.end()
 }
 
-export default function() {
+export default function( tap ) {
   tap.test( testSingleWindowMove )
   tap.test( testMoveToNewGroup )
+  tap.end()
 }

@@ -20,10 +20,10 @@ import {
   TAB_DETACH,
 } from './action-types.mjs'
 
-export function initAction({ tabs, window_tab_groups_map }) {
+export function initAction({ browser_tabs, window_tab_groups_map }) {
   return {
     type: INIT,
-    tabs,
+    browser_tabs,
     window_tab_groups_map
   }
 }
@@ -91,10 +91,10 @@ export function activateTabAction( tab_id, window_id ) {
   }
 }
 
-export function addTabAction( tab, tab_group_id ) {
+export function addTabAction( browser_tab, tab_group_id ) {
   return {
     type: TAB_ADD,
-    tab,
+    browser_tab,
     tab_group_id
   }
 }
@@ -107,10 +107,10 @@ export function removeTabAction( tab_id, window_id ) {
   }
 }
 
-export function updateTabAction( tab, change_info ) {
+export function updateTabAction( browser_tab, change_info ) {
   return {
     type: TAB_UPDATE,
-    tab,
+    browser_tab,
     change_info
   }
 }

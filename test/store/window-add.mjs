@@ -1,9 +1,8 @@
-import tap from 'tap'
 import { base_new_tab, getInitialState, getMultiWindowInitialState } from './helpers'
 
 import { addWindow } from '../../src/store/reducers'
 
-function testSingleWindowAdd() {
+function testSingleWindowAdd( t ) {
   let state = {
     orphan_tabs: [],
     windows: []
@@ -11,15 +10,17 @@ function testSingleWindowAdd() {
 
   state = addWindow( state, { window: { id: 1 } } )
 
-  tap.equal( state.windows.length, 1 )
-  tap.equal( state.windows[ 0 ].id, 1 )
+  t.equal( state.windows.length, 1 )
+  t.equal( state.windows[ 0 ].id, 1 )
 
   state = addWindow( state, { window: { id: 2 } } )
 
-  tap.equal( state.windows.length, 2 )
-  tap.equal( state.windows[ 1 ].id, 2 )
+  t.equal( state.windows.length, 2 )
+  t.equal( state.windows[ 1 ].id, 2 )
+  t.end()
 }
 
-export default function() {
-  testSingleWindowAdd()
+export default function( tap ) {
+  tap.test( testSingleWindowAdd )
+  tap.end()
 }

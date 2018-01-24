@@ -57,6 +57,7 @@ p1
 - review @todos
 - context menu for move tab
 - determine min version
+- add notification indicator
 - publish
   - fix id
 
