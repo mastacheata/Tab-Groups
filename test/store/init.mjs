@@ -53,7 +53,7 @@ function testMultiWindowFreshInit( t ) {
   ]
   const window_tab_groups_map = new Map()
 
-  let initial_state = init( null, { browser_tabs, window_tab_groups_map })
+  let initial_state = init( null, { browser_tabs, window_tab_groups_map } )
 
   t.equal( initial_state.windows.length, 2 )
 

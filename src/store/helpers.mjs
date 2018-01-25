@@ -1,4 +1,8 @@
 
+export const default_config = {
+  theme: 'light'
+}
+
 export function createWindow( window_id, tab_groups ) {
   return {
     id: window_id,

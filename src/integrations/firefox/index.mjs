@@ -15,9 +15,9 @@ import {
   updateConfigAction,
 } from '../../store/actions.mjs'
 import {
-  findTab
+  default_config,
+  findTab,
 } from '../../store/helpers.mjs'
-import { default_config } from '../../store/reducers.mjs'
 
 const LOCAL_CONFIG_KEY = 'config'
 const WINDOW_TAB_GROUPS_KEY = 'tab_groups'

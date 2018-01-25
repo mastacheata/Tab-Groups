@@ -23,16 +23,13 @@ import {
 import {
   createWindow,
   createTabGroup,
+  default_config,
   getNewTabGroupId,
 } from './helpers.mjs'
 
 import {
   getTabState,
 } from '../integrations/index.mjs'
-
-export const default_config = {
-  theme: 'light'
-}
 
 const initial_state = {
   config: default_config,
@@ -415,7 +412,7 @@ export function updateTab( state, { browser_tab, change_info } ) {
 
         let i = 0
         return Object.assign( {}, window, {
-          pinned_tabs: window.pinned_tabs.filter( _tab => _tab.id !== browser_tab.id ),
+          pinned_tabs: window.pinned_tabs.filter( tab => tab.id !== browser_tab.id ),
           tab_groups: window.tab_groups.map( tab_group => {
             if( 0 <= browser_tab.index - i && browser_tab.index - i <= tab_group.tabs_count ) {
               // @todo if next tab_group is empty, add tab to it instead
