@@ -174,8 +174,9 @@ export function loadBrowserState() {
 }
 
 /**
- * Map the browser state for a tab to the representation from the state
- * @param browser_tab
+ * Map the browsers tab representation to the one stored on the state object
+ * @param browser_tab The browser representation for a tab
+ * @returns The tab representation that will be stored in the state
  */
 export function getTabState( browser_tab ) {
   return {
@@ -183,13 +184,17 @@ export function getTabState( browser_tab ) {
     title: browser_tab.title,
     status: browser_tab.status,
     url: browser_tab.url,
-    fav_icon_url: getFavIconUrl( browser_tab ),
+    icon_url: getFavIconUrl( browser_tab ),
     is_active: browser_tab.active,
     preview_image: {
       width: browser_tab.width,
       height: browser_tab.height,
     },
-    // @todo audio info
+    // @todo last_accessed
+    // @todo discarded
+    // @todo audio info?
+    // @todo openerTabId?
+    // @todo highlighted?
   }
 }
 

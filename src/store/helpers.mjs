@@ -89,28 +89,3 @@ export function getTabGroupsPersistState( window ) {
     }
   })
 }
-
-/**
- * Map the browsers tab representation to the one stored on the state object
- * @param tab The browser representation for a tab
- * @returns The tab representation that will be stored in the state
- */
-export function getTabState( tab ) {
-  return {
-    id: tab.id,
-    active: tab.active,
-    pinned: tab.pinned,
-    // highlighted?
-    status: tab.status,
-    last_accessed: tab.lastAccessed,
-    discarded: tab.discarded,
-    // openerTabId?
-    // audible?  may want to merge to object
-    // mutedInfo.muted?
-    favicon_url: tab.favIconUrl,
-    url: tab.url,
-    title: tab.title,
-    // @todo store preview image with width and height
-  }
-}
-

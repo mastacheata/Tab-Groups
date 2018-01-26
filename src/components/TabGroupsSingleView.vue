@@ -23,7 +23,7 @@
             @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
             draggable="true" @dragstart="onTabDragStart( tab, null, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
         >
-          <img class="tab-group-pinned-tab-icon" :src="tab.fav_icon_url"/>
+          <img class="tab-group-pinned-tab-icon" :src="tab.icon_url"/>
         </div>
       </section>
       <div class="tab-groups-tabs-pane">
@@ -44,7 +44,7 @@
               <circle cx="12px" cy="12px" r="16px"/>
               <!-- @todo clipPath for image with circle -->
             </svg>
-            <img class="tab-group-tab-card-favicon" :src="tab.fav_icon_url"/>
+            <img class="tab-group-tab-card-favicon" :src="tab.icon_url"/>
             <div class="tab-group-tab-title"><span>{{ tab.title }}</span></div>
           </div>
         </section>
@@ -55,6 +55,7 @@
 
 <script>
 import {
+  createGroupAction,
   updateGroupAction,
 } from '../store/actions.mjs'
 import {
@@ -114,6 +115,9 @@ export default {
   },
   methods: {
     createTabGroup() {
+      // Create new group with default properties in the store
+      window.store.dispatch( createGroupAction( this.window_id ) )
+      // @todo create new tab in the new group
     },
     selectTabGroup( tab_group ) {
       console.info('selectTabGroup', tab_group)

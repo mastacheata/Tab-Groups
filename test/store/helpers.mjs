@@ -96,11 +96,18 @@ export const tab_schema = {
     'url': {
       type: 'string'
     },
-    'fav_icon_url': {
-      type: 'string'
+    'icon_url': {
+      type: 'string',
+      format: 'uri'
     },
     'is_active': {
       type: 'boolean'
+    },
+    'is_discarded': {
+      type: 'boolean'
+    },
+    'last_accessed': {
+      type: 'number'
     },
     'preview_image': {
       type: 'object',

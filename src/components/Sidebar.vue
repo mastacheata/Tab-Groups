@@ -11,7 +11,7 @@
           v-for="tab in pinned_tabs" :key="tab.id"
           @click.left="openTab( tab )" @click.middle="closeTab( tab )"
       >
-        <img class="sidebar-tabs-pinned-list-item-icon" :src="tab.favIconUrl"/>
+        <img class="sidebar-tabs-pinned-list-item-icon" :src="tab.icon_url"/>
       </div>
     </div>
     <div class="sidebar-tab-group-list" @click.right.prevent>
@@ -36,7 +36,7 @@
 
 <script>
 import {
-  createGroupAction
+  createGroupAction,
 } from '../store/actions.mjs'
 import {
   cloneTabGroup,
@@ -74,23 +74,6 @@ export default {
       search_resolved: true,
       pinned_tabs: [],
       tab_groups: [
-        // {
-        //   id: 1,
-        //   name: "group 1",
-        //   tabs_count: 2,
-        //   tabs: [
-        //     {
-        //       id: 1,
-        //       title: 'Test',
-        //       favicon_url: null
-        //     },
-        //     {
-        //       id: 2,
-        //       title: 'Test 2',
-        //       favicon_url: null
-        //     }
-        //   ]
-        // }
       ],
       theme: null
     }

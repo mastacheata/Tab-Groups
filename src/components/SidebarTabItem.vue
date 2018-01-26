@@ -4,7 +4,7 @@
         @click.left="openTab" @click.middle="closeTab"
         draggable="true" @drag="onTabDrag" @dragstart="onTabDragStart" @dragenter="onTabDragEnter" @dragover="onTabDragOver" @dragexit="onTabDragExit" @dragleave="onTabDragLeave" @dragend="onTabDragEnd" @drop="onTabDrop"
     >
-      <img class="sidebar-tab-view-item-icon" :src="tab.fav_icon_url"/>
+      <img class="sidebar-tab-view-item-icon" :src="tab.icon_url"/>
       <div>
         <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
         <br>
