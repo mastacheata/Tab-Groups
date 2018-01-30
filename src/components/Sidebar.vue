@@ -7,26 +7,29 @@
       <input class="sidebar-header-search" type="search" @input="onUpdateSearchText( search_text )" v-model="search_text" :placeholder="__MSG_tab_search_placeholder__"/>
     </div>
     <div class="sidebar-tabs-pinned-list" @click.right.prevent>
-      <div class="sidebar-tabs-pinned-list-item" :class="{ active: tab.active }" :title="tab.title"
+      <div class="sidebar-tabs-pinned-list-item"
           v-for="tab in pinned_tabs" :key="tab.id"
+          :class="{ active: tab.active }" :title="tab.title"
           @click.left="openTab( tab )" @click.middle="closeTab( tab )"
       >
         <img class="sidebar-tabs-pinned-list-item-icon" :src="tab.icon_url"/>
       </div>
     </div>
     <div class="sidebar-tab-group-list" @click.right.prevent>
-      <div class="sidebar-tab-group-list-item" v-for="tab_group in tab_groups" :key="tab_group.id">
+      <div class="sidebar-tab-group-list-item"
+          v-for="tab_group in tab_groups" :key="tab_group.id"
+      >
         <div class="sidebar-tab-group-list-item-header"
             @dragenter="onTabGroupDragEnter( tab_group, $event )" @dragover="onTabGroupDragOver( tab_group, $event )" @drop="onTabGroupDrop( tab_group, $event )" @dragend="onTabGroupDragEnd( tab_group, $event )"
         >
           <span class="text">
-            <span v-on:click="toggleTabGroupOpen( tab_group )">{{ tab_group.is_open ? '–' : '+' }}</span>
+            <span v-on:click="toggleTabGroupOpen( tab_group )">{{ tab_group.open ? '–' : '+' }}</span>
             {{ tab_group.title }}
           </span>
 
           <span class="sidebar-tab-group-list-item-header-tab-count">{{ getCountMessage( 'tabs', tab_group.tabs_count ) }}</span>
         </div>
-        <div v-if="tab_group.is_open" class="sidebar-tab-group-tabs-list">
+        <div v-if="tab_group.open" class="sidebar-tab-group-tabs-list">
           <SidebarTabItem class="sidebar-tab-group-tabs-list-item" :window-id="window_id" :tab-group="tab_group" :tab="tab" v-for="tab in tab_group.tabs" :key="tab.id" v-if="! search_text || ! search_resolved || tab.is_matched"/>
         </div>
       </div>
@@ -92,19 +95,20 @@ export default {
 
         // Need to deep clone the objects because Vue extends prototypes when state added to the vm
         let tab_groups = state_window.tab_groups.map( cloneTabGroup )
+        // Use the extended splice to trigger change detection
+        Object.getPrototypeOf( this.pinned_tabs ).splice.apply( this.pinned_tabs, [ 0, this.pinned_tabs.length, ...tab_groups[ 0 ].tabs ] )
+        tab_groups = tab_groups.filter( tab_group => tab_group.id )
         tab_groups.forEach( tab_group => {
-          // @todo check existing state
-          tab_group.is_open = true
+          // Copy the `open` flag from original data
+          const orig_tab_group = this.tab_groups.find( _tab_group => _tab_group.id === tab_group.id )
+          if( orig_tab_group ) {
+            tab_group.open = orig_tab_group.open
+          } else {
+            tab_group.open = ( tab_group.id === state_window.active_tab_group_id )
+          }
         })
-
         // Use the extended splice to trigger change detection
         Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...tab_groups ] )
-
-        // Need to deep clone the objects because Vue extends prototypes when state added to the vm
-        let pinned_tabs = state_window.pinned_tabs.map( cloneTab )
-
-        // Use the extended splice to trigger change detection
-        Object.getPrototypeOf( this.pinned_tabs ).splice.apply( this.pinned_tabs, [ 0, this.pinned_tabs.length, ...pinned_tabs ] )
       } else {
         // @todo error
       }
@@ -136,7 +140,7 @@ export default {
       runTabSearch( window.store, this.window_id, search_text )
     }, 250 ),
     toggleTabGroupOpen( tab_group ) {
-      tab_group.is_open = ! tab_group.is_open
+      tab_group.open = ! tab_group.open
     }
   }
 }

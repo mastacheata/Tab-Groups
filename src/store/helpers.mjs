@@ -6,16 +6,34 @@ export const default_config = {
 export function createWindow( window_id, tab_groups ) {
   return {
     id: window_id,
-    active_tab_group_id: tab_groups[ 0 ].id,
-    pinned_tabs: [],
+    active_tab_group_id: tab_groups[ 1 ].id,
     tab_groups: tab_groups
   }
 }
 
-export function createTabGroup( tab_group_id, tabs ) {
+export function createTabGroup( tab_group_id, tabs, active_tab_id ) {
+  if( ! active_tab_id && tabs.length ) {
+    active_tab_id = tabs[ 0 ].id
+  }
+
   return {
     id: tab_group_id,
     title: typeof browser != 'undefined' ? browser.i18n.getMessage( "tab_group_name_placeholder", [ tab_group_id ] ) : `Group ${ tab_group_id }`,
+    active_tab_id,
+    tabs,
+    tabs_count: tabs.length
+  }
+}
+
+export function createPinnedTabGroup( tabs, active_tab_id ) {
+  if( ! active_tab_id && tabs.length ) {
+    active_tab_id = tabs[ 0 ].id
+  }
+
+  return {
+    id: 0,
+    pinned: true,
+    active_tab_id,
     tabs,
     tabs_count: tabs.length
   }
@@ -23,7 +41,6 @@ export function createTabGroup( tab_group_id, tabs ) {
 
 export function cloneWindow( window ) {
   return Object.assign( {}, window, {
-    pinned_tabs: window.pinned_tabs.map( cloneTab ),
     tab_groups: window.tab_groups.map( cloneTabGroup )
   })
 }
@@ -79,13 +96,23 @@ export function getNewTabGroupId( state ) {
   return new_tab_group_id
 }
 
+/**
+ * Load the state of a window to store on the session
+ * @param window the window from the state
+ */
 export function getTabGroupsPersistState( window ) {
-  return window.tab_groups.map( tab_group => {
-    return {
+  return window.tab_groups.filter( tab_group => tab_group.id ).map( tab_group => {
+    const tab_group_state = {
       id: tab_group.id,
       title: tab_group.title,
+      active_tab_id: tab_group.active_tab_id,
       tabs_count: tab_group.tabs_count,
-      is_active: tab_group.id === window.active_tab_group_id ? true : undefined
     }
+
+    if( tab_group.id === window.active_tab_group_id ) {
+      tab_group_state.active = true
+    }
+
+    return tab_group_state
   })
 }

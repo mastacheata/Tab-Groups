@@ -3,9 +3,10 @@ import {
   createTestTab,
   getInitialState,
   getMultiWindowInitialState,
-} from './helpers'
+  validateState,
+} from './helpers.mjs'
 
-import { addTab } from '../../src/store/reducers'
+import { addTab } from '../../src/store/reducers.mjs'
 
 function testSingleWindowAdd( t ) {
   let state = getInitialState()
@@ -18,9 +19,10 @@ function testSingleWindowAdd( t ) {
   })
 
   state = addTab( state, { tab_group_id, browser_tab } )
+  t.ok( validateState( state ), "state validates", validateState.errors )
 
-  t.equal( state.windows[ 0 ].tab_groups.length, 1 )
-  t.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 3 )
+  t.equal( state.windows[ 0 ].tab_groups.length, 2 )
+  t.equal( state.windows[ 0 ].tab_groups[ 1 ].tabs.length, 3 )
   t.end()
 }
 
@@ -35,11 +37,12 @@ function testMultiWindowAdd( t ) {
   })
 
   state = addTab( state, { browser_tab } )
+  t.ok( validateState( state ), "state validates", validateState.errors )
 
-  t.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs.length, 2 )
-  t.equal( state.windows[ 0 ].tab_groups[ 0 ].tabs_count, state.windows[ 0 ].tab_groups[ 0 ].tabs.length )
-  t.equal( state.windows[ 1 ].tab_groups[ 0 ].tabs.length, 3 )
-  t.equal( state.windows[ 1 ].tab_groups[ 0 ].tabs_count, state.windows[ 1 ].tab_groups[ 0 ].tabs.length )
+  t.equal( state.windows[ 0 ].tab_groups[ 1 ].tabs.length, 2 )
+  t.equal( state.windows[ 0 ].tab_groups[ 1 ].tabs_count, state.windows[ 0 ].tab_groups[ 1 ].tabs.length )
+  t.equal( state.windows[ 1 ].tab_groups[ 1 ].tabs.length, 3 )
+  t.equal( state.windows[ 1 ].tab_groups[ 1 ].tabs_count, state.windows[ 1 ].tab_groups[ 1 ].tabs.length )
   t.end()
 }
 

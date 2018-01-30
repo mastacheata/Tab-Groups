@@ -23,6 +23,7 @@ import {
 import {
   createWindow,
   createTabGroup,
+  createPinnedTabGroup,
   default_config,
   getNewTabGroupId,
 } from './helpers.mjs'
@@ -60,17 +61,11 @@ function findWindowIndex( windows, window_id ) {
 function _removeTab( state, { tab_id, window_id, index, is_detach, is_pin } ) {
   // @todo use index to optimize the lookup process if set
   let orphan_tab = null
+  // @todo update active_tab_id if required
 
   const windows = state.windows.map( window => {
     if( window.id === window_id ) {
       window = Object.assign( {}, window, {
-        pinned_tabs: window.pinned_tabs.filter( tab => {
-          if( tab.id === tab_id ) {
-            orphan_tab = tab
-            return false
-          }
-          return true
-        }),
         tab_groups: window.tab_groups.map( tab_group => {
           const tab_index = tab_group.tabs.findIndex( tab => tab.id === tab_id )
           if( tab_index > -1 ) {
@@ -85,7 +80,11 @@ function _removeTab( state, { tab_id, window_id, index, is_detach, is_pin } ) {
       })
 
       if( is_pin && orphan_tab ) {
-        window.pinned_tabs = [ ...window.pinned_tabs, orphan_tab ]
+        if( window.tab_groups[ 0 ].pinned ) {
+          window.tab_groups[ 0 ].tabs.push( orphan_tab )
+        } else {
+          window.tab_groups.unshift( createTabGroup( getNewTabGroupId( state ), [ orphan_tab ], true ) )
+        }
       }
     }
     return window
@@ -126,19 +125,20 @@ export function init( state, { config, browser_tabs, window_tab_groups_map } ) {
     // @todo this should be based on config setting
 
     let pinned_tabs
+
     // Find the first non-pinned tab
-    const tabs_start_index = window_tabs.findIndex( tab => ! tab.pinned )
+    const tabs_start_index = window_tabs.findIndex( browser_tab => ! browser_tab.pinned )
     if( tabs_start_index === -1 ) {
       // All the tabs are pinned
-      pinned_tabs = [ ...window_tabs ].map( getTabState )
+      pinned_tabs = window_tabs.map( getTabState )
       window_tabs = []
     } else {
       pinned_tabs = window_tabs.slice( 0, tabs_start_index ).map( getTabState )
       window_tabs = window_tabs.slice( tabs_start_index ).map( getTabState )
     }
 
-    let window_tab_groups = []
-    let window_tab_groups_state = window_tab_groups_map.get( window_id )
+    const window_tab_groups = [ createPinnedTabGroup( pinned_tabs ) ]
+    const window_tab_groups_state = window_tab_groups_map.get( window_id )
     if( window_tab_groups_state ) {
       for( let tab_group_state of window_tab_groups_state ) {
         const tabs = window_tabs.splice( 0, tab_group_state.tabs_count ).map( getTabState )
@@ -157,8 +157,7 @@ export function init( state, { config, browser_tabs, window_tab_groups_map } ) {
 
     windows.push({
       id: window_id,
-      active_tab_group_id: window_tab_groups[ 0 ].id,
-      pinned_tabs,
+      active_tab_group_id: window_tab_groups[ 1 ].id, // @todo
       tab_groups: window_tab_groups
     })
   }
@@ -186,20 +185,23 @@ export function init( state, { config, browser_tabs, window_tab_groups_map } ) {
   return init_state
 }
 
-export function addWindow( state, { window } ) {
-  // Check if there are any orphan_tabs that below to this window
+export function addWindow( state, { browser_window } ) {
+  // Check if there are any orphan_tabs that belong to this window
   let tabs = []
   let orphan_tabs = state.orphan_tabs
   if( orphan_tabs.length > 0 ) {
-    tabs = state.orphan_tabs.filter( tab => tab.windowId === window.id )
-    orphan_tabs = orphan_tabs.filter( tab => tab.windowId !== window.id )
+    // @todo map to state
+    // @todo is it possible to have pinned orphan tabs?
+    tabs = state.orphan_tabs.filter( browser_tab => browser_tab.windowId === browser_window.id )
+    orphan_tabs = orphan_tabs.filter( browser_tab => browser_tab.windowId !== browser_window.id )
   }
 
   return Object.assign( {}, state, {
     orphan_tabs,
     windows: [
       ...state.windows,
-      createWindow( window.id, [
+      createWindow( browser_window.id, [
+        createPinnedTabGroup( [] ),
         createTabGroup( getNewTabGroupId( state ), tabs )
       ])
     ]
@@ -321,33 +323,27 @@ export function moveGroup( state, { tab_group_id, window_id, index } ) {
 }
 
 export function activateTab( state, { tab_id, window_id } ) {
+  let tab_group_id
   // @todo optimize to return existing state if tab already active
   return Object.assign( {}, state, {
     windows: state.windows.map( window => {
       if( window.id === window_id ) {
         window = Object.assign( {}, window, {
           tab_groups: window.tab_groups.map( tab_group => {
-            // If tab_group contains an active tab or the tab_id, return a copy with active toggled
-            if( tab_group.tabs.some( tab => tab.active || tab.id === tab_id ) ) {
+            // If tab_group contains the tab_id, return a copy with active toggled
+            if( tab_group.tabs.some( tab => tab.id === tab_id ) ) {
+              tab_group_id = tab_group.id
               tab_group = Object.assign( {}, tab_group, {
-                tabs: tab_group.tabs.map( tab => {
-                  if( tab.id === tab_id ) {
-                    return Object.assign( {}, tab, {
-                      is_active: true
-                    })
-                  }
-                  if( tab.is_active ) {
-                    return Object.assign( {}, tab, {
-                      is_active: false
-                    })
-                  }
-                  return tab
-                })
+                active_tab_id: tab_id
               })
             }
             return tab_group
           })
         })
+
+        if( tab_group_id ) {
+          window.active_tab_group_id = tab_group_id
+        }
       }
       return window
     })
@@ -384,7 +380,7 @@ export function addTab( state, { browser_tab } ) {
   if( ! is_window_defined ) {
     orphan_tabs = [
       ...orphan_tabs,
-      getTabState( browser_tab )
+      browser_tab
     ]
   }
 
@@ -412,7 +408,6 @@ export function updateTab( state, { browser_tab, change_info } ) {
 
         let i = 0
         return Object.assign( {}, window, {
-          pinned_tabs: window.pinned_tabs.filter( tab => tab.id !== browser_tab.id ),
           tab_groups: window.tab_groups.map( tab_group => {
             if( 0 <= browser_tab.index - i && browser_tab.index - i <= tab_group.tabs_count ) {
               // @todo if next tab_group is empty, add tab to it instead
@@ -448,7 +443,7 @@ export function updateTab( state, { browser_tab, change_info } ) {
             tab_group = Object.assign( {}, tab_group, {
               tabs: [ ...tab_group.tabs ]
             })
-            tab_group.tabs[ tab_index ] = browser_tab
+            tab_group.tabs[ tab_index ] = getTabState( browser_tab )
           }
           return tab_group
         })
@@ -490,7 +485,7 @@ export function updateTabImage( state, { tab_id, window_id, preview_image_uri } 
 }
 
 export function moveTabs( state, { source_tabs_data, target_data } ) {
-  let { windows, pinned_tabs } = state
+  let { windows } = state
 
   if( source_tabs_data.window_id == null ) {
     // source is the pinned tabs
@@ -499,12 +494,6 @@ export function moveTabs( state, { source_tabs_data, target_data } ) {
   }
   const target_window_index = findWindowIndex( windows, target_data.window_id )
   windows = [ ...windows ]
-
-  if( source_window_index === -1 ) {
-    const pinned_tab_index = pinned_tabs.findIndex( tab => tab.id === sour)
-  } else {
-
-  }
 
   // @todo pull tabs from source
   // @todo push tabs to target
@@ -535,15 +524,6 @@ export function moveTab( state, { tab_id, window_id, index, tab_group_id } ) {
         }
         index_offset += tabs.length
         return tabs
-      }
-
-      if( window.pinned_tabs ) {
-        const pinned_tabs = pullTab( window.pinned_tabs )
-        if( window.pinned_tabs !== pinned_tabs ) {
-          window = Object.assign( {}, window, {
-            pinned_tabs
-          })
-        }
       }
 
       const tab_groups = window.tab_groups.map( tab_group => {
@@ -615,6 +595,7 @@ export function attachTab( state, { tab_id, window_id, index } ) {
     index
   })
 
+  // @todo should be browser_tab
   return Object.assign( addTab( state, { tab } ), {
     orphan_tabs
   })

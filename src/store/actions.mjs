@@ -29,10 +29,10 @@ export function initAction({ browser_tabs, window_tab_groups_map }) {
   }
 }
 
-export function addWindowAction( window ) {
+export function addWindowAction( browser_window ) {
   return {
     type: WINDOW_ADD,
-    window
+    browser_window
   }
 }
 

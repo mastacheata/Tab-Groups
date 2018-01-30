@@ -61,10 +61,10 @@ export function bindBrowserEvents( store ) {
 
   // Attach listeners for changes to windows
 
-  browser.windows.onCreated.addListener( ( window ) => {
-    console.info('windows.onCreated', window)
-    if( window.type === 'normal' ) {
-      store.dispatch( addWindowAction( window ) )
+  browser.windows.onCreated.addListener( ( browser_window ) => {
+    console.info('windows.onCreated', browser_window)
+    if( browser_window.type === 'normal' ) {
+      store.dispatch( addWindowAction( browser_window ) )
     }
   })
 
@@ -184,8 +184,8 @@ export function getTabState( browser_tab ) {
     title: browser_tab.title,
     status: browser_tab.status,
     url: browser_tab.url,
-    icon_url: getFavIconUrl( browser_tab ),
-    is_active: browser_tab.active,
+    icon_url: getIconUrl( browser_tab ),
+    // active: browser_tab.active,
     preview_image: {
       width: browser_tab.width,
       height: browser_tab.height,
@@ -198,14 +198,16 @@ export function getTabState( browser_tab ) {
   }
 }
 
-function getFavIconUrl( browser_tab ) {
-  switch( browser_tab.favIconUrl ) {
-    case 'chrome://mozapps/skin/extensions/extensionGeneric-16.svg':
-      return '/icons/extensionGeneric.svg'
-    case 'chrome://branding/content/icon32.png#':
-      return '/icons/icon32.png'
-    default:
-      return browser_tab.favIconUrl
+function getIconUrl( browser_tab ) {
+  if( browser_tab.favIconUrl != null ) {
+    switch( browser_tab.favIconUrl ) {
+      case 'chrome://mozapps/skin/extensions/extensionGeneric-16.svg':
+        return '/icons/extensionGeneric.svg'
+      case 'chrome://branding/content/icon32.png':
+        return '/icons/icon32.png'
+      default:
+        return browser_tab.favIconUrl
+    }
   }
 }
 
@@ -288,15 +290,11 @@ export function resetBrowserState( store ) {
   const state = store.getState()
 
   if( state.orphan_tabs ) {
-    window.pinned_tabs.forEach( resetTabState )
+    window.orphan_tabs.forEach( resetTabState )
   }
 
   state.windows.forEach( window => {
     resetWindowState( window )
-
-    if( window.pinned_tabs ) {
-      window.pinned_tabs.forEach( resetTabState )
-    }
 
     window.tab_groups.forEach( tab_group => {
       tab_group.tabs.forEach( resetTabState )
@@ -374,9 +372,6 @@ export function moveTabsToGroup( store, tabs_data, window_id, tab_group_id, inde
     return
   }
 
-  if( window.pinned_tabs ) {
-    index_offset += window.pinned_tabs.length
-  }
   for( let tab_group of window.tab_groups ) {
     if( tab_group_id === tab_group.id ) {
       if( index == null ) {

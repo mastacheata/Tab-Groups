@@ -2,7 +2,7 @@
   <div class="page tab-groups-single-view">
     <section class="tab-groups-list-pane" @wheel="onTabGroupWheel( $event )">
       <article class="tab-groups-list-item" :class="{ active: tab_group.id === selected_tab_group.id }"
-          v-for="tab_group in state_window.tab_groups" :key="tab_group.id"
+          v-for="tab_group in tab_groups" :key="tab_group.id"
           @click.left="selectTabGroup( tab_group )"
           draggable="true" @dragenter="onTabGroupDragEnter( tab_group, $event )" @dragover="onTabGroupDragOver( tab_group, $event )" @drop="onTabGroupDrop( tab_group, $event )" @dragend="onTabGroupDragEnd( tab_group, $event )"
       >
@@ -16,9 +16,9 @@
       </article>
     </section>
     <div class="tab-groups-main-pane">
-      <section v-if="state_window.pinned_tabs" class="tab-group-pinned-tabs">
+      <section v-if="pinned_tabs" class="tab-group-pinned-tabs">
         <div class="tab-group-pinned-tab"
-            v-for="tab in state_window.pinned_tabs" :key="tab.id"
+            v-for="tab in pinned_tabs" :key="tab.id"
             :title="tab.title"
             @click.left="selectTab( tab )" @click.middle="closeTab( tab )"
             draggable="true" @dragstart="onTabDragStart( tab, null, $event )" @dragend="onTabDragEnd( tab, $event )" @drop="onTabDrop( tab, $event )"
@@ -87,7 +87,8 @@ export default {
       is_dragging_tab: false,
       window_id: window.current_window_id,
       selected_tab_group: null,
-      state_window: null,
+      pinned_tabs: [],
+      tab_groups: [],
       theme: null
     }
   },
@@ -98,15 +99,27 @@ export default {
       const state_window = state.windows.find( ( window ) => window.id === this.window_id )
       if( state_window ) {
         // Need to deep clone the objects because Vue extends prototypes when state added to the vm
-        this.state_window = cloneWindow( state_window )
+        let tab_groups = state_window.tab_groups.map( cloneTabGroup )
+        // Use the extended splice to trigger change detection
+        Object.getPrototypeOf( this.pinned_tabs ).splice.apply( this.pinned_tabs, [ 0, this.pinned_tabs.length, ...tab_groups[ 0 ].tabs ] )
+        tab_groups = tab_groups.filter( tab_group => tab_group.id )
+        tab_groups.forEach( tab_group => {
+          // @todo check existing state
+          tab_group.open = true
+        })
+        // Use the extended splice to trigger change detection
+        Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...tab_groups ] )
 
         if( this.selected_tab_group ) {
           this.selected_tab_group = this.state_window.tab_groups.find( tab_group => tab_group.id === this.selected_tab_group.id )
         }
-
         if( ! this.selected_tab_group ) {
-          // @todo if no selected tab group, use active instead
-          this.selected_tab_group = this.state_window.tab_groups[ 0 ]
+          if( state_window.active_tab_group_id ) {
+            this.selected_tab_group = this.tab_groups.find( tab_group => tab_group.id === state_window.active_tab_group_id )
+          }
+          if( ! this.selected_tab_group ) {
+            this.selected_tab_group = this.tab_groups[ 0 ]
+          }
         }
       } else {
         // @todo error

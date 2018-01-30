@@ -25,10 +25,6 @@ export default {
     onStateChange( state => {
       this.theme = state.config.theme
     })
-  },
-  methods: {
-    createTabGroup() {
-    }
   }
 }
 </script>

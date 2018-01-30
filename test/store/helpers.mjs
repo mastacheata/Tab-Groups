@@ -4,8 +4,10 @@ import { getTabState } from '../../src/integrations/index.mjs'
 import {
   createWindow,
   createTabGroup,
+  createPinnedTabGroup,
   default_config,
   findTab,
+  getTabGroupsPersistState,
 } from '../../src/store/helpers.mjs'
 
 export const base_new_browser_tab = {
@@ -45,10 +47,10 @@ export function getInitialState() {
     orphan_tabs: [],
     windows: [
       createWindow( 1, [
+        createPinnedTabGroup( [] ),
         createTabGroup( 1, [
           createTestTab({
-            id: 1,
-            is_active: true
+            id: 1
           }),
           createTestTab({
             id: 2
@@ -66,10 +68,10 @@ export function getMultiWindowInitialState() {
 
   initial_state.windows.push(
     createWindow( 2, [
+      createPinnedTabGroup( [] ),
       createTabGroup( 2, [
         createTestTab({
-          id: 3,
-          active: true
+          id: 3
         }),
         createTestTab({
           id: 4
@@ -81,11 +83,11 @@ export function getMultiWindowInitialState() {
   return initial_state
 }
 
-export const tab_schema = {
+export const tab_state_schema = {
   type: 'object',
   properties: {
     'id': {
-      type: 'number'
+      type: 'integer'
     },
     'title': {
       type: 'string'
@@ -100,23 +102,20 @@ export const tab_schema = {
       type: 'string',
       format: 'uri'
     },
-    'is_active': {
-      type: 'boolean'
-    },
-    'is_discarded': {
+    'discarded': {
       type: 'boolean'
     },
     'last_accessed': {
-      type: 'number'
+      type: 'integer'
     },
     'preview_image': {
       type: 'object',
       properties: {
         'width': {
-          type: 'number'
+          type: 'integer'
         },
         'height': {
-          type: 'number'
+          type: 'integer'
         },
         'uri': {
           type: 'string',
@@ -125,51 +124,89 @@ export const tab_schema = {
       }
     }
   },
+  additionalProperties: false,
   required: [
     'id',
     'status',
   ]
 }
 
-export const tab_group_schema = {
-  type: 'object',
+export const tab_group_state_schema = {
   properties: {
     'id': {
-      type: 'number'
+      type: 'integer'
     },
     'title': {
       type: 'string'
     },
+    'active_tab_id': {
+    },
     'tabs': {
       type: 'array',
-      items: tab_schema
+      items: tab_state_schema
     },
     'tabs_count': {
-      type: 'number'
+      type: 'integer'
     }
   },
+  additionalProperties: false,
   required: [
     'id',
     'title',
+    'active_tab_id',
     'tabs',
     'tabs_count',
   ]
 }
 
-export const window_schema = {
+export const pinned_tab_group_state_schema = {
+  properties: {
+    'id': {
+      enum: [ 0 ]
+    },
+    'pinned': {
+      enum: [ true ]
+    },
+    'active_tab_id': {
+    },
+    'tabs': {
+      type: 'array',
+      items: tab_state_schema
+    },
+    'tabs_count': {
+      type: 'integer',
+      minimum: 0
+    }
+  },
+  additionalProperties: false,
+  required: [
+    'pinned'
+  ]
+}
+
+export const window_state_schema = {
   type: 'object',
   properties: {
     'id': {
-      type: 'number'
+      type: 'integer'
     },
     'active_tab_group_id': {
-      type: 'number'
+      type: 'integer',
+      minimum: 1
     },
     'tab_groups': {
       type: 'array',
-      items: tab_group_schema
+      minItems: 2,
+      items: {
+        type: 'object',
+        oneOf: [
+          pinned_tab_group_state_schema,
+          tab_group_state_schema
+        ]
+      }
     }
   },
+  additionalProperties: false,
   required: [
     'id',
     'active_tab_group_id',
@@ -185,13 +222,14 @@ export const state_schema = {
     },
     orphan_tabs: {
       type: 'array',
-      items: tab_schema
+      items: tab_state_schema
     },
     windows: {
       type: 'array',
-      items: window_schema
+      items: window_state_schema
     }
   },
+  additionalProperties: false,
   required: [
     'config',
     'windows',
@@ -199,14 +237,15 @@ export const state_schema = {
 }
 
 const ajv = new Ajv()
-export const validateTab = ajv.compile( tab_schema )
-export const validateTabGroup = ajv.compile( tab_group_schema )
-export const validateWindow = ajv.compile( window_schema )
+export const validateTabState = ajv.compile( tab_state_schema )
+export const validateTabGroupState = ajv.compile( Object.assign( { type: 'object' }, tab_group_state_schema ) )
+export const validateWindowState = ajv.compile( window_state_schema )
 export const validateState = ajv.compile( state_schema )
 
 function testFindTab( t ) {
   let state = getInitialState()
-  let tab = findTab( state, state.windows[ 0 ].id, state.windows[ 0 ].tab_groups[ 0 ].tabs[ 0 ].id )
+  let tab = findTab( state, state.windows[ 0 ].id, state.windows[ 0 ].tab_groups[ 1 ].tabs[ 0 ].id )
+  t.equal( tab, state.windows[ 0 ].tab_groups[ 1 ].tabs[ 0 ] )
   t.end()
 }
 
@@ -216,8 +255,26 @@ function testValidate( t ) {
   t.end()
 }
 
+function testPersistence( t ) {
+  let state = getInitialState()
+  let tab_groups_state = getTabGroupsPersistState( state.windows[ 0 ] )
+
+  t.same( tab_groups_state, [
+    {
+      id: 1,
+      title: 'Group 1',
+      active: true,
+      active_tab_id: 1,
+      tabs_count: 2
+    }
+  ])
+
+  t.end()
+}
+
 export default function( tap ) {
   tap.test( testFindTab )
   tap.test( testValidate )
+  tap.test( testPersistence )
   tap.end()
 }

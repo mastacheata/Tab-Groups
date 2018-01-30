@@ -1,6 +1,6 @@
 <template>
   <div class="sidebar-tab-view-item-container">
-    <div class="sidebar-tab-view-item" :class="{ active: tab.is_active }" :title="tab.title"
+    <div class="sidebar-tab-view-item" :class="{ active: tabGroup.active_tab_id === tab.id }" :title="tab.title"
         @click.left="openTab" @click.middle="closeTab"
         draggable="true" @drag="onTabDrag" @dragstart="onTabDragStart" @dragenter="onTabDragEnter" @dragover="onTabDragOver" @dragexit="onTabDragExit" @dragleave="onTabDragLeave" @dragend="onTabDragEnd" @drop="onTabDrop"
     >

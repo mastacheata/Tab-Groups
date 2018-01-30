@@ -1,7 +1,11 @@
 p1
-- fix handling for chrome urls
+- bugs
+  - moving to same group should be noop
+  - moving to start adds to pinned
+  - dead object error on tab group page
+- revisit tab design
+  - with mobile and new tab page layouts
 - add pin tests
-  - fix tab pinning
   - fix move when there are pinned tabs
 - tab groups page - 1st layout
   - min height for cards based on current window size to prevent layout issues
@@ -14,24 +18,19 @@ p1
     - add configure option
   - tabs list
     - loading indicator
+      - https://365webresources.com/10-best-pure-css-loading-spinners-front-end-developers/
+      - https://matejkustec.github.io/SpinThatShit/
     - if dragging, don't set active tag
   - shouldn't be included as tab in tab group
-- drag and drop
-  - standardize drop data as URI
-  - handle external url list drop
 - preview image
   - add debounce task after transition to complete if active
-- remove index & window id from nested tabs of state
-- copy `is_open` from existing data if available
 - sidebar
   - create new group [hover, icon]
-  - pinned tabs
-  - images (favicon)
   - drag and drop
-    - tab to group
     - tab order
     - group order
     - pinned tab to group
+    - https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Recommended_drag_types
   - status indication
     - audio playing, muted
     - pinned
@@ -55,18 +54,23 @@ p1
 - clean up console warnings
 - clear out repo
 - review @todos
-- context menu for move tab
 - determine min version
 - add notification indicator
+- add docs to hide tab bar
+  - https://superuser.com/questions/1261660/firefox-quantum-ver-57-how-can-i-hide-the-horizontal-tab-bar-with-treesty/1261661
+  - https://support.mozilla.org/en-US/questions/957337
 - publish
   - fix id
 
 p2
+- investigate mobile version
+- sync
 - load/save backup
 - update tests for new state schema
 - drag and drop
   - groups in sidebar
   - between windows
+  - handle external url list drop
 - sidebar
   - bubbling audio indicator
   - tab search clear
