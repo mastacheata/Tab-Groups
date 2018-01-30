@@ -20,10 +20,11 @@
           v-for="tab_group in tab_groups" :key="tab_group.id"
       >
         <div class="sidebar-tab-group-list-item-header"
+            v-on:click="toggleTabGroupOpen( tab_group )"
             @dragenter="onTabGroupDragEnter( tab_group, $event )" @dragover="onTabGroupDragOver( tab_group, $event )" @drop="onTabGroupDrop( tab_group, $event )" @dragend="onTabGroupDragEnd( tab_group, $event )"
         >
           <span class="text">
-            <span v-on:click="toggleTabGroupOpen( tab_group )">{{ tab_group.open ? '–' : '+' }}</span>
+            <span>{{ tab_group.open ? '–' : '+' }}</span>
             {{ tab_group.title }}
           </span>
 

@@ -3,6 +3,7 @@ p1
   - moving to same group should be noop
   - moving to start adds to pinned
   - dead object error on tab group page
+  - search text weirdness
 - revisit tab design
   - with mobile and new tab page layouts
 - add pin tests

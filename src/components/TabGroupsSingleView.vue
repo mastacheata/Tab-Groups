@@ -111,7 +111,7 @@ export default {
         Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...tab_groups ] )
 
         if( this.selected_tab_group ) {
-          this.selected_tab_group = this.state_window.tab_groups.find( tab_group => tab_group.id === this.selected_tab_group.id )
+          this.selected_tab_group = this.tab_groups.find( tab_group => tab_group.id === this.selected_tab_group.id )
         }
         if( ! this.selected_tab_group ) {
           if( state_window.active_tab_group_id ) {
