@@ -47,7 +47,7 @@ function findTabGroupId( tab_groups, tab_id ) {
 }
 
 function findTabWindowId( windows, tab_id ) {
-  let window = windows.find( window => findTabGroup( window.tab_groups, tab_id ) )
+  let window = windows.find( window => findTabGroupId( window.tab_groups, tab_id ) != null )
   if( window ) {
     return window.id
   }
@@ -140,8 +140,9 @@ export function init( state, { config, browser_tabs, window_tab_groups_map } ) {
     const window_tab_groups = [ createPinnedTabGroup( pinned_tabs ) ]
     const window_tab_groups_state = window_tab_groups_map.get( window_id )
     if( window_tab_groups_state ) {
+      const last_tab_group_state = window_tab_groups_state[ window_tab_groups_state.length - 1 ]
       for( let tab_group_state of window_tab_groups_state ) {
-        const tabs = window_tabs.splice( 0, tab_group_state.tabs_count ).map( getTabState )
+        const tabs = ( last_tab_group_state === tab_group_state ? window_tabs : window_tabs.splice( 0, tab_group_state.tabs_count ) ).map( getTabState )
         window_tab_groups.push({
           id: tab_group_state.id,
           title: tab_group_state.title,
@@ -577,7 +578,7 @@ export function moveTab( state, { tab_id, window_id, index, tab_group_id } ) {
 }
 
 export function attachTab( state, { tab_id, window_id, index } ) {
-  let tab_index = state.orphan_tabs.findIndex( tab => tab.id === tab_id )
+  let tab_index = state.orphan_tabs.findIndex( browser_tab => browser_tab.id === tab_id )
   if( tab_index === -1 ) {
     // If the tab that is being detached is the last in the window, the attach event is fired before the detach, scan for tab in windows
     const tab_window_id = findTabWindowId( state.windows, tab_id )
@@ -586,17 +587,16 @@ export function attachTab( state, { tab_id, window_id, index } ) {
       return state
     }
     state = detachTab( state, { tab_id, window_id: tab_window_id } )
-    tab_index = state.orphan_tabs.findIndex( tab => tab.id === tab_id )
+    tab_index = state.orphan_tabs.findIndex( browser_tab => browser_tab.id === tab_id )
   }
 
   const orphan_tabs = [ ...state.orphan_tabs ]
-  const tab = Object.assign( {}, orphan_tabs.splice( tab_index, 1 )[ 0 ], {
+  const browser_tab = Object.assign( {}, orphan_tabs.splice( tab_index, 1 )[ 0 ], {
     windowId: window_id,
     index
   })
 
-  // @todo should be browser_tab
-  return Object.assign( addTab( state, { tab } ), {
+  return Object.assign( addTab( state, { browser_tab } ), {
     orphan_tabs
   })
 }

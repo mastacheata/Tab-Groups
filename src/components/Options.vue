@@ -27,7 +27,7 @@
       <section v-if="selected_section === 'data'">
         <form @submit.prevent>
           <button @click="clearAllData()" class="browser-style">Clear All Data</button>
-          <button @click="reset()" class="browser-style">Reset</button>
+          <button @click="syncState()" class="browser-style">Sync State</button>
         </form>
       </section>
     </article>
@@ -36,6 +36,7 @@
 
 <script>
 import {
+  loadBrowserState,
   resetBrowserState,
   setTheme,
 } from '../integrations/index.mjs'
@@ -69,8 +70,8 @@ export default {
     clearAllData() {
       resetBrowserState( window.store )
     },
-    reset() {
-      console.info('@todo reset')
+    syncState() {
+      window.background.syncState()
     },
     selectSection( section_id ) {
       this.selected_section = section_id

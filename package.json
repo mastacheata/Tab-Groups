@@ -7,6 +7,7 @@
     "dev": "./node_modules/.bin/cross-env NODE_ENV=development ./build.sh",
     "test": "node --experimental-modules test/index.mjs",
     "debug": "./node_modules/.bin/web-ext --source-dir dist run --verbose",
+    "debug-de": "./node_modules/.bin/web-ext --source-dir dist run --verbose --firefox firefox-de",
     "package": "cd dist && rm tab-groups.zip && zip tab-groups.zip -r *"
   },
   "author": "Alex McCausland <alex.mccausland@gmail.com>",

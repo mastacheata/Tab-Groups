@@ -81,15 +81,13 @@ export function bindBrowserEvents( store ) {
 
     // Start background task to get preview image
     browser.tabs.captureVisibleTab( windowId, TAB_PREVIEW_IMAGE_DETAILS )
-      .then(
-        ( preview_image_uri ) => {
-          store.dispatch( updateTabImageAction( tabId, windowId, preview_image_uri ) )
-          const tab = findTab( store.getState(), windowId, tabId )
-          if( tab && tab.preview_image ) {
-            setTabPreviewState( tab.id, tab.preview_image )
-          }
+      .then( preview_image_uri => {
+        store.dispatch( updateTabImageAction( tabId, windowId, preview_image_uri ) )
+        const tab = findTab( store.getState(), windowId, tabId )
+        if( tab && tab.preview_image ) {
+          setTabPreviewState( tab.id, tab.preview_image )
         }
-      )
+      })
   })
 
   browser.tabs.onCreated.addListener( ( browser_tab ) => {
@@ -290,7 +288,7 @@ export function resetBrowserState( store ) {
   const state = store.getState()
 
   if( state.orphan_tabs ) {
-    window.orphan_tabs.forEach( resetTabState )
+    state.orphan_tabs.forEach( resetTabState )
   }
 
   state.windows.forEach( window => {
