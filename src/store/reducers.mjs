@@ -58,7 +58,7 @@ function findWindowIndex( windows, window_id ) {
   return windows.findIndex( window => window.id === window_id )
 }
 
-function _removeTab( state, { tab_id, window_id, index, is_detach, is_pin } ) {
+function _removeTab( state, { tab_id, window_id, index, is_detach } ) {
   // @todo use index to optimize the lookup process if set
   let orphan_tab = null
   // @todo update active_tab_id if required
@@ -78,14 +78,6 @@ function _removeTab( state, { tab_id, window_id, index, is_detach, is_pin } ) {
           return tab_group
         })
       })
-
-      if( is_pin && orphan_tab ) {
-        if( window.tab_groups[ 0 ].pinned ) {
-          window.tab_groups[ 0 ].tabs.push( orphan_tab )
-        } else {
-          window.tab_groups.unshift( createTabGroup( getNewTabGroupId( state ), [ orphan_tab ], true ) )
-        }
-      }
     }
     return window
   })
@@ -360,6 +352,7 @@ export function addTab( state, { browser_tab } ) {
 
     is_window_defined = true
     let i = 0
+    const last_tab_group = window.tab_groups[ window.tab_groups.length - 1 ]
     return Object.assign( {}, window, {
       tab_groups: window.tab_groups.map( tab_group => {
         if( 0 <= browser_tab.index - i && browser_tab.index - i <= tab_group.tabs_count ) {
@@ -369,6 +362,11 @@ export function addTab( state, { browser_tab } ) {
             tabs_count: tab_group.tabs_count + 1
           })
           tab_group.tabs.splice( browser_tab.index - i, 0, getTabState( browser_tab ) )
+        } else if( last_tab_group ) {
+          tab_group = Object.assign( {}, tab_group, {
+            tabs: [ ...tab_group.tabs, getTabState( browser_tab ) ],
+            tabs_count: tab_group.tabs_count + 1
+          })
         }
         i += tab_group.tabs_count
         return tab_group
@@ -396,59 +394,76 @@ export function removeTab( state, { tab_id, window_id } ) {
 }
 
 export function updateTab( state, { browser_tab, change_info } ) {
-  // @todo if change_info contains 'pinned'
-  if( change_info.hasOwnProperty( 'pinned' ) ) {
-    if( change_info.pinned ) {
-      return _removeTab( state, { tab_id: browser_tab.id, window_id: browser_tab.windowId, is_pin: true } )
-    } else {
-      // Remove the tab from the pinned tabs
-      const windows = state.windows.map( window => {
-        if( window.id !== browser_tab.windowId ) {
-          return window
-        }
-
-        let i = 0
-        return Object.assign( {}, window, {
-          tab_groups: window.tab_groups.map( tab_group => {
-            if( 0 <= browser_tab.index - i && browser_tab.index - i <= tab_group.tabs_count ) {
-              // @todo if next tab_group is empty, add tab to it instead
-              tab_group = Object.assign( {}, tab_group, {
-                tabs: [ ...tab_group.tabs ],
-                tabs_count: tab_group.tabs_count + 1
-              })
-              tab_group.tabs.splice( browser_tab.index - i, 0, getTabState( browser_tab ) )
-            }
-            i += tab_group.tabs_count
-            return tab_group
-          })
-        })
-      })
-
-      return Object.assign( {}, state, {
-        windows
-      })
-    }
-  }
-
   // @todo change use the nature of change_info to ignore changes
   return Object.assign( {}, state, {
     windows: state.windows.map( window => {
       if( window.id !== browser_tab.windowId ) {
         return window
       }
-      // @todo check for the tab in the pinned tabs
-      return Object.assign( {}, window, {
-        tab_groups: window.tab_groups.map( tab_group => {
-          const tab_index = tab_group.tabs.findIndex( _tab => _tab.id === browser_tab.id )
-          if( tab_index > -1 ) {
-            tab_group = Object.assign( {}, tab_group, {
-              tabs: [ ...tab_group.tabs ]
-            })
-            tab_group.tabs[ tab_index ] = getTabState( browser_tab )
-          }
-          return tab_group
+      if( change_info.hasOwnProperty( 'pinned' ) ) {
+        // @todo this is really a tab move, could use helper
+        // @todo if unpin, add to active tab group id instead
+        let i = 0
+        const isTab = ( _tab ) => _tab.id === browser_tab.id
+        const isNotTab = ( _tab ) => _tab.id !== browser_tab.id
+        return Object.assign( {}, window, {
+          tab_groups: window.tab_groups.map( tab_group => {
+            if( tab_group.pinned ) {
+              if( change_info.pinned ) {
+                // Add tab to pinned group
+                if( ! tab_group.tabs.some( isTab ) ) {
+                  tab_group = Object.assign( {}, tab_group, {
+                    // If the tab has already been added by the move, remove it
+                    tabs: [ ...tab_group.tabs ],
+                    tabs_count: tab_group.tabs_count + 1
+                  })
+                  tab_group.tabs.splice( browser_tab.index - i, 0, getTabState( browser_tab ) )
+                }
+              } else {
+                // Remove tab from pinned group
+                tab_group = Object.assign( {}, tab_group, {
+                  tabs: tab_group.tabs.filter( isNotTab ),
+                  tabs_count: tab_group.tabs_count - 1
+                })
+              }
+            } else {
+              if( change_info.pinned ) {
+                // Remove tab if exists
+                if( tab_group.tabs.some( isTab ) ) {
+                  tab_group = Object.assign( {}, tab_group, {
+                    tabs: tab_group.tabs.filter( isNotTab ),
+                    tabs_count: tab_group.tabs_count - 1
+                  })
+                }
+              } else if( browser_tab && browser_tab.index - i <= tab_group.tabs_count ) {
+                // Add tab by index
+                tab_group = Object.assign( {}, tab_group, {
+                  tabs: [ ...tab_group.tabs ],
+                  tabs_count: tab_group.tabs_count + 1
+                })
+                tab_group.tabs.splice( browser_tab.index - i, 0, getTabState( browser_tab ) )
+                browser_tab = null
+              }
+            }
+            // Increment offset to calc future index
+            i += tab_group.tabs_count
+            return tab_group
+          })
         })
-      })
+      } else {
+        return Object.assign( {}, window, {
+          tab_groups: window.tab_groups.map( tab_group => {
+            const tab_index = tab_group.tabs.findIndex( _tab => _tab.id === browser_tab.id )
+            if( tab_index > -1 ) {
+              tab_group = Object.assign( {}, tab_group, {
+                tabs: [ ...tab_group.tabs ]
+              })
+              tab_group.tabs[ tab_index ] = getTabState( browser_tab )
+            }
+            return tab_group
+          })
+        })
+      }
     })
   })
 }
