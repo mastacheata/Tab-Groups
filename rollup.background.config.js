@@ -2,10 +2,12 @@
 import async from 'rollup-plugin-async'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
-// import typescript from 'rollup-plugin-typescript';
+import typescript from 'rollup-plugin-typescript'
 
 let plugins = [
-  // typescript(),
+  typescript({
+    typescript: require( 'typescript' )
+  }),
   async(),
   nodeResolve({
     jsnext: true,
@@ -16,7 +18,7 @@ let plugins = [
 ]
 
 let config = {
-  input: './src/background.mjs',
+  input: './src/background.ts',
   output: {
     file: './dist/background.js',
     format: 'umd',

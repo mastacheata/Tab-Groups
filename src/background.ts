@@ -1,13 +1,13 @@
 import createStore from 'redux/es/createStore'
 
-import { initAction } from './store/actions.mjs'
-import App, { init } from './store/reducers.mjs'
-import { getTabGroupsPersistState } from './store/helpers.mjs'
+import { initAction } from './store/actions'
+import App, { init } from './store/reducers'
+import { getTabGroupsPersistState } from './store/helpers'
 import {
   bindBrowserEvents,
   loadBrowserState,
   setWindowTabGroupsState,
-} from './integrations/index.mjs'
+} from './integrations/index'
 
 function onError( error ) {
   console.error( error )
@@ -40,16 +40,23 @@ const store_promise = loadBrowserState()
     return Promise.reject( err )
   })
 
-/**
- * Load the store and browser_state to dispatch init with fresh data
- */
-window.syncState = () => {
-  return Promise.all( [ window.getStore(), loadBrowserState() ] )
-    .then( ( [ store, browser_state ] ) => {
-      store.dispatch( initAction( browser_state ) )
-    })
+interface BackgroundWindow extends Window {
+  syncState(): Promise<any>
+  // @todo load type
+  getStore(): Promise<any>
 }
 
-window.getStore = function() {
-  return store_promise
-}
+Object.assign( window, {
+  /**
+   * Load the store and browser_state to dispatch init with fresh data
+   */
+  syncState() {
+    return Promise.all( [ (<BackgroundWindow>window).getStore(), loadBrowserState() ] )
+      .then( ( [ store, browser_state ] ) => {
+        store.dispatch( initAction( browser_state ) )
+      })
+  },
+  getStore() {
+    return store_promise
+  }
+})

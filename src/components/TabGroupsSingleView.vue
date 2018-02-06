@@ -57,28 +57,28 @@
 import {
   createGroupAction,
   updateGroupAction,
-} from '../store/actions.mjs'
+} from '../store/actions'
 import {
   cloneWindow,
   cloneTabGroup,
-} from '../store/helpers.mjs'
+} from '../store/helpers'
 import {
   getMessage,
   closeTab,
   setTabActive,
   runTabSearch,
-} from '../integrations/index.mjs'
+} from '../integrations/index'
 import {
   debounce,
   getCountMessage,
   onStateChange,
-} from './helpers.mjs'
+} from './helpers'
 import {
   setTabTransferData,
   onTabGroupDragEnter,
   onTabGroupDragOver,
   onTabGroupDrop,
-} from './droppable.mjs'
+} from './droppable'
 
 export default {
   name: 'tab-groups-single-view',

@@ -39,10 +39,10 @@ import {
   loadBrowserState,
   resetBrowserState,
   setTheme,
-} from '../integrations/index.mjs'
+} from '../integrations/index'
 import {
   onStateChange,
-} from './helpers.mjs'
+} from './helpers'
 
 export default {
   name: 'options',

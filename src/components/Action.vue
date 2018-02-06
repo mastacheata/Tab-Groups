@@ -34,18 +34,18 @@
 </template>
 
 <script>
-import { cloneTabGroup } from '../store/helpers.mjs'
+import { cloneTabGroup } from '../store/helpers'
 import {
   getMessage,
   openOptionsPage,
   openTabGroupsPage,
   runTabSearch,
-} from '../integrations/index.mjs'
+} from '../integrations/index'
 import {
   debounce,
   getCountMessage,
   onStateChange,
-} from './helpers.mjs'
+} from './helpers'
 
 export default {
   name: 'action',

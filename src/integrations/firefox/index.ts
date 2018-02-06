@@ -13,12 +13,12 @@ import {
   startSearchAction,
   finishSearchAction,
   updateConfigAction,
-} from '../../store/actions.mjs'
+} from '../../store/actions'
 import {
   default_config,
   findTab,
   getTabMoveData,
-} from '../../store/helpers.mjs'
+} from '../../store/helpers'
 
 const LOCAL_CONFIG_KEY = 'config'
 const WINDOW_TAB_GROUPS_KEY = 'tab_groups'

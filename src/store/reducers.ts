@@ -18,7 +18,7 @@ import {
   TAB_ATTACH,
   TAB_DETACH,
   CONFIG_UPDATE,
-} from './action-types.mjs'
+} from './action-types'
 
 import {
   createWindow,
@@ -28,11 +28,11 @@ import {
   findTab,
   getNewTabGroupId,
   getTabMoveData,
-} from './helpers.mjs'
+} from './helpers'
 
 import {
   getTabState,
-} from '../integrations/index.mjs'
+} from '../integrations/index'
 
 const initial_state = {
   config: default_config,

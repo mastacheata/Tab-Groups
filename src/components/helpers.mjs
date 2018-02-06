@@ -1,7 +1,7 @@
 
 import {
   getMessage
-} from '../integrations/index.mjs'
+} from '../integrations/index'
 
 /**
  * Delay execution of function, use only most recent args.  Works to wrap method on component

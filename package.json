@@ -34,6 +34,7 @@
     "rollup-plugin-commonjs": "^8.3.0",
     "rollup-plugin-node-globals": "^1.1.0",
     "rollup-plugin-node-resolve": "^3.0.2",
+    "rollup-plugin-typescript": "^0.8.1",
     "rollup-plugin-vue": "^3.0.0",
     "tap": "^11.0.1",
     "typescript": "^2.7.1",

@@ -19,7 +19,7 @@ import {
   TAB_MOVE,
   TAB_ATTACH,
   TAB_DETACH,
-} from './action-types.mjs'
+} from './action-types'
 
 export function initAction({ browser_tabs, window_tab_groups_map }) {
   return {

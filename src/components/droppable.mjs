@@ -1,7 +1,7 @@
 
 import {
   moveTabsToGroup,
-} from '../integrations/index.mjs'
+} from '../integrations/index'
 
 // @todo think through handling for 3rd party drag sources
 

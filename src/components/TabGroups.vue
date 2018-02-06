@@ -7,7 +7,7 @@
 <script>
 import {
   onStateChange,
-} from './helpers.mjs'
+} from './helpers'
 
 import TabGroupsSingleView from './TabGroupsSingleView.vue'
 

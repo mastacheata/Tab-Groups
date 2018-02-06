@@ -4,6 +4,7 @@ import buble from 'rollup-plugin-buble'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import nodeGlobals from 'rollup-plugin-node-globals'
+import typescript from 'rollup-plugin-typescript'
 
 let plugins = [
   alias({
@@ -11,6 +12,9 @@ let plugins = [
   }),
   vue({
     css: './dist/assets/css/app.css'
+  }),
+  typescript({
+    typescript: require( 'typescript' )
   }),
   buble({
     objectAssign: 'Object.assign',
@@ -35,7 +39,7 @@ let plugins = [
 ]
 
 let config = {
-  input: './src/main.mjs',
+  input: './src/main.ts',
   output: {
     file: './dist/assets/js/app.js',
     format: 'umd',

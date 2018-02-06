@@ -18,10 +18,10 @@
 import {
   setTabActive,
   closeTab,
-} from '../integrations/index.mjs'
+} from '../integrations/index'
 import {
   setTabTransferData,
-} from './droppable.mjs'
+} from './droppable'
 
 export default {
   name: 'sidebar-tab-item',

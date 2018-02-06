@@ -41,27 +41,27 @@
 <script>
 import {
   createGroupAction,
-} from '../store/actions.mjs'
+} from '../store/actions'
 import {
   cloneTabGroup,
   cloneTab,
-} from '../store/helpers.mjs'
+} from '../store/helpers'
 import {
   getMessage,
   setTabActive,
   closeTab,
   runTabSearch,
-} from '../integrations/index.mjs'
+} from '../integrations/index'
 import {
   onTabGroupDragEnter,
   onTabGroupDragOver,
   onTabGroupDrop,
-} from './droppable.mjs'
+} from './droppable'
 import {
   debounce,
   getCountMessage,
   onStateChange,
-} from './helpers.mjs'
+} from './helpers'
 import SidebarTabItem from './SidebarTabItem.vue'
 
 export default {

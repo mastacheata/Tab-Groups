@@ -1,7 +1,7 @@
-import { createTestTab } from './helpers'
+import { createTestTab } from './helpers.mjs'
 import { createTabGroup, createWindow } from '../../src/store/helpers.mjs'
 
-import { moveTabs } from '../../src/store/reducers'
+import { moveTabs } from '../../src/store/reducers.mjs'
 
 function testSingleWindowMoveOne( t ) {
   const initial_state = {
