@@ -150,6 +150,7 @@ export default {
 <style scoped>
 .sidebar {
   width: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -265,6 +266,7 @@ export default {
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
+  overflow-y: auto;
 }
 
 .sidebar-tab-group-list-item {

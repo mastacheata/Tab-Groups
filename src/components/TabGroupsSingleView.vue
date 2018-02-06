@@ -28,7 +28,7 @@
       </section>
       <div class="tab-groups-tabs-pane">
         <section class="tab-group-tabs-header-pane">
-          <div class="tab-group-header-title" contenteditable="true" spellcheck="false" @blur="onTabGroupNameUpdate">{{ selected_tab_group.title }}</div>
+          <div class="tab-group-header-title" contenteditable="true" spellcheck="false" @blur="onTabGroupNameUpdate" @keyup.enter="onTabGroupNamePressEnter">{{ selected_tab_group.title }}</div>
           <!-- @todo add tab count -->
         </section>
         <section class="tab-group-tabs-list-pane">
@@ -143,6 +143,13 @@ export default {
     selectTab( tab ) {
       console.info('selectTab', tab)
       setTabActive( tab.id )
+    },
+    onTabGroupNamePressEnter( event ) {
+      console.info('onTabGroupNamePressEnter', event)
+      event.preventDefault()
+      event.target.textContent = event.target.textContent.replace( /\n/g, '' )
+      event.currentTarget.blur()
+      window.getSelection().removeAllRanges()
     },
     onTabGroupNameUpdate( event ) {
       console.info('onTabGroupNameUpdate', event, event.target.textContent)
