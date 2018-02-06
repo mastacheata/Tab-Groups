@@ -1,14 +1,35 @@
 p1
+- test with typescript
 - bugs
-  - moving to same group should be noop
   - moving to start adds to pinned
+  - open new tab when all tabs are pinned
+  - fix move when there are pinned tabs
   - dead object error on tab group page
   - search text weirdness
+  - pinned tab drag
+  - move between windows
+  - when transitioning from discarded, if update clears favicon, keep open one
+  - "new group" should open new tab in group, group should open
+  - moving to same group should be noop
+  - active indicator on pinned tabs
+  - tab group page
+    - fix rendering when preview images aren't available
+    - fix title text truncation sizing
+  - sidebar
+    - drag preview image issue
+    - truncate group name
+    - editable group name
+  - action
+    - fix icon theming
+    - groups should be selectable
+    - pinned tab rendering
+  - open new tab should open at the beginning of the current collection
+- need context menu on sidebar to replace tab bar
 - revisit tab design
   - with mobile and new tab page layouts
-- add pin tests
-  - fix move when there are pinned tabs
 - tab groups page - 1st layout
+  - visual indicator for editable text
+    - enter should finish edit
   - min height for cards based on current window size to prevent layout issues
   - rescale images based on resize
   - tab group list
@@ -21,11 +42,16 @@ p1
     - loading indicator
       - https://365webresources.com/10-best-pure-css-loading-spinners-front-end-developers/
       - https://matejkustec.github.io/SpinThatShit/
+    - placeholder icon
     - if dragging, don't set active tag
   - shouldn't be included as tab in tab group
 - preview image
   - add debounce task after transition to complete if active
+- index based dragging
 - sidebar
+  - add background for icon visibility
+  - update pinned tab styling to match tab bar
+  - group headers should be sticky
   - create new group [hover, icon]
   - drag and drop
     - tab order
@@ -60,10 +86,14 @@ p1
 - add docs to hide tab bar
   - https://superuser.com/questions/1261660/firefox-quantum-ver-57-how-can-i-hide-the-horizontal-tab-bar-with-treesty/1261661
   - https://support.mozilla.org/en-US/questions/957337
+- add sync check
+- add handling for private browsing
 - publish
+  - turn on vuejs production mode
   - fix id
 
 p2
+- replace tab navigation hotkeys for more consistent group handling
 - investigate mobile version
 - sync
 - load/save backup
@@ -126,3 +156,5 @@ other
 - investigate weh
   - https://github.com/mi-g/weh
   - should use standard form spec for preferences
+- page visibility
+- webvr

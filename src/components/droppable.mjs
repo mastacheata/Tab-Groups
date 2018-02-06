@@ -3,7 +3,6 @@ import {
   moveTabsToGroup,
 } from '../integrations/index.mjs'
 
-// @todo update to allow multi-drag
 // @todo think through handling for 3rd party drag sources
 
 export function setTabTransferData( data_transfer, window_id, tab_ids ) {
