@@ -8,6 +8,7 @@ import {
   default_config,
   findTab,
   getTabGroupsPersistState,
+  getTabMoveData,
 } from '../../src/store/helpers.mjs'
 
 export const base_new_browser_tab = {
@@ -249,6 +250,50 @@ function testFindTab( t ) {
   t.end()
 }
 
+function testGetTabMoveData( t ) {
+  const initial_state = {
+    windows: [
+      createWindow( 1, [
+        createPinnedTabGroup( [] ),
+        createTabGroup( 2, [
+          createTestTab({ id: 4 }),
+          createTestTab({ id: 5 }),
+          createTestTab({ id: 6 })
+        ]),
+        createTabGroup( 3, [
+          createTestTab({ id: 7 }),
+          createTestTab({ id: 8 })
+        ])
+      ])
+    ]
+  }
+
+  let source_data = {
+    window_id: 1,
+    tab_ids: [ 4, 5 ]
+  }
+  let target_data = {
+    window_id: 1,
+    tab_group_id: 3
+  }
+
+  let tab_move_data = getTabMoveData( initial_state, source_data, target_data )
+
+  t.equal( tab_move_data.source_data.window_id, 1 )
+  t.equal( tab_move_data.source_data.tabs.filter( tab => tab ).length, 2, "no missing tabs" )
+  t.same( tab_move_data.source_data.tabs.map( tab => tab.id ), [ 4, 5 ], "tabs match ids and order" )
+  t.equal( tab_move_data.source_data.tabs[ 0 ], initial_state.windows[ 0 ].tab_groups[ 1 ].tabs[ 0 ], "copy tab 4 by reference" )
+  t.equal( tab_move_data.source_data.tabs[ 1 ], initial_state.windows[ 0 ].tab_groups[ 1 ].tabs[ 1 ], "copy tab 5 by reference" )
+  t.same( tab_move_data.target_data, {
+    window_id: 1,
+    index: 3,
+    tab_group_id: 3,
+    tab_group_index: 2
+  })
+
+  t.end()
+}
+
 function testValidate( t ) {
   let state = getInitialState()
   t.equal( validateState( state ), true )
@@ -274,6 +319,7 @@ function testPersistence( t ) {
 
 export default function( tap ) {
   tap.test( testFindTab )
+  tap.test( testGetTabMoveData )
   tap.test( testValidate )
   tap.test( testPersistence )
   tap.end()

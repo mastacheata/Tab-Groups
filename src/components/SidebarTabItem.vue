@@ -42,7 +42,7 @@ export default {
     },
     onTabDragStart( event ) {
       console.info('onTabDragStart', event, this.windowId, this.tabGroup)
-      setTabTransferData( event.dataTransfer, this.windowId, this.tabGroup.id, this.tab.id )
+      setTabTransferData( event.dataTransfer, this.windowId, [ this.tab.id ] )
     },
     onTabDragEnter( event ) {
       console.info('onTabDragEnter', event)

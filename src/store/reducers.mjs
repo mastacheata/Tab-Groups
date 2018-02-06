@@ -25,7 +25,9 @@ import {
   createTabGroup,
   createPinnedTabGroup,
   default_config,
+  findTab,
   getNewTabGroupId,
+  getTabMoveData,
 } from './helpers.mjs'
 
 import {
@@ -500,96 +502,133 @@ export function updateTabImage( state, { tab_id, window_id, preview_image_uri } 
   })
 }
 
-export function moveTabs( state, { source_tabs_data, target_data } ) {
+/**
+ * Return a copy of state with tab identified by source_data moved to the target
+ * Only exported for testing
+ * @todo should include multi-source
+ * @todo what if source location doesn't match info
+ * @param state
+ * @param source_data
+ *   { window_id, tab_group_id, tab_ids }
+ *     tab_group_id optional
+ *   { window_id, index, pinned }
+ *   // @todo { browser_tabs }
+ * @param target_data
+ *   { window_id, index, pinned }
+ *   { window_id, tab_group_id }
+ *   { window_id, tab_group_id, tab_group_index }
+ *   { window_id, pinned }
+ */
+export function moveTabs( state, source_data, target_data ) {
   let { windows } = state
+  // @todo most of this can be removed
 
-  if( source_tabs_data.window_id == null ) {
-    // source is the pinned tabs
+  // Load source_tabs with array of tabs
+
+  let source_tabs
+  if( source_data.tabs ) {
+    source_tabs = source_data.tabs
+  } else if( source_data.tab_ids ) {
+    // source_tabs = Array( source_data.tab_ids ).fill( null )
+    // const scanTabGroup = ( tab_group ) => {
+    //   console.info('scanTabGroup', source_data.tab_ids, tab_group)
+    //   tab_group.tabs.forEach( tab => {
+    //     const tab_index = source_data.tab_ids.indexOf( tab.id )
+    //     if( tab_index > -1 ) {
+    //       source_tabs[ tab_index ] = tab
+    //       console.info('found')
+    //     }
+    //   })
+    // }
+
+    // windows.forEach( window => {
+    //   if( window.id !== source_data.window_id ) {
+    //     return
+    //   }
+
+    //   const { tab_groups } = window
+    //   if( source_data.tab_group_id != null ) {
+    //     const tab_group_index = tab_groups.findIndex( _tab_group => _tab_group.id === source_data.tab_group_id )
+    //     if( tab_group_index !== -1 ) {
+    //       scanTabGroup( tab_groups[ tab_group_index ] )
+    //     }
+    //   } else {
+    //     tab_groups.forEach( scanTabGroup )
+    //   }
+    // })
   } else {
-    const source_window_index = findWindowIndex( windows, source_tabs_data.window_id )
+    // console.warn( "Problem loading source tab", source_data )
+    // return state
   }
-  const target_window_index = findWindowIndex( windows, target_data.window_id )
-  windows = [ ...windows ]
 
-  // @todo pull tabs from source
-  // @todo push tabs to target
+  // if( source_tabs.includes( null ) ) {
+  //   console.warn( "Problem loading source tab", source_tabs )
+  //   return state
+  // }
 
-  // @todo check pinned tabs
   // @todo check orphan tabs
+  // @todo If source is same as target, noop
   return Object.assign( {}, state, {
-    windows
-  })
-}
-
-export function moveTab( state, { tab_id, window_id, index, tab_group_id } ) {
-  return Object.assign( {}, state, {
-    windows: state.windows.map( window => {
-      // @todo if window_id is not defined, auto-detect
-      if( window.id !== window_id ) {
+    windows: windows.map( window => {
+      if( window.id !== source_data.window_id && window.id !== target_data.window_id ) {
         return window
       }
-
-      let moved_tab = null
       let index_offset = 0
+      return Object.assign( {}, window, {
+        tab_groups: window.tab_groups.map( tab_group => {
+          let { tabs } = tab_group
+          if( tabs.some( tab => source_tabs.includes( tab ) ) ) {
+            tabs = tabs.filter( tab => ! source_tabs.includes( tab ) )
+          }
 
-      function pullTab( tabs ) {
-        const tab_index = tabs.findIndex( tab => tab.id === tab_id )
-        if( tab_index > -1 && index_offset + tab_index !== index ) {
-          tabs = [ ...tabs ]
-          moved_tab = tabs.splice( tab_index, 1 )[ 0 ]
-        }
-        index_offset += tabs.length
-        return tabs
-      }
+          // if( target_data.tab_group_id == null && target_data.index <= index_offset + tabs.length ) {
+          //   // @todo checks to validated pinned
+          //   if( tab_group.pinned ) {
+          //     console.warn('@todo handling for pinned group')
+          //   }
+          //   target_data = Object.assign( {}, target_data, {
+          //     tab_group_id: tab_group.id,
+          //     tab_group_index: target_data.index - index_offset
+          //   })
+          // }
 
-      const tab_groups = window.tab_groups.map( tab_group => {
-        const tabs = pullTab( tab_group.tabs )
-        if( tabs !== tab_group.tabs ) {
-          tab_group = Object.assign( {}, tab_group, {
-            tabs,
-            tabs_count: tabs.length
-          })
-        }
-        return tab_group
-      })
-
-      // Scan tab_groups to find place to move tab to
-      if( moved_tab ) {
-        // @todo this is broken by pinned tabs
-        for( let i = 0, j = 0; j < tab_groups.length; j++ ) {
-          if( tab_group_id != null ) {
-            // If the tab_group_id is passed, override behaviour
-            if( tab_groups[ j ].id === tab_group_id ) {
-              tab_groups[ j ] = Object.assign( {}, tab_groups[ j ], {
-                tabs: [ ...tab_groups[ j ].tabs ],
-                tabs_count: tab_groups[ j ].tabs_count + 1
-              })
-              if( index != null ) {
-                tab_groups[ j ].tabs.splice( index - i, 0, moved_tab )
-              } else {
-                tab_groups[ j ].tabs.push( moved_tab )
-              }
-            }
-          } else {
-            // Otherwise determine group by index
-            if( index - i <= tab_groups[ j ].tabs_count ) {
-              tab_groups[ j ] = Object.assign( {}, tab_groups[ j ], {
-                tabs: [ ...tab_groups[ j ].tabs ],
-                tabs_count: tab_groups[ j ].tabs_count + 1
-              })
-              tab_groups[ j ].tabs.splice( index - i, 0, moved_tab )
-              break
+          if( target_data.tab_group_id === tab_group.id ) {
+            tabs = [ ...tabs ]
+            if( target_data.tab_group_index === null ) {
+              tabs.push( ...source_tabs )
+            } else {
+              tabs.splice( target_data.tab_group_index, 0, ...source_tabs )
             }
           }
-          i += tab_groups[ j ].tabs_count
-        }
-      }
 
-      return Object.assign( {}, window, {
-        tab_groups
+          if( tabs !== tab_group.tabs ) {
+            tab_group = Object.assign( {}, tab_group, {
+              tabs,
+              tabs_count: tabs.length
+            })
+          }
+
+          index_offset += tab_group.tabs_count
+          return tab_group
+        })
       })
     })
   })
+}
+
+export function moveTab( state, { tab_id, window_id, index } ) {
+  const source_data = {
+    window_id,
+    tab_ids: [ tab_id ],
+    tabs: [ findTab( state, window_id, tab_id ) ]
+  }
+
+  const target_data = {
+    window_id,
+    index
+  }
+
+  return moveTabs( state, source_data, target_data )
 }
 
 export function attachTab( state, { tab_id, window_id, index } ) {
@@ -649,7 +688,7 @@ export default function App( state = initial_state, action ) {
     case GROUP_MOVE:
       return moveGroup( state, action )
     case TABS_MOVE:
-      return moveTabs( state, action )
+      return moveTabs( state, action.source_data, action.target_data )
     case TAB_ACTIVATE:
       return activateTab( state, action )
     case TAB_ADD:

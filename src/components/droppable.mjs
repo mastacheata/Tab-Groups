@@ -3,8 +3,11 @@ import {
   moveTabsToGroup,
 } from '../integrations/index.mjs'
 
-export function setTabTransferData( data_transfer, window_id, tab_group_id, tab_id ) {
-  const event_data = { window_id, tab_group_id, tab_ids: [ tab_id ] }
+// @todo update to allow multi-drag
+// @todo think through handling for 3rd party drag sources
+
+export function setTabTransferData( data_transfer, window_id, tab_ids ) {
+  const event_data = { window_id, tab_ids }
   console.info('setTabTransferData', event_data)
   data_transfer.dropEffect = 'move'
   data_transfer.effectAllowed = 'move'
@@ -43,10 +46,14 @@ export function onTabGroupDragOver( tab_group, event ) {
 
 export function onTabGroupDrop( tab_group, event ) {
   event.preventDefault()
-  const event_data = getTransferData( event.dataTransfer )
-  console.info('onTabGroupDrop', tab_group, event, event_data)
-  if( isTabTransfer( event_data ) ) {
-    console.info('detected tab drop', event_data)
-    moveTabsToGroup( window.store, event_data, this.window_id, tab_group.id )
+  const source_data = getTransferData( event.dataTransfer )
+  console.info('onTabGroupDrop', tab_group, event, source_data)
+  if( isTabTransfer( source_data ) ) {
+    console.info('detected tab drop', source_data)
+    const target_data = {
+      window_id: this.window_id,
+      tab_group_id: tab_group.id
+    }
+    moveTabsToGroup( window.store, source_data, target_data )
   }
 }

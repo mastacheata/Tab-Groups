@@ -125,10 +125,10 @@ export function updateTabImageAction( tab_id, window_id, preview_image_uri ) {
   }
 }
 
-export function moveTabsToGroupAction( source_tabs_data, target_data ) {
+export function moveTabsAction( source_data, target_data ) {
   return {
     type: TABS_MOVE,
-    source_tabs_data,
+    source_data,
     target_data,
   }
 }

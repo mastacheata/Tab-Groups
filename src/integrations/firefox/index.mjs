@@ -7,7 +7,7 @@ import {
   updateTabAction,
   updateTabImageAction,
   moveTabAction,
-  moveTabToGroupAction,
+  moveTabsAction,
   attachTabAction,
   detachTabAction,
   startSearchAction,
@@ -17,6 +17,7 @@ import {
 import {
   default_config,
   findTab,
+  getTabMoveData,
 } from '../../store/helpers.mjs'
 
 const LOCAL_CONFIG_KEY = 'config'
@@ -101,8 +102,9 @@ export function bindBrowserEvents( store ) {
   })
 
   browser.tabs.onMoved.addListener( ( tab_id, { windowId, fromIndex, toIndex } ) => {
+    // @todo can skip dispatch step if this has already been handled
     console.info('tabs.onMoved', tab_id, windowId, fromIndex, toIndex)
-    store.dispatch( moveTabAction( tab_id, windowId, toIndex ) )
+    // store.dispatch( moveTabAction( tab_id, windowId, toIndex ) )
   })
 
   browser.tabs.onAttached.addListener( ( tab_id, { newWindowId, newPosition } ) => {
@@ -355,38 +357,38 @@ export function closeTab( tab_id ) {
 /**
  * Move tabs to a different group
  * @param store
- * @param tabs_data Object with properties window_id, tab_group_id and tab_ids
- * @param window_id
- * @param tab_group_id
+ * @param source_data Object with properties window_id, tab_group_id and tab_ids
+ * @param target_data
  */
-export function moveTabsToGroup( store, tabs_data, window_id, tab_group_id, index ) {
-  console.info('moveTabsToGroup', tabs_data, window_id, tab_group_id, index)
-  const { tab_ids } = tabs_data
-  let index_offset = 0
+export function moveTabsToGroup( store, source_data, target_data ) {
+  console.info('moveTabsToGroup', source_data, target_data)
+  const { tab_ids } = source_data
   const state = store.getState()
-  const window = state.windows.find( window => window.id == window_id )
-  if( ! window ) {
-    // @todo error
+
+  const move_data = getTabMoveData( state, source_data, target_data )
+
+  if( ! move_data ) {
+    console.info('error')
     return
   }
 
-  for( let tab_group of window.tab_groups ) {
-    if( tab_group_id === tab_group.id ) {
-      if( index == null ) {
-        index = index_offset + tab_group.tabs_count
-      } else {
-        index += index_offset
-      }
-      for( let tab_id of tab_ids ) {
-        // @todo should have dispatch operation for multi-move for efficiency
-        store.dispatch( moveTabToGroupAction( tab_id, window_id, tab_group_id ) )
-      }
-      break
-    }
-    index_offset += tab_group.tabs_count
+  source_data = move_data.source_data
+  target_data = move_data.target_data
+
+  const move_properties = {
+    index: target_data.index
   }
 
-  return browser.tabs.move( tab_ids, { index } )
+  if( source_data.window_id != target_data.window_id ) {
+    move_properties.windowId = target_data.window_id
+  }
+  store.dispatch( moveTabsAction( source_data, target_data ) )
+
+  return browser.tabs.move( tab_ids, move_properties )
+    .then( browser_tabs => {
+      // window.setTimeout( () => {
+      // }, 0)
+    })
 }
 
 /**
