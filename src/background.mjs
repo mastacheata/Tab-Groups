@@ -1,4 +1,4 @@
-import createStore from 'redux/es/createStore'
+import { createStore } from './store/redux-slim.mjs'
 
 import { initAction } from './store/actions.mjs'
 import App, { init } from './store/reducers.mjs'

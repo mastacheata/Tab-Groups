@@ -1,8 +1,8 @@
 import Vue from 'vue'
 
-import Action from './components/Action.vue'
+// import Action from './components/Action.vue'
 import Options from './components/Options.vue'
-import TabGroups from './components/TabGroups.vue'
+// import TabGroups from './components/TabGroups.vue'
 import Sidebar from './components/Sidebar.vue'
 
 Promise.all([
@@ -19,12 +19,12 @@ Promise.all([
   window.current_window_id = current_window.id
   window.store = store
 
-  if( window.document.getElementById( 'action' ) ) {
-    new Vue({
-      el: '#action',
-      render: ( h ) => h( Action )
-    })
-  }
+  // if( window.document.getElementById( 'action' ) ) {
+  //   new Vue({
+  //     el: '#action',
+  //     render: ( h ) => h( Action )
+  //   })
+  // }
 
   if( window.document.getElementById( 'options' ) ) {
     new Vue({
@@ -33,12 +33,12 @@ Promise.all([
     })
   }
 
-  if( window.document.getElementById( 'tab-groups' ) ) {
-    new Vue({
-      el: '#tab-groups',
-      render: ( h ) => h( TabGroups )
-    })
-  }
+  // if( window.document.getElementById( 'tab-groups' ) ) {
+  //   new Vue({
+  //     el: '#tab-groups',
+  //     render: ( h ) => h( TabGroups )
+  //   })
+  // }
 
   if( window.document.getElementById( 'sidebar' ) ) {
     new Vue({

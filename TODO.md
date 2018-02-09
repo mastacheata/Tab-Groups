@@ -1,30 +1,98 @@
 p1
-- test with typescript
+- testing
+  - reproduce all bugs as integration tests
+  - add library for web-extension browser mocking
 - bugs
+  - drag from new window to existing
   - moving to start adds to pinned
-  - open new tab when all tabs are pinned
   - fix move when there are pinned tabs
-  - dead object error on tab group page
   - search text weirdness
   - pinned tab drag
-  - move between windows
   - when transitioning from discarded, if update clears favicon, keep open one
   - "new group" should open new tab in group, group should open
   - moving to same group should be noop
   - active indicator on pinned tabs
+  - sidebar
+    - bind right click for empty space
+    - duplicate tab issue
+    - fix favicon removal bug
+    - multi-drag
+      - styling
+      - clear selection after move
+      - preview placeholder
+      - drag below the fold to trigger timer scroll
+      - drag image
+        - experiment with svg content
+    - out of window drop target makes new window?
+    - active style should only be displayed if group also active
+    - drag preview image issue
+    - add background for icon visibility
+  - open new tab should open at the end of the current collection
+- watch task with compile / tests
+- index based dragging
+- sidebar
+  - context menu
+  - group header
+    - editable group name
+    - delete group
+    - group header shouldn't wrap
+  - tab item
+    - visual style for suspend
+    - loading indicator
+    - status indication
+      - audio playing, muted
+      - pinned
+      - loading
+  - update pinned tab styling to match tab bar
+  - create new group [icon]
+  - drag and drop
+    - tab order
+    - group order
+    - between pinned tabs
+    - https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Recommended_drag_types
+  - arrow key navigation with selected state
+- options
+  - base styling
+  - toggles
+    - features
+      - search
+      - sync
+  - fix field tabbing
+- testing for suspend and replace
+- validation includes unique & active linking
+- add validator to redux
+- text overflow gradient
+- clean up console warnings
+- clear out repo
+- review @todos
+- add notification indicator
+- add docs to hide tab bar
+  - https://superuser.com/questions/1261660/firefox-quantum-ver-57-how-can-i-hide-the-horizontal-tab-bar-with-treesty/1261661
+  - https://support.mozilla.org/en-US/questions/957337
+- add sync check
+- add handling for private browsing
+- publish
+  - determine min version
+  - turn on vuejs production mode
+  - fix id
+
+p2
+- bugs
   - tab group page
     - fix rendering when preview images aren't available
     - fix title text truncation sizing
-  - sidebar
-    - drag preview image issue
-    - truncate group name
-    - editable group name
+    - tab group name edit
+      - right side artifact
+      - enter should exit
+      - select text on focus
+      - visual indication for edit
   - action
     - fix icon theming
     - groups should be selectable
     - pinned tab rendering
-  - open new tab should open at the beginning of the current collection
-- need context menu on sidebar to replace tab bar
+- test with typescript
+  - pull in types for redux, web-extensions
+  - refactor includes from components as methods on background window
 - revisit tab design
   - with mobile and new tab page layouts
 - tab groups page - 1st layout
@@ -47,52 +115,12 @@ p1
   - shouldn't be included as tab in tab group
 - preview image
   - add debounce task after transition to complete if active
-- index based dragging
-- sidebar
-  - add background for icon visibility
-  - update pinned tab styling to match tab bar
-  - group headers should be sticky
-  - create new group [hover, icon]
-  - drag and drop
-    - tab order
-    - group order
-    - pinned tab to group
-    - https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Recommended_drag_types
-  - status indication
-    - audio playing, muted
-    - pinned
-    - loading
-  - arrow key navigation with selected state
-- options
-  - base styling
-  - toggles
-    - features
-      - search
-      - sync
-  - fix field tabbing
-- testing for suspend and replace
 - action
   - update icons for dynamic colours
   - 2nd screen for open tabs
   - 2nd screen for config
   - scrollable
   - dark theme
-- text overflow gradient
-- clean up console warnings
-- clear out repo
-- review @todos
-- determine min version
-- add notification indicator
-- add docs to hide tab bar
-  - https://superuser.com/questions/1261660/firefox-quantum-ver-57-how-can-i-hide-the-horizontal-tab-bar-with-treesty/1261661
-  - https://support.mozilla.org/en-US/questions/957337
-- add sync check
-- add handling for private browsing
-- publish
-  - turn on vuejs production mode
-  - fix id
-
-p2
 - replace tab navigation hotkeys for more consistent group handling
 - investigate mobile version
 - sync
@@ -129,6 +157,7 @@ p3
 - light and dark themes for actions
 - filter for playing audio
 - recover with history
+- tour & upgrade features
 
 p4
 - VueJS unit testing

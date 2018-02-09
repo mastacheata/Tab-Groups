@@ -17,6 +17,7 @@ import {
 import {
   default_config,
   findTab,
+  getSourceTabGroupData,
   getTabMoveData,
 } from '../../store/helpers.mjs'
 
@@ -27,6 +28,8 @@ const TAB_PREVIEW_IMAGE_KEY = 'preview_image'
 const TAB_PREVIEW_IMAGE_DETAILS = {
   format: 'png'
 }
+
+const EMPTY = {}
 
 // LOCALIZATION
 
@@ -102,9 +105,20 @@ export function bindBrowserEvents( store ) {
   })
 
   browser.tabs.onMoved.addListener( ( tab_id, { windowId, fromIndex, toIndex } ) => {
-    // @todo can skip dispatch step if this has already been handled
     console.info('tabs.onMoved', tab_id, windowId, fromIndex, toIndex)
-    // store.dispatch( moveTabAction( tab_id, windowId, toIndex ) )
+
+    const source_data = {
+      window_id: windowId,
+      tab_id,
+      index: fromIndex
+    }
+
+    const target_data = {
+      window_id: windowId,
+      index: toIndex
+    }
+
+    onTabMoved( store, source_data, target_data )
   })
 
   browser.tabs.onAttached.addListener( ( tab_id, { newWindowId, newPosition } ) => {
@@ -126,6 +140,20 @@ export function bindBrowserEvents( store ) {
     console.info('tabs.onUpdated', tab_id, change_info, browser_tab)
     store.dispatch( updateTabAction( browser_tab, change_info ) )
   })
+
+  if( browser.contextualIdentities ) {
+    browser.contextualIdentities.onCreated.addListener( ( { contextualIdentity } ) => {
+      console.info('contextualIdentities.onCreated', contextualIdentity)
+    })
+
+    browser.contextualIdentities.onUpdated.addListener( ( { contextualIdentity } ) => {
+      console.info('contextualIdentities.onUpdated', contextualIdentity)
+    })
+
+    browser.contextualIdentities.onRemoved.addListener( ( { contextualIdentity } ) => {
+      console.info('contextualIdentities.onRemoved', contextualIdentity)
+    })
+  }
 }
 
 /**
@@ -133,17 +161,25 @@ export function bindBrowserEvents( store ) {
  */
 export function loadBrowserState() {
   const window_ids = []
-  let config, browser_tabs
+  let browser_tabs, config, contextual_identities, theme
 
   return Promise.all([
     browser.storage ? browser.storage.local.get( LOCAL_CONFIG_KEY ) : null,
-    browser.tabs.query( {} ),
+    browser.tabs.query( EMPTY ),
     // theme.getCurrent is available in firefox 58+
-    browser.theme && browser.theme.getCurrent ? browser.theme.getCurrent() : null
+    browser.theme && browser.theme.getCurrent ? browser.theme.getCurrent() : null,
+    browser.contextualIdentities.query( EMPTY )
   ]).then(
-    ( [ storage, _tabs, theme ] ) => {
+    ( [ storage, _browser_tabs, _theme, _contextual_identities ] ) => {
+      browser_tabs = _browser_tabs
       config = storage[ LOCAL_CONFIG_KEY ] || default_config
-      browser_tabs = _tabs
+      contextual_identities = _contextual_identities || []
+      theme = _theme || {}
+
+      console.info('storage', storage)
+      console.info('browser_tabs', _browser_tabs)
+      console.info('theme', theme)
+      console.info('contextual_identities', contextual_identities)
 
       const browser_tab_preview_images = []
 
@@ -168,7 +204,7 @@ export function loadBrowserState() {
         browser_tabs[ i ].preview_image = tab_preview_images[ i ]
       }
       // This is the same structure from reducers.init
-      return { config, browser_tabs, window_tab_groups_map }
+      return { browser_tabs, config, contextual_identities, theme, window_tab_groups_map }
     }
   )
 }
@@ -179,13 +215,12 @@ export function loadBrowserState() {
  * @returns The tab representation that will be stored in the state
  */
 export function getTabState( browser_tab ) {
-  return {
+  const tab = {
     id: browser_tab.id,
     title: browser_tab.title,
     status: browser_tab.status,
     url: browser_tab.url,
     icon_url: getIconUrl( browser_tab ),
-    // active: browser_tab.active,
     preview_image: {
       width: browser_tab.width,
       height: browser_tab.height,
@@ -195,7 +230,14 @@ export function getTabState( browser_tab ) {
     // @todo audio info?
     // @todo openerTabId?
     // @todo highlighted?
+    // @todo sessionId
   }
+
+  if( browser_tab.cookieStoreId ) {
+    tab.context_id = browser_tab.cookieStoreId
+  }
+
+  return tab
 }
 
 function getIconUrl( browser_tab ) {
@@ -313,6 +355,18 @@ export function openOptionsPage() {
   browser.runtime.openOptionsPage()
 }
 
+export function openSidebarPage() {
+  const url = browser.extension.getURL( "sidebar.html" )
+
+  browser.tabs.create({ url })
+    .then( () => {
+      // We don't want to sync this URL ever nor clutter the users history
+      if( browser.history != null ) {
+        browser.history.deleteUrl({ url })
+      }
+    })
+}
+
 /**
  * Open the extension tab groups page in new tab
  */
@@ -354,11 +408,90 @@ export function closeTab( tab_id ) {
   return browser.tabs.remove( [ tab_id ] )
 }
 
+export function onTabMoved( store, source_data, target_data ) {
+  if( source_data.index === target_data.index ) {
+    console.info('ignoring move with equal index')
+    return
+  }
+  // const source_data = {
+  //   window_id
+  //   tab_id
+  //   index
+  // }
+
+  // const target_data = {
+  //   window_id
+  //   index
+  // }
+
+
+  // Can skip dispatch step if this has already been handled
+  if( store.is_dispatching ) {
+    console.info('skipping move')
+    return
+  }
+
+  // @todo if extension tab is being moved, move back
+
+  // Run scan of state to detect if this crosses a tab_group threshold and move back
+  if( Math.abs( source_data.index - target_data.index ) === 1 ) {
+    const state = store.getState()
+    const target_window = state.windows.find( window => window.id === source_data.window_id )
+
+    source_data = Object.assign( {}, source_data,
+      getSourceTabGroupData( target_window, source_data )
+    )
+
+    console.info('source_data', source_data)
+
+    let is_cancelled = false
+    if( source_data.index + 1 === target_data.index ) {
+      // Is move down 1
+      if( source_data.tab_group_last ) {
+        is_cancelled = true
+      }
+    } else if( source_data.index - 1 === target_data.index ) {
+      // Is move up 1
+      if( source_data.tab_group_index === 0 ) {
+        is_cancelled = true
+
+        const move_source_data = {
+          window_id: source_data.window_id
+        }
+
+        moveTabsToGroup( store, move_source_data, target_data )
+      }
+    }
+
+    if( is_cancelled ) {
+      browser.tabs.move( [ source_data.tab_id ], { index: source_data.index } )
+      // @todo trigger move to tab group
+      console.warn('reversing move')
+      return
+    }
+  }
+
+  // Can skip dispatch step if this has already been handled
+  if( ! store.is_dispatching ) {
+    // @todo probably not required
+    store.dispatch( moveTabAction( source_data.tab_id, target_data.window_id, target_data.index ) )
+  }
+}
+
 /**
  * Move tabs to a different group
  * @param store
- * @param source_data Object with properties window_id, tab_group_id and tab_ids
+ * @param source_data Object with properties window_id and tab_ids
+ *   window_id
+ *   tab_ids
  * @param target_data
+ * @returns move_data
+ *   source_data
+ *     window_id
+ *     tab_ids
+ *     tabs
+ *   target_data
+ *     window_id
  */
 export function moveTabsToGroup( store, source_data, target_data ) {
   console.info('moveTabsToGroup', source_data, target_data)
@@ -379,11 +512,12 @@ export function moveTabsToGroup( store, source_data, target_data ) {
     index: target_data.index
   }
 
-  if( source_data.window_id != target_data.window_id ) {
+  if( source_data.window_id !== target_data.window_id ) {
     move_properties.windowId = target_data.window_id
   }
   store.dispatch( moveTabsAction( source_data, target_data ) )
 
+  console.info('browser.tabs.move', tab_ids, move_properties)
   return browser.tabs.move( tab_ids, move_properties )
     .then( browser_tabs => {
       // window.setTimeout( () => {

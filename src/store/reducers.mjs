@@ -27,7 +27,9 @@ import {
   default_config,
   findTab,
   getNewTabGroupId,
+  getSourceTabGroupData,
   getTabMoveData,
+  getTargetTabGroupData,
 } from './helpers.mjs'
 
 import {
@@ -36,6 +38,7 @@ import {
 
 const initial_state = {
   config: default_config,
+  contexts: {},
   orphan_tabs: [],
   windows: []
 }
@@ -95,7 +98,7 @@ function _removeTab( state, { tab_id, window_id, index, is_detach } ) {
   return new_state
 }
 
-export function init( state, { config, browser_tabs, window_tab_groups_map } ) {
+export function init( state, { browser_tabs, config, contextual_identities, theme, window_tab_groups_map } ) {
   const window_tabs_map = new Map()
 
   // @todo use persist state from window_tab_groups_map
@@ -112,6 +115,16 @@ export function init( state, { config, browser_tabs, window_tab_groups_map } ) {
     }
     window_tabs.push( browser_tab )
   })
+
+  let contexts = {}
+  if( contextual_identities ) {
+    contextual_identities.forEach( contextual_identity => {
+      contexts[ contextual_identity.cookieStoreId ] = {
+        color: contextual_identity.colorCode,
+        name: contextual_identity.name,
+      }
+    })
+  }
 
   const windows = []
   for( let [ window_id, window_tabs ] of window_tabs_map.entries() ) {
@@ -159,6 +172,7 @@ export function init( state, { config, browser_tabs, window_tab_groups_map } ) {
 
   const init_state = {
     config: config || initial_state.config,
+    contexts,
     orphan_tabs: initial_state.orphan_tabs,
     windows
       /*
@@ -353,24 +367,27 @@ export function addTab( state, { browser_tab } ) {
     }
 
     is_window_defined = true
-    let i = 0
+    let index_offset = 0
     const last_tab_group = window.tab_groups[ window.tab_groups.length - 1 ]
     return Object.assign( {}, window, {
       tab_groups: window.tab_groups.map( tab_group => {
-        if( 0 <= browser_tab.index - i && browser_tab.index - i <= tab_group.tabs_count ) {
-          // @todo if next tab_group is empty, add tab to it instead
-          tab_group = Object.assign( {}, tab_group, {
-            tabs: [ ...tab_group.tabs ],
-            tabs_count: tab_group.tabs_count + 1
-          })
-          tab_group.tabs.splice( browser_tab.index - i, 0, getTabState( browser_tab ) )
-        } else if( last_tab_group ) {
-          tab_group = Object.assign( {}, tab_group, {
-            tabs: [ ...tab_group.tabs, getTabState( browser_tab ) ],
-            tabs_count: tab_group.tabs_count + 1
-          })
+        // New tabs aren't added to pinned
+        if( browser_tab.pinned === tab_group.pinned || ! browser_tab.pinned === ! tab_group.pinned ) {
+          if( 0 <= browser_tab.index - index_offset && browser_tab.index - index_offset <= tab_group.tabs_count ) {
+            // @todo if next tab_group is empty, add tab to it instead
+            tab_group = Object.assign( {}, tab_group, {
+              tabs: [ ...tab_group.tabs ],
+              tabs_count: tab_group.tabs_count + 1
+            })
+            tab_group.tabs.splice( browser_tab.index - index_offset, 0, getTabState( browser_tab ) )
+          } else if( tab_group === last_tab_group ) {
+            tab_group = Object.assign( {}, tab_group, {
+              tabs: [ ...tab_group.tabs, getTabState( browser_tab ) ],
+              tabs_count: tab_group.tabs_count + 1
+            })
+          }
         }
-        i += tab_group.tabs_count
+        index_offset += tab_group.tabs_count
         return tab_group
       })
     })
@@ -504,100 +521,43 @@ export function updateTabImage( state, { tab_id, window_id, preview_image_uri } 
 
 /**
  * Return a copy of state with tab identified by source_data moved to the target
- * Only exported for testing
- * @todo should include multi-source
  * @todo what if source location doesn't match info
  * @param state
  * @param source_data
- *   { window_id, tab_group_id, tab_ids }
- *     tab_group_id optional
+ *   { window_id, tab_ids }
  *   { window_id, index, pinned }
+ *   { window_id, tabs }
  *   // @todo { browser_tabs }
  * @param target_data
  *   { window_id, index, pinned }
  *   { window_id, tab_group_id }
  *   { window_id, tab_group_id, tab_group_index }
- *   { window_id, pinned }
+//  *   { window_id, pinned }
  */
 export function moveTabs( state, source_data, target_data ) {
-  let { windows } = state
-  // @todo most of this can be removed
-
-  // Load source_tabs with array of tabs
-
-  let source_tabs
-  if( source_data.tabs ) {
-    source_tabs = source_data.tabs
-  } else if( source_data.tab_ids ) {
-    // source_tabs = Array( source_data.tab_ids ).fill( null )
-    // const scanTabGroup = ( tab_group ) => {
-    //   console.info('scanTabGroup', source_data.tab_ids, tab_group)
-    //   tab_group.tabs.forEach( tab => {
-    //     const tab_index = source_data.tab_ids.indexOf( tab.id )
-    //     if( tab_index > -1 ) {
-    //       source_tabs[ tab_index ] = tab
-    //       console.info('found')
-    //     }
-    //   })
-    // }
-
-    // windows.forEach( window => {
-    //   if( window.id !== source_data.window_id ) {
-    //     return
-    //   }
-
-    //   const { tab_groups } = window
-    //   if( source_data.tab_group_id != null ) {
-    //     const tab_group_index = tab_groups.findIndex( _tab_group => _tab_group.id === source_data.tab_group_id )
-    //     if( tab_group_index !== -1 ) {
-    //       scanTabGroup( tab_groups[ tab_group_index ] )
-    //     }
-    //   } else {
-    //     tab_groups.forEach( scanTabGroup )
-    //   }
-    // })
-  } else {
-    // console.warn( "Problem loading source tab", source_data )
-    // return state
-  }
-
-  // if( source_tabs.includes( null ) ) {
-  //   console.warn( "Problem loading source tab", source_tabs )
-  //   return state
-  // }
+  let { windows, orphan_tabs } = state
 
   // @todo check orphan tabs
   // @todo If source is same as target, noop
   return Object.assign( {}, state, {
+    orphan_tabs,
     windows: windows.map( window => {
       if( window.id !== source_data.window_id && window.id !== target_data.window_id ) {
         return window
       }
-      let index_offset = 0
       return Object.assign( {}, window, {
         tab_groups: window.tab_groups.map( tab_group => {
           let { tabs } = tab_group
-          if( tabs.some( tab => source_tabs.includes( tab ) ) ) {
-            tabs = tabs.filter( tab => ! source_tabs.includes( tab ) )
+          if( tabs.some( tab => source_data.tabs.includes( tab ) ) ) {
+            tabs = tabs.filter( tab => ! source_data.tabs.includes( tab ) )
           }
-
-          // if( target_data.tab_group_id == null && target_data.index <= index_offset + tabs.length ) {
-          //   // @todo checks to validated pinned
-          //   if( tab_group.pinned ) {
-          //     console.warn('@todo handling for pinned group')
-          //   }
-          //   target_data = Object.assign( {}, target_data, {
-          //     tab_group_id: tab_group.id,
-          //     tab_group_index: target_data.index - index_offset
-          //   })
-          // }
 
           if( target_data.tab_group_id === tab_group.id ) {
             tabs = [ ...tabs ]
-            if( target_data.tab_group_index === null ) {
-              tabs.push( ...source_tabs )
+            if( target_data.tab_group_index == null ) {
+              tabs.push( ...source_data.tabs )
             } else {
-              tabs.splice( target_data.tab_group_index, 0, ...source_tabs )
+              tabs.splice( target_data.tab_group_index, 0, ...source_data.tabs )
             }
           }
 
@@ -608,7 +568,6 @@ export function moveTabs( state, source_data, target_data ) {
             })
           }
 
-          index_offset += tab_group.tabs_count
           return tab_group
         })
       })
@@ -617,16 +576,34 @@ export function moveTabs( state, source_data, target_data ) {
 }
 
 export function moveTab( state, { tab_id, window_id, index } ) {
+  const target_window = state.windows.find( window => window.id === window_id )
+  if( ! target_window ) {
+    console.error( 'window missing' )
+    return state
+  }
+
+  const source_tab_group_data = getSourceTabGroupData( target_window, { tab_id } )
+
+  // No-op if index is not updated
+  if( source_tab_group_data.index === index ) {
+    console.info('no-op move')
+    return state
+  }
+
   const source_data = {
     window_id,
     tab_ids: [ tab_id ],
-    tabs: [ findTab( state, window_id, tab_id ) ]
+    tabs: [ findTab( state, window_id, tab_id ) ],
   }
 
-  const target_data = {
+  let target_data = {
     window_id,
-    index
+    index,
   }
+
+  target_data = Object.assign( {}, target_data,
+    getTargetTabGroupData( target_window, target_data, source_data.tabs )
+  )
 
   return moveTabs( state, source_data, target_data )
 }
@@ -640,14 +617,17 @@ export function attachTab( state, { tab_id, window_id, index } ) {
       // @todo error
       return state
     }
-    state = detachTab( state, { tab_id, window_id: tab_window_id } )
-    tab_index = state.orphan_tabs.findIndex( browser_tab => browser_tab.id === tab_id )
+
+    const { source_data, target_data } = getTabMoveData( state, { window_id: tab_window_id, tab_ids: [ tab_id ] }, { window_id, index } )
+
+    return moveTabs( state, source_data, target_data )
   }
 
   const orphan_tabs = [ ...state.orphan_tabs ]
   const browser_tab = Object.assign( {}, orphan_tabs.splice( tab_index, 1 )[ 0 ], {
     windowId: window_id,
-    index
+    index,
+    pinned: false
   })
 
   return Object.assign( addTab( state, { browser_tab } ), {
@@ -656,12 +636,43 @@ export function attachTab( state, { tab_id, window_id, index } ) {
 }
 
 export function detachTab( state, { tab_id, window_id, index } ) {
+  console.info('detachTab', { tab_id, window_id, index })
   return _removeTab( state, { tab_id, window_id, index, is_detach: true } )
 }
 
 export function updateConfig( state, { config } ) {
   return Object.assign( {}, state, {
     config
+  })
+}
+
+export function addContext( state, { context } ) {
+  let contexts = Object.assign( {}, state.contexts )
+
+  contexts[ context.id ] = context
+
+  return Object.assign( {}, state, {
+    contexts
+  })
+}
+
+export function updateContext( state, { context } ) {
+  let contexts = Object.assign( {}, state.contexts )
+
+  contexts[ context.id ] = context
+
+  return Object.assign( {}, state, {
+    contexts
+  })
+}
+
+export function removeContext( state, { context } ) {
+  let contexts = Object.assign( {}, state.contexts )
+
+  delete contexts[ context.id ]
+
+  return Object.assign( {}, state, {
+    contexts
   })
 }
 

@@ -5,13 +5,18 @@
       <div class="sidebar-header-new_group" @click.left="createTabGroup()" @click.right.prevent>New Group</div>
       <!-- @todo create icon -->
       <input class="sidebar-header-search" type="search" @input="onUpdateSearchText( search_text )" v-model="search_text" :placeholder="__MSG_tab_search_placeholder__"/>
+      <div class="sidebar-header-config" @click="openOptionsPage()">
+        <!-- @todo hi-res, context colours -->
+        <img class="icon" src="/icons/options.png"/>
+      </div>
     </div>
     <div class="sidebar-tabs-pinned-list" @click.right.prevent>
       <div class="sidebar-tabs-pinned-list-item"
           v-for="tab in pinned_tabs" :key="tab.id"
-          :class="{ active: tab.active }" :title="tab.title"
-          @click.left="openTab( tab )" @click.middle="closeTab( tab )"
+          :class="{ active: tab.active, selected: isSelected( tab ) }" :title="tab.title"
+          @click.ctrl="toggleTabSelection( tab )" @click.exact="openTab( tab )" @click.middle="closeTab( tab )"
       >
+        <!-- @todo fade styling for pinned tabs if search -->
         <img class="sidebar-tabs-pinned-list-item-icon" :src="tab.icon_url"/>
       </div>
     </div>
@@ -31,7 +36,23 @@
           <span class="sidebar-tab-group-list-item-header-tab-count">{{ getCountMessage( 'tabs', tab_group.tabs_count ) }}</span>
         </div>
         <div v-if="tab_group.open" class="sidebar-tab-group-tabs-list">
-          <SidebarTabItem class="sidebar-tab-group-tabs-list-item" :window-id="window_id" :tab-group="tab_group" :tab="tab" v-for="tab in tab_group.tabs" :key="tab.id" v-if="! search_text || ! search_resolved || tab.is_matched"/>
+          <div class="sidebar-tab-group-tabs-list-item"
+              v-for="tab in tab_group.tabs" :key="tab.id" :tab="tab"
+              v-if="! search_text || ! search_resolved || tab.is_matched" :title="tab.title"
+              :class="{ active: tab_group.active_tab_id === tab.id, selected: isSelected( tab ) }"
+              @click.ctrl="toggleTabSelection( tab )" @click.exact="openTab( tab )" @click.middle="closeTab( tab )"
+              draggable="true" @drag="onTabDrag" @dragstart="onTabDragStart( tab, $event )" @dragenter="onTabDragEnter" @dragover="onTabDragOver" @dragexit="onTabDragExit" @dragleave="onTabDragLeave" @dragend="onTabDragEnd" @drop="onTabDrop"
+          >
+            <div class="sidebar-tab-view-item" :class="{ active: tab_group.active_tab_id === tab.id }">
+              <img class="sidebar-tab-view-item-icon" :src="tab.icon_url"/>
+              <div class="sidebar-tab-view-item-text">
+                <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
+                <br>
+                <span class="sidebar-tab-view-item-url">{{ tab.url }}</span>
+              </div>
+              <div v-if="tab.context_id" class="sidebar-tab-view-item-context" :style="context_styles[ tab.context_id ]"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -51,31 +72,33 @@ import {
   setTabActive,
   closeTab,
   runTabSearch,
+  openOptionsPage,
 } from '../integrations/index.mjs'
 import {
   onTabGroupDragEnter,
   onTabGroupDragOver,
   onTabGroupDrop,
+  setTabTransferData,
 } from './droppable.mjs'
 import {
   debounce,
   getCountMessage,
   onStateChange,
 } from './helpers.mjs'
-import SidebarTabItem from './SidebarTabItem.vue'
 
 export default {
   name: 'sidebar',
   components: {
-    SidebarTabItem
   },
   data() {
     return {
       window_id: window.current_window_id,
       active_tab_group_id: null,
+      context_styles: {},
       is_tab_group_open: {},
       search_text: '',
       search_resolved: true,
+      selected_tab_ids: [],
       pinned_tabs: [],
       tab_groups: [
       ],
@@ -86,6 +109,12 @@ export default {
     onStateChange( state => {
       this.theme = state.config.theme
 
+      for( let context_id in state.contexts || {} ) {
+        this.context_styles[ context_id ] = {
+          'background-color': state.contexts[ context_id ].color
+        }
+      }
+
       const state_window = state.windows.find( window => window.id === this.window_id )
       if( state_window ) {
         // @todo if active_tab_group_id has changed, open the new active group
@@ -93,6 +122,9 @@ export default {
 
         this.search_text = state_window.search_text
         this.search_resolved = state_window.search_resolved
+
+        // @todo this could be done more efficiently
+        const new_selected_tab_ids = []
 
         // Need to deep clone the objects because Vue extends prototypes when state added to the vm
         let tab_groups = state_window.tab_groups.map( cloneTabGroup )
@@ -107,7 +139,14 @@ export default {
           } else {
             tab_group.open = ( tab_group.id === state_window.active_tab_group_id )
           }
+
+          tab_group.tabs.forEach( tab => {
+            if( this.selected_tab_ids.includes( tab.id ) ) {
+              new_selected_tab_ids.push( tab.id )
+            }
+          })
         })
+        Object.getPrototypeOf( this.selected_tab_ids ).splice.apply( this.selected_tab_ids, [ 0, this.selected_tab_ids.length, ...new_selected_tab_ids ] )
         // Use the extended splice to trigger change detection
         Object.getPrototypeOf( this.tab_groups ).splice.apply( this.tab_groups, [ 0, this.tab_groups.length, ...tab_groups ] )
       } else {
@@ -128,10 +167,49 @@ export default {
       // @todo create new tab in the new group
     },
     openTab( tab ) {
+      console.info('openTab', tab)
+      this.selected_tab_ids.splice( 0, this.selected_tab_ids.length )
       setTabActive( tab.id )
     },
     closeTab( tab ) {
+      console.info('closeTab', tab)
       closeTab( tab.id )
+    },
+    isSelected( tab ) {
+      return this.selected_tab_ids.includes( tab.id )
+    },
+    onTabDrag( event ) {
+      console.info('onTabDrag', event)
+    },
+    onTabDragStart( tab, event ) {
+      console.info('onTabDragStart', event, this.window_id, this.selected_tab_ids)
+
+      // Use the selected tabs if the tab is selected
+      if( this.isSelected( tab ) ) {
+        setTabTransferData( event.dataTransfer, this.window_id, [ ...this.selected_tab_ids ] )
+      } else {
+        this.selected_tab_ids.splice( 0, this.selected_tab_ids.length )
+        setTabTransferData( event.dataTransfer, this.window_id, [ tab.id ] )
+      }
+    },
+    onTabDragEnter( event ) {
+      console.info('onTabDragEnter', event)
+    },
+    onTabDragExit( event ) {
+      console.info('onTabDragExit', event)
+    },
+    onTabDragLeave( event ) {
+      console.info('onTabDragLeave', event)
+    },
+    onTabDragOver( event ) {
+      console.info('onTabDragOver', event)
+      event.dataTransfer.dropEffect = 'move'
+    },
+    onTabDragEnd( event ) {
+      console.info('onTabDragEnd', event)
+    },
+    onTabDrop( event ) {
+      console.info('onTabDrop', event, event.dataTransfer.getData( 'text/plain' ) )
     },
     onTabGroupDragEnter,
     onTabGroupDragOver,
@@ -140,8 +218,19 @@ export default {
       console.info('runSearch', search_text)
       runTabSearch( window.store, this.window_id, search_text )
     }, 250 ),
+    openOptionsPage,
     toggleTabGroupOpen( tab_group ) {
       tab_group.open = ! tab_group.open
+    },
+    toggleTabSelection( tab ) {
+      console.info('toggleTabSelection', tab)
+      const tab_index = this.selected_tab_ids.indexOf( tab.id )
+      if( tab_index > -1 ) {
+        this.selected_tab_ids.splice( tab_index, 1 )
+      } else {
+        this.selected_tab_ids.push( tab.id )
+      }
+      console.info('selected_tab_ids', this.selected_tab_ids)
     }
   }
 }
@@ -185,6 +274,15 @@ export default {
 .sidebar-header-new_group {
   flex: 1;
   padding: 4px 8px;
+  cursor: pointer;
+}
+
+.light .sidebar-header-new_group:hover {
+  background-color: #cccdcf; /* Light Theme header tab hover background */
+}
+
+.dark .sidebar-header-new_group:hover {
+  background-color: #252526; /* Dark Theme header tab hover background */
 }
 
 .sidebar-header-search {
@@ -205,6 +303,22 @@ export default {
   background-color: #474749; /* Dark Theme awesome bar background */
   color: #fff; /* Photon White */
   border: none;
+}
+
+.sidebar-header-config {
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.light .sidebar-header-config:hover {
+  background-color: #cccdcf; /* Light Theme header tab hover background */
+}
+
+.dark .sidebar-header-config:hover {
+  background-color: #252526; /* Dark Theme header tab hover background */
 }
 
 .sidebar-tabs-pinned-list {
@@ -280,6 +394,8 @@ export default {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  position: sticky;
+  top: 0;
 }
 
 .sidebar-tab-group-list-item-header > span {
@@ -298,6 +414,96 @@ export default {
 }
 
 .sidebar-tab-group-tabs-list-item {
+  width: 100%;
   flex: 1;
+}
+
+.sidebar-tab-group-tabs-list-item.selected {
+  /* @todo themed */
+  background-color: purple;
+}
+
+.sidebar-tab-view-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+}
+
+.sidebar-tab-view-item-icon {
+  width: 24px;
+  height: 24px;
+  margin: 0 8px;
+}
+
+.sidebar-tab-view-item-text {
+  flex: 1;
+  padding-top: 10px;
+  padding-bottom: 10px
+}
+
+.sidebar-tab-view-item-context {
+  flex: 0;
+  min-width: 4px;
+  height: 52px;
+}
+
+.light .sidebar-tab-group-list-item-header {
+  background-color: white;
+  border-bottom: black 1px solid;
+}
+
+.light .sidebar-tab-view-item.active {
+  background-color: #f5f6f7; /* Light Theme header active tab background */
+}
+
+.light .sidebar-tab-view-item:hover {
+  background-color: #cccdcf; /* Light Theme header tab hover background */
+}
+
+.light .sidebar-tab-view-item.active:hover {
+  background-color: #f5f6f7; /* Light Theme header active tab background */
+}
+
+.light .sidebar-tab-view-item-title {
+  color: black;
+}
+
+.light .sidebar-tab-view-item-url {
+  color: #737373; /* Photon Grey 50 */
+}
+
+.dark .sidebar-tab-group-list-item-header {
+  background-color: black;
+  border-bottom: white 1px solid;
+}
+
+.dark .sidebar-tab-view-item.active {
+  background-color: #323234; /* Dark Theme header active tab background */
+}
+
+.dark .sidebar-tab-view-item:hover {
+  background-color: #252526; /* Dark Theme header tab hover background */
+}
+
+.dark .sidebar-tab-view-item.active:hover {
+  background-color: #323234; /* Dark Theme header active tab background */
+}
+
+.dark .sidebar-tab-view-item-title {
+  color: #fff; /* Photon White */
+}
+
+.dark .sidebar-tab-view-item-url {
+  color: #737373; /* Photon Grey 50 */
+}
+
+/* @todo should be moved to common css */
+.icon {
+  height: 16px;
+  width: 16px;
+  margin-right: 4px;
 }
 </style>

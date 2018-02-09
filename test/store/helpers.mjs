@@ -103,6 +103,9 @@ export const tab_state_schema = {
       type: 'string',
       format: 'uri'
     },
+    'context_id': {
+      type: 'string'
+    },
     'discarded': {
       type: 'boolean'
     },
@@ -221,6 +224,9 @@ export const state_schema = {
     config: {
       type: 'object'
     },
+    contexts: {
+      type: 'object'
+    },
     orphan_tabs: {
       type: 'array',
       items: tab_state_schema
@@ -238,10 +244,28 @@ export const state_schema = {
 }
 
 const ajv = new Ajv()
-export const validateTabState = ajv.compile( tab_state_schema )
-export const validateTabGroupState = ajv.compile( Object.assign( { type: 'object' }, tab_group_state_schema ) )
-export const validateWindowState = ajv.compile( window_state_schema )
-export const validateState = ajv.compile( state_schema )
+export const validateTabStateSchema = ajv.compile( tab_state_schema )
+export const validateTabGroupStateSchema = ajv.compile( Object.assign( { type: 'object' }, tab_group_state_schema ) )
+export const validateWindowStateSchema = ajv.compile( window_state_schema )
+export const validateStateSchema = ajv.compile( state_schema )
+
+export function validateTabState( tab_state ) {
+  return validateTabStateSchema( tab_state )
+}
+export function validateTabGroupState( tab_group_state ) {
+  // @todo validate no duplicate tabs
+  // @todo validate active_tab_id is set
+  // @todo validate tab count
+  return validateTabGroupStateSchema( tab_group_state )
+}
+export function validateWindowState( window_state ) {
+  // @todo validate each of the tab groups
+  // @todo validate active_tab_group_id is set
+  return validateWindowStateSchema( window_state )
+}
+export function validateState( state ) {
+  return validateStateSchema( state )
+}
 
 function testFindTab( t ) {
   let state = getInitialState()

@@ -1,6 +1,7 @@
 
 export const default_config = {
-  theme: 'light'
+  theme: 'light', // 'dark'
+  native_tab_move: 'group', // 'free', 'group-wrap'
 }
 
 export function createWindow( window_id, tab_groups ) {
@@ -96,35 +97,79 @@ export function getNewTabGroupId( state ) {
   return new_tab_group_id
 }
 
-function getTargetIndex( state, target_data, ignored_tabs ) {
-  const target_window = state.windows.find( window => window.id === target_data.window_id )
-  if( ! target_window ) {
-    return null
-  }
+export function getTargetIndex( target_window, target_data, ignored_tabs ) {
   let index_offset = 0
   for( let tab_group of target_window.tab_groups ) {
-    let tab_group_index = 0
-    for( let tab of tab_group.tabs ) {
-      if( ! ignored_tabs.includes( tab ) ) {
-        tab_group_index++
-        if( target_data.tab_group_id === tab_group.id && target_data.tab_group_index === tab_group_index ) {
-          return {
-            index: index_offset + tab_group_index
-          }
+    if( target_data.tab_group_id === tab_group.id ) {
+      if( target_data.tab_group_index != null ) {
+        return {
+          index: index_offset + target_data.tab_group_index
         }
       }
-    }
-    index_offset += tab_group_index
-    if( target_data.tab_group_id === tab_group.id ) {
       return {
-        index: index_offset,
-        tab_group_index
+        index: index_offset + tab_group.tabs_count
       }
     }
+    index_offset += tab_group.tabs_count
+  }
+  // @todo should this add to the last group?
+  return null
+}
+
+export function getSourceTabGroupData( source_window, source_data ) {
+  let index_offset = 0
+  for( let tab_group of source_window.tab_groups ) {
+    let tab_group_index = tab_group.tabs.findIndex( tab => tab.id === source_data.tab_id )
+    if( tab_group_index > -1 ) {
+      return {
+        index: index_offset + tab_group_index,
+        tab_group_id: tab_group.id,
+        tab_group_index,
+        tab_group_last: ( tab_group_index === tab_group.tabs_count - 1 )
+      }
+    }
+    index_offset += tab_group.tabs_count
   }
   return null
 }
 
+export function getTargetTabGroupData( target_window, target_data, ignored_tabs = [] ) {
+  let index_offset = 0
+  for( let tab_group of target_window.tab_groups ) {
+    let { tabs_count } = tab_group
+    if( ignored_tabs.length ) {
+      tabs_count = tab_group.tabs.filter( tab => ! ignored_tabs.includes( tab ) ).length
+    }
+    if( target_data.index - index_offset < tabs_count ) {
+      return {
+        tab_group_id: tab_group.id,
+        tab_group_index: target_data.index - index_offset
+      }
+    }
+    if( target_data.index - index_offset == tabs_count || target_data.pinned != null && tab_group.pinned != null ) {
+      return {
+        tab_group_id: tab_group.id,
+        tab_group_index: target_data.index - index_offset
+      }
+    }
+    index_offset += tabs_count
+  }
+  const last_tab_group = target_window.tab_groups[ target_window.tab_groups.length - 1 ]
+  return {
+    tab_group_id: last_tab_group.id,
+    tab_group_index: last_tab_group.tabs_count
+  }
+}
+
+/**
+ * Get normalized copy of source and target data for move
+ * @param state
+ * @param source_data
+ *   window_id
+ *   tab_ids
+ * @param target_data
+ *
+ */
 export function getTabMoveData( state, source_data, target_data ) {
   let { windows } = state
 
@@ -181,9 +226,15 @@ export function getTabMoveData( state, source_data, target_data ) {
   // Load the global index for the target
   if( target_data.index == null && target_data.tab_group_id != null ) {
     target_data = Object.assign( {}, target_data,
-      getTargetIndex( state, target_data, source_tabs )
+      getTargetIndex( target_window, target_data, source_tabs )
     )
     // @todo check result
+  }
+
+  if( target_data.tab_group_id == null ) {
+    target_data = Object.assign( {}, target_data,
+      getTargetTabGroupData( target_window, target_data )
+    )
   }
 
   return {

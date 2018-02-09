@@ -8,6 +8,9 @@
         <li :class="{ 'active': selected_section === 'data' }">
           <a href="javascript:void(0)" @click="selectSection( 'data' )">Data</a>
         </li>
+        <li :class="{ 'active': selected_section === 'debug' }">
+          <a href="javascript:void(0)" @click="selectSection( 'debug' )">Debug</a>
+        </li>
       </ul>
     </nav>
     <article class="main">
@@ -30,6 +33,11 @@
           <button @click="syncState()" class="browser-style">Sync State</button>
         </form>
       </section>
+      <section v-if="selected_section === 'debug'">
+        <form @submit.prevent>
+          <button @click="openSidebarPage()" class="browser-style">Open Sidebar Page</button>
+        </form>
+      </section>
     </article>
   </body>
 </template>
@@ -38,6 +46,7 @@
 import {
   loadBrowserState,
   resetBrowserState,
+  openSidebarPage,
   setTheme,
 } from '../integrations/index.mjs'
 import {
@@ -70,6 +79,7 @@ export default {
     clearAllData() {
       resetBrowserState( window.store )
     },
+    openSidebarPage,
     syncState() {
       window.background.syncState()
     },
