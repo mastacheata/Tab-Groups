@@ -176,11 +176,6 @@ export function loadBrowserState() {
       contextual_identities = _contextual_identities || []
       theme = _theme || {}
 
-      console.info('storage', storage)
-      console.info('browser_tabs', _browser_tabs)
-      console.info('theme', theme)
-      console.info('contextual_identities', contextual_identities)
-
       const browser_tab_preview_images = []
 
       let window_tab_groups = []

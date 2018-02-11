@@ -3,6 +3,7 @@ p1
   - reproduce all bugs as integration tests
   - add library for web-extension browser mocking
 - bugs
+  - context broken
   - drag from new window to existing
   - moving to start adds to pinned
   - fix move when there are pinned tabs
@@ -15,7 +16,6 @@ p1
   - sidebar
     - bind right click for empty space
     - duplicate tab issue
-    - fix favicon removal bug
     - multi-drag
       - styling
       - clear selection after move
@@ -24,18 +24,25 @@ p1
       - drag image
         - experiment with svg content
     - out of window drop target makes new window?
+    - group toggle is odd if group moves above the fold, should scroll container so both headers visible
     - active style should only be displayed if group also active
     - drag preview image issue
-    - add background for icon visibility
+    - context display is broken
+    - icons
+      - better handling for broken icons
+      - add background for icon visibility
   - open new tab should open at the end of the current collection
 - watch task with compile / tests
-- index based dragging
 - sidebar
   - context menu
   - group header
     - editable group name
     - delete group
     - group header shouldn't wrap
+    - active group indicator
+  - pinned tabs
+    - icon sizing should match native for consistency
+    - update styling to match tab bar
   - tab item
     - visual style for suspend
     - loading indicator
@@ -43,14 +50,19 @@ p1
       - audio playing, muted
       - pinned
       - loading
-  - update pinned tab styling to match tab bar
+      - notifications?
+    - ensure new tab is visible (scroll, open group)
   - create new group [icon]
   - drag and drop
-    - tab order
-    - group order
+    - index based tab dragging
+    - index based group dragging
     - between pinned tabs
-    - https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Recommended_drag_types
-  - arrow key navigation with selected state
+    - [Recommended drag types](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Recommended_drag_types)
+  - navigation
+    - arrow key navigation with selected state
+    - add handling for native change tab: none, visible, group-wrap
+    - tab wheel scroll
+    - command to toggle group sidebar
 - options
   - base styling
   - toggles
@@ -59,13 +71,14 @@ p1
       - sync
   - fix field tabbing
 - testing for suspend and replace
-- validation includes unique & active linking
-- add validator to redux
+- dispatcher
+  - add validator
+    - update to include unique & active linking
+  - add performance markers
 - text overflow gradient
 - clean up console warnings
 - clear out repo
 - review @todos
-- add notification indicator
 - add docs to hide tab bar
   - https://superuser.com/questions/1261660/firefox-quantum-ver-57-how-can-i-hide-the-horizontal-tab-bar-with-treesty/1261661
   - https://support.mozilla.org/en-US/questions/957337

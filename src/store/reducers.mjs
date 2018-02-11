@@ -32,6 +32,7 @@ import {
   getTargetTabGroupData,
 } from './helpers.mjs'
 
+// @todo remove dependency
 import {
   getTabState,
 } from '../integrations/index.mjs'
@@ -149,7 +150,7 @@ export function init( state, { browser_tabs, config, contextual_identities, them
     if( window_tab_groups_state ) {
       const last_tab_group_state = window_tab_groups_state[ window_tab_groups_state.length - 1 ]
       for( let tab_group_state of window_tab_groups_state ) {
-        const tabs = ( last_tab_group_state === tab_group_state ? window_tabs : window_tabs.splice( 0, tab_group_state.tabs_count ) ).map( getTabState )
+        const tabs = ( last_tab_group_state === tab_group_state ? window_tabs : window_tabs.splice( 0, tab_group_state.tabs_count ) )
         window_tab_groups.push({
           id: tab_group_state.id,
           title: tab_group_state.title,

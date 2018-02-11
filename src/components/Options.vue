@@ -44,7 +44,6 @@
 
 <script>
 import {
-  loadBrowserState,
   resetBrowserState,
   openSidebarPage,
   setTheme,
