@@ -2,7 +2,12 @@
   <body class="sidebar" :class="theme">
     <div class="sidebar-header">
       <!-- @todo create icon -->
-      <div class="sidebar-header-new_group" @click.left="createTabGroup()" @click.right.prevent>New Group</div>
+      <div class="sidebar-header-new_group"
+          @click.left="createTabGroup()" @click.right.prevent
+      >
+        <!-- @todo use localized string -->
+        New Group
+      </div>
       <!-- @todo create icon -->
       <input class="sidebar-header-search" type="search" @input="onUpdateSearchText( search_text )" v-model="search_text" :placeholder="__MSG_tab_search_placeholder__"/>
       <div class="sidebar-header-config" @click="openOptionsPage()">
@@ -18,6 +23,7 @@
       >
         <!-- @todo fade styling for pinned tabs if search -->
         <img class="sidebar-tabs-pinned-list-item-icon" :src="tab.icon_url"/>
+        <!-- @todo context bar -->
       </div>
     </div>
     <div class="sidebar-tab-group-list" @click.right.prevent>
@@ -29,6 +35,7 @@
             @dragenter="onTabGroupDragEnter( tab_group, $event )" @dragover="onTabGroupDragOver( tab_group, $event )" @drop="onTabGroupDrop( tab_group, $event )" @dragend="onTabGroupDragEnd( tab_group, $event )"
         >
           <span class="text">
+            <!-- @todo icons -->
             <span>{{ tab_group.open ? '–' : '+' }}</span>
             {{ tab_group.title }}
           </span>
@@ -39,10 +46,12 @@
           <div class="sidebar-tab-group-tabs-list-item"
               v-for="tab in tab_group.tabs" :key="tab.id" :tab="tab"
               v-if="! search_text || ! search_resolved || tab.is_matched" :title="tab.title"
-              :class="{ active: tab_group.active_tab_id === tab.id, selected: isSelected( tab ) }"
+              :class="{ active: tab_group.active_tab_id === tab.id, selected: isSelected( tab ), source: isSelected( tab ) && is_dragging, target: target_tab_id === tab.id && ! isSelected( tab ) }"
               @click.ctrl="toggleTabSelection( tab )" @click.exact="openTab( tab )" @click.middle="closeTab( tab )"
-              draggable="true" @drag="onTabDrag" @dragstart="onTabDragStart( tab, $event )" @dragenter="onTabDragEnter" @dragover="onTabDragOver" @dragexit="onTabDragExit" @dragleave="onTabDragLeave" @dragend="onTabDragEnd" @drop="onTabDrop"
+              draggable="true" @dragstart="onTabDragStart( $event, tab )" @dragend="onTabDragEnd" @drop="onTabDrop( tab, $event )"
+              @dragover="onTabDragOver( $event, tab_group, tab )"
           >
+              <!-- @drag="onTabDrag" @dragenter="onTabDragEnter( tab_group, tab, $event )" @dragleave="onTabDragLeave( tab_group, tab, $event )" @dragexit="onTabDragExit" -->
             <div class="sidebar-tab-view-item" :class="{ active: tab_group.active_tab_id === tab.id }">
               <img class="sidebar-tab-view-item-icon" :src="tab.icon_url"/>
               <div class="sidebar-tab-view-item-text">
@@ -68,13 +77,16 @@ import {
   cloneTab,
 } from '../store/helpers.mjs'
 import {
-  getMessage,
-  setTabActive,
   closeTab,
-  runTabSearch,
+  getMessage,
+  moveTabsToGroup,
   openOptionsPage,
+  runTabSearch,
+  setTabActive,
 } from '../integrations/index.mjs'
 import {
+  getTransferData,
+  isTabTransfer,
   onTabGroupDragEnter,
   onTabGroupDragOver,
   onTabGroupDrop,
@@ -95,6 +107,7 @@ export default {
       window_id: window.current_window_id,
       active_tab_group_id: null,
       context_styles: {},
+      is_dragging: false,
       is_tab_group_open: {},
       search_text: '',
       search_resolved: true,
@@ -102,6 +115,9 @@ export default {
       pinned_tabs: [],
       tab_groups: [
       ],
+      target_tab_group_id: null,
+      target_tab_group_index: null,
+      target_tab_id: null,
       theme: null
     }
   },
@@ -179,37 +195,51 @@ export default {
       return this.selected_tab_ids.includes( tab.id )
     },
     onTabDrag( event ) {
-      console.info('onTabDrag', event)
+      // console.info('onTabDrag', event)
     },
-    onTabDragStart( tab, event ) {
+    onTabDragStart( event, tab ) {
       console.info('onTabDragStart', event, this.window_id, this.selected_tab_ids)
+      this.is_dragging = true
 
       // Use the selected tabs if the tab is selected
       if( this.isSelected( tab ) ) {
         setTabTransferData( event.dataTransfer, this.window_id, [ ...this.selected_tab_ids ] )
       } else {
-        this.selected_tab_ids.splice( 0, this.selected_tab_ids.length )
+        this.selected_tab_ids.splice( 0, this.selected_tab_ids.length, tab.id )
         setTabTransferData( event.dataTransfer, this.window_id, [ tab.id ] )
       }
     },
-    onTabDragEnter( event ) {
-      console.info('onTabDragEnter', event)
-    },
-    onTabDragExit( event ) {
-      console.info('onTabDragExit', event)
-    },
-    onTabDragLeave( event ) {
-      console.info('onTabDragLeave', event)
-    },
-    onTabDragOver( event ) {
-      console.info('onTabDragOver', event)
-      event.dataTransfer.dropEffect = 'move'
+    onTabDragOver( event, tab_group, tab ) {
+      event.preventDefault()
+      const event_data = getTransferData( event.dataTransfer )
+      // console.info('onTabDragOver', event)
+      if( isTabTransfer( event_data ) ) {
+        this.target_tab_group_id = tab_group.id
+        this.target_tab_group_index = tab_group.tabs.indexOf( tab )
+        this.target_tab_id = tab.id
+        event.dataTransfer.effectAllowed = 'move'
+        event.dataTransfer.dropEffect = 'move'
+      }
     },
     onTabDragEnd( event ) {
       console.info('onTabDragEnd', event)
+      this.is_dragging = false
+      this.target_tab_group_id = null
+      this.target_tab_group_index = null
+      this.target_tab_id = null
     },
-    onTabDrop( event ) {
-      console.info('onTabDrop', event, event.dataTransfer.getData( 'text/plain' ) )
+    onTabDrop( tab, event ) {
+      const source_data = getTransferData( event.dataTransfer )
+      console.info('onTabDrop', tab.id, event, source_data )
+
+      const target_data = {
+        window_id: this.window_id,
+        tab_group_id: this.target_tab_group_id,
+        tab_group_index: this.target_tab_group_index
+      }
+
+      moveTabsToGroup( window.store, source_data, target_data )
+      this.selected_tab_ids.splice( 0, this.selected_tab_ids.length )
     },
     onTabGroupDragEnter,
     onTabGroupDragOver,
@@ -338,6 +368,32 @@ export default {
   padding: 2px;
 }
 
+.sidebar-tab-group-tabs-list-item.target {
+  background-color: red;
+}
+
+.sidebar-tab-view-item {
+  transition-property: margin-top;
+  transition-duration: 250ms;
+  transition-timing-function: cubic-bezier(.07,.95,0,1);
+}
+
+.sidebar-tab-group-tabs-list-item.target .sidebar-tab-view-item {
+  margin-top: 54px;
+}
+
+.light .sidebar-tab-group-tabs-list-item.target .sidebar-tab-view-item {
+  background-color: white;
+}
+
+.dark .sidebar-tab-group-tabs-list-item.target .sidebar-tab-view-item {
+  background-color: white;
+}
+
+.light .sidebar-tab-group-tabs-list-item.source .sidebar-tab-view-item {
+  background-color: blue;
+}
+
 .dark .sidebar-tabs-pinned-list-item {
 }
 
@@ -370,8 +426,8 @@ export default {
 }
 
 .sidebar-tabs-pinned-list-item-icon {
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
 }
 
 .sidebar-tab-group-list {
@@ -415,7 +471,7 @@ export default {
 
 .sidebar-tab-group-tabs-list-item {
   width: 100%;
-  flex: 1;
+  flex: 0;
 }
 
 .sidebar-tab-group-tabs-list-item.selected {

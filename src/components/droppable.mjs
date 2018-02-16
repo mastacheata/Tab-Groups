@@ -14,14 +14,14 @@ export function setTabTransferData( data_transfer, window_id, tab_ids ) {
 }
 
 // @todo extract helper to pull data transfer type
-function isTabTransfer( event_data ) {
+export function isTabTransfer( event_data ) {
   return event_data && event_data.hasOwnProperty( 'tab_ids' )
 }
 
-function getTransferData( data_transfer ) {
+export function getTransferData( data_transfer ) {
   const event_data = JSON.parse( data_transfer.getData( 'application/json' ) )
   // @todo error guard
-  console.info('getTransferData', event_data)
+  // console.info('getTransferData', event_data)
 
   return event_data
 }

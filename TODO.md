@@ -4,6 +4,8 @@ p1
   - add library for web-extension browser mocking
 - bugs
   - context broken
+  - target after start issue
+    - could fix with style change
   - drag from new window to existing
   - moving to start adds to pinned
   - fix move when there are pinned tabs
@@ -55,9 +57,15 @@ p1
   - create new group [icon]
   - drag and drop
     - index based tab dragging
+      - style cleanup
+      - drop animation looks janky
+      - drag over last item moves to the wrong indexp
     - index based group dragging
     - between pinned tabs
+    - to new group
     - [Recommended drag types](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Recommended_drag_types)
+      - drag tab to bookmark
+      - drag group to bookmarks
   - navigation
     - arrow key navigation with selected state
     - add handling for native change tab: none, visible, group-wrap
@@ -70,6 +78,7 @@ p1
       - search
       - sync
   - fix field tabbing
+  - open tools on debug
 - testing for suspend and replace
 - dispatcher
   - add validator

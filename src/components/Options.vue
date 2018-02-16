@@ -1,5 +1,6 @@
 <template>
   <body class="options">
+    <!-- @todo localize -->
     <nav class="sidenav">
       <ul>
         <li :class="{ 'active': selected_section === 'preferences' }">
