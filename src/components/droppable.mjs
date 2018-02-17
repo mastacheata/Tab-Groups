@@ -1,9 +1,16 @@
-
+// @todo should call on background directly instead
 import {
   moveTabsToGroup,
 } from '../integrations/index.mjs'
 
 // @todo think through handling for 3rd party drag sources
+
+export function resetDragState() {
+  this.is_dragging = false
+  this.target_tab_group_id = null
+  this.target_tab_group_index = null
+  this.target_tab_id = null
+}
 
 export function setTabTransferData( data_transfer, window_id, tab_ids ) {
   const event_data = { window_id, tab_ids }
@@ -26,14 +33,14 @@ export function getTransferData( data_transfer ) {
   return event_data
 }
 
-export function onTabGroupDragEnter( tab_group, event ) {
+export function onTabGroupDragEnter( event, tab_group ) {
   console.info('onTabGroupDragEnter', tab_group, event)
   event.dataTransfer.effectAllowed = 'move'
   event.dataTransfer.dropEffect = 'move'
   event.preventDefault()
 }
 
-export function onTabGroupDragOver( tab_group, event ) {
+export function onTabGroupDragOver( event, tab_group ) {
   event.preventDefault()
   const event_data = getTransferData( event.dataTransfer )
   console.info('onTabGroupDragOver', tab_group, event)
@@ -43,7 +50,7 @@ export function onTabGroupDragOver( tab_group, event ) {
   }
 }
 
-export function onTabGroupDrop( tab_group, event ) {
+export function onTabGroupDrop( event, tab_group ) {
   event.preventDefault()
   const source_data = getTransferData( event.dataTransfer )
   console.info('onTabGroupDrop', tab_group, event, source_data)

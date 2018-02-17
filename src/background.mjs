@@ -5,7 +5,13 @@ import App, { init } from './store/reducers.mjs'
 import { getTabGroupsPersistState } from './store/helpers.mjs'
 import {
   bindBrowserEvents,
+  closeTab,
+  getMessage,
   loadBrowserState,
+  moveTabsToGroup,
+  openOptionsPage,
+  runTabSearch,
+  setTabActive,
   setWindowTabGroupsState,
 } from './integrations/index.mjs'
 
@@ -53,3 +59,11 @@ window.syncState = () => {
 window.getStore = function() {
   return store_promise
 }
+
+// Proxy public methods from integrations to reduce duplication in app js
+window.moveTabsToGroup = moveTabsToGroup
+window.closeTab = closeTab
+window.getMessage = getMessage
+window.openOptionsPage = openOptionsPage
+window.runTabSearch = runTabSearch
+window.setTabActive = setTabActive

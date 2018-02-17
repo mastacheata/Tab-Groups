@@ -25,6 +25,11 @@
     "description": "Link to tab group page"
   },
 
+  "tab_group_new": {
+    "message": "New Group",
+    "description": "Link to tab group page"
+  },
+
   "tab_group_sidebar_action": {
     "message": "Open the tab groups sidebar",
     "description": "Open the tab groups sidebar"

@@ -2,6 +2,7 @@ p1
 - testing
   - reproduce all bugs as integration tests
   - add library for web-extension browser mocking
+  - add testing for vue components
 - bugs
   - context broken
   - target after start issue
@@ -19,6 +20,7 @@ p1
     - bind right click for empty space
     - duplicate tab issue
     - multi-drag
+      - dragging from new doesn't clear the target class
       - styling
       - clear selection after move
       - preview placeholder
@@ -55,6 +57,7 @@ p1
       - notifications?
     - ensure new tab is visible (scroll, open group)
   - create new group [icon]
+  - favicon scan for context styles
   - drag and drop
     - index based tab dragging
       - style cleanup

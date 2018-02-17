@@ -4,9 +4,9 @@
       <!-- @todo create icon -->
       <div class="sidebar-header-new_group"
           @click.left="createTabGroup()" @click.right.prevent
+          @dragenter="onTabGroupDragEnter( $event )" @dragover="onTabGroupDragOver( $event )" @drop="onTabGroupDrop( $event )" @dragend="onTabGroupDragEnd( $event )"
       >
-        <!-- @todo use localized string -->
-        New Group
+        {{ __MSG_tab_group_new__ }}
       </div>
       <!-- @todo create icon -->
       <input class="sidebar-header-search" type="search" @input="onUpdateSearchText( search_text )" v-model="search_text" :placeholder="__MSG_tab_search_placeholder__"/>
@@ -32,7 +32,7 @@
       >
         <div class="sidebar-tab-group-list-item-header"
             v-on:click="toggleTabGroupOpen( tab_group )"
-            @dragenter="onTabGroupDragEnter( tab_group, $event )" @dragover="onTabGroupDragOver( tab_group, $event )" @drop="onTabGroupDrop( tab_group, $event )" @dragend="onTabGroupDragEnd( tab_group, $event )"
+            @dragenter="onTabGroupDragEnter( $event, tab_group )" @dragover="onTabGroupDragOver( $event. tab_group )" @drop="onTabGroupDrop( $event. tab_group )" @dragend="onTabGroupDragEnd( $event, tab_group )"
         >
           <span class="text">
             <!-- @todo icons -->
@@ -79,7 +79,7 @@ import {
 import {
   closeTab,
   getMessage,
-  moveTabsToGroup,
+  // moveTabsToGroup,
   openOptionsPage,
   runTabSearch,
   setTabActive,
@@ -90,6 +90,7 @@ import {
   onTabGroupDragEnter,
   onTabGroupDragOver,
   onTabGroupDrop,
+  resetDragState,
   setTabTransferData,
 } from './droppable.mjs'
 import {
@@ -113,8 +114,7 @@ export default {
       search_resolved: true,
       selected_tab_ids: [],
       pinned_tabs: [],
-      tab_groups: [
-      ],
+      tab_groups: [],
       target_tab_group_id: null,
       target_tab_group_index: null,
       target_tab_id: null,
@@ -171,7 +171,10 @@ export default {
     })
   },
   computed: {
-    __MSG_tab_search_placeholder__: function() {
+    __MSG_tab_group_new__() {
+      return getMessage( "tab_group_new" )
+    },
+    __MSG_tab_search_placeholder__() {
       return getMessage( "tab_search_placeholder" )
     }
   },
@@ -223,10 +226,7 @@ export default {
     },
     onTabDragEnd( event ) {
       console.info('onTabDragEnd', event)
-      this.is_dragging = false
-      this.target_tab_group_id = null
-      this.target_tab_group_index = null
-      this.target_tab_id = null
+      this.resetDragState()
     },
     onTabDrop( tab, event ) {
       const source_data = getTransferData( event.dataTransfer )
@@ -238,8 +238,9 @@ export default {
         tab_group_index: this.target_tab_group_index
       }
 
-      moveTabsToGroup( window.store, source_data, target_data )
+      window.background.moveTabsToGroup( window.store, source_data, target_data )
       this.selected_tab_ids.splice( 0, this.selected_tab_ids.length )
+      this.resetDragState()
     },
     onTabGroupDragEnter,
     onTabGroupDragOver,
@@ -249,6 +250,7 @@ export default {
       runTabSearch( window.store, this.window_id, search_text )
     }, 250 ),
     openOptionsPage,
+    resetDragState,
     toggleTabGroupOpen( tab_group ) {
       tab_group.open = ! tab_group.open
     },
@@ -266,7 +268,21 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+$photon-white: #fff;
+$photon-ink-90: #0f1126;
+$photon-grey-50: #737373;
+
+$photon-border-radius: 2px;
+
+$dark-header-background: #0c0c0d;
+$dark-header-active-background: #323234;
+$dark-header-hover-background: #252526;
+
+$light-header-background: #0c0c0d;
+$light-header-active-background: #f5f6f7;
+$light-header-hover-background: #cccdcf;
+
 .sidebar {
   width: 100%;
   height: 100vh;
@@ -276,29 +292,11 @@ export default {
   align-items: stretch;
 }
 
-.sidebar.dark {
-  color: #fff; /* Photon White */
-  background-color: #0c0c0d; /* Dark Theme header background */
-}
-
-.sidebar.light {
-  color: #0f1126; /* Photon Ink 90 */
-  background-color: white;
-}
-
 .sidebar-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-}
-
-.light .sidebar-header {
-  background-color: #f5f6f7; /* Light Theme header active tab background */
-}
-
-.dark .sidebar-header {
-  background-color: #323234; /* Dark Theme header active tab background */
 }
 
 .sidebar-header-new_group {
@@ -307,32 +305,12 @@ export default {
   cursor: pointer;
 }
 
-.light .sidebar-header-new_group:hover {
-  background-color: #cccdcf; /* Light Theme header tab hover background */
-}
-
-.dark .sidebar-header-new_group:hover {
-  background-color: #252526; /* Dark Theme header tab hover background */
-}
-
 .sidebar-header-search {
   flex: 0;
   padding: 4px 8px;
   margin: 4px;
-  border-radius: 2px;
+  border-radius: $photon-border-radius;
   max-width: 50%;
-}
-
-.light .sidebar-header-search {
-  background-color: #fff; /* Photon White */
-  color: #0f1126; /* Photon Ink 90 */
-  border: 1px solid #ccc;
-}
-
-.dark .sidebar-header-search {
-  background-color: #474749; /* Dark Theme awesome bar background */
-  color: #fff; /* Photon White */
-  border: none;
 }
 
 .sidebar-header-config {
@@ -343,25 +321,11 @@ export default {
   cursor: pointer;
 }
 
-.light .sidebar-header-config:hover {
-  background-color: #cccdcf; /* Light Theme header tab hover background */
-}
-
-.dark .sidebar-header-config:hover {
-  background-color: #252526; /* Dark Theme header tab hover background */
-}
-
 .sidebar-tabs-pinned-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, 28px);
   grid-auto-columns: min-content;
   grid-auto-rows: max-content;
-}
-
-.light .sidebar-tabs-pinned-list {
-}
-
-.dark .sidebar-tabs-pinned-list {
 }
 
 .sidebar-tabs-pinned-list-item {
@@ -382,47 +346,8 @@ export default {
   margin-top: 54px;
 }
 
-.light .sidebar-tab-group-tabs-list-item.target .sidebar-tab-view-item {
-  background-color: white;
-}
-
-.dark .sidebar-tab-group-tabs-list-item.target .sidebar-tab-view-item {
-  background-color: white;
-}
-
-.light .sidebar-tab-group-tabs-list-item.source .sidebar-tab-view-item {
-  background-color: blue;
-}
-
-.dark .sidebar-tabs-pinned-list-item {
-}
-
 .sidebar-tabs-pinned-list-item {
   padding: 2px;
-}
-
-.light .sidebar-tabs-pinned-list-item.active {
-  background-color: #f5f6f7; /* Light Theme header active tab background */
-}
-
-.light .sidebar-tabs-pinned-list-item:hover {
-  background-color: #cccdcf; /* Light Theme header tab hover background */
-}
-
-.light .sidebar-tabs-pinned-list-item.active:hover {
-  background-color: #f5f6f7; /* Light Theme header active tab background */
-}
-
-.dark .sidebar-tabs-pinned-list-item.active {
-  background-color: #323234; /* Dark Theme header active tab background */
-}
-
-.dark .sidebar-tabs-pinned-list-item:hover {
-  background-color: #252526; /* Dark Theme header tab hover background */
-}
-
-.dark .sidebar-tabs-pinned-list-item.active:hover {
-  background-color: #323234; /* Dark Theme header active tab background */
 }
 
 .sidebar-tabs-pinned-list-item-icon {
@@ -486,6 +411,7 @@ export default {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: clip;
+  cursor: pointer;
 }
 
 .sidebar-tab-view-item-icon {
@@ -506,60 +432,146 @@ export default {
   height: 52px;
 }
 
-.light .sidebar-tab-group-list-item-header {
-  background-color: white;
-  border-bottom: black 1px solid;
-}
-
-.light .sidebar-tab-view-item.active {
-  background-color: #f5f6f7; /* Light Theme header active tab background */
-}
-
-.light .sidebar-tab-view-item:hover {
-  background-color: #cccdcf; /* Light Theme header tab hover background */
-}
-
-.light .sidebar-tab-view-item.active:hover {
-  background-color: #f5f6f7; /* Light Theme header active tab background */
-}
-
-.light .sidebar-tab-view-item-title {
-  color: black;
-}
-
-.light .sidebar-tab-view-item-url {
-  color: #737373; /* Photon Grey 50 */
-}
-
-.dark .sidebar-tab-group-list-item-header {
-  background-color: black;
-  border-bottom: white 1px solid;
-}
-
-.dark .sidebar-tab-view-item.active {
-  background-color: #323234; /* Dark Theme header active tab background */
-}
-
-.dark .sidebar-tab-view-item:hover {
-  background-color: #252526; /* Dark Theme header tab hover background */
-}
-
-.dark .sidebar-tab-view-item.active:hover {
-  background-color: #323234; /* Dark Theme header active tab background */
-}
-
-.dark .sidebar-tab-view-item-title {
-  color: #fff; /* Photon White */
-}
-
-.dark .sidebar-tab-view-item-url {
-  color: #737373; /* Photon Grey 50 */
-}
-
 /* @todo should be moved to common css */
 .icon {
   height: 16px;
   width: 16px;
   margin-right: 4px;
+}
+
+.light {
+  &.sidebar {
+    color: $photon-ink-90;
+    background-color: $photon-white;
+  }
+
+  .sidebar-header {
+    background-color: $light-header-active-background;
+  }
+
+  .sidebar-header-new_group:hover {
+    background-color: $light-header-hover-background;
+  }
+
+  .sidebar-header-search {
+    background-color: $photon-white;
+    color: $photon-ink-90;
+    border: 1px solid #ccc;
+  }
+
+  .sidebar-header-config:hover {
+    background-color: $light-header-hover-background;
+  }
+
+  .sidebar-tab-group-tabs-list-item.source .sidebar-tab-view-item {
+    background-color: blue;
+  }
+
+  .sidebar-tab-group-tabs-list-item.target .sidebar-tab-view-item {
+    background-color: $photon-white;
+  }
+
+  .sidebar-tabs-pinned-list-item.active {
+    background-color: $light-header-active-background;
+  }
+
+  .sidebar-tabs-pinned-list-item:hover {
+    background-color: $light-header-hover-background;
+  }
+
+  .sidebar-tabs-pinned-list-item.active:hover {
+    background-color: $light-header-active-background;
+  }
+
+  .sidebar-tab-group-list-item-header {
+    background-color: $photon-white;
+    border-bottom: black 1px solid;
+  }
+
+  .sidebar-tab-view-item.active {
+    background-color: $light-header-active-background;
+  }
+
+  .sidebar-tab-view-item:hover {
+    background-color: $light-header-hover-background;
+  }
+
+  .sidebar-tab-view-item.active:hover {
+    background-color: $light-header-active-background;
+  }
+
+  .sidebar-tab-view-item-title {
+    color: black;
+  }
+
+  .sidebar-tab-view-item-url {
+    color: $photon-grey-50;
+  }
+}
+
+.dark {
+  &.sidebar {
+    color: $photon-white;
+    background-color: $dark-header-background;
+  }
+
+  .sidebar-header {
+    background-color: $dark-header-active-background;
+  }
+
+  .sidebar-header-new_group:hover {
+    background-color: $dark-header-hover-background;
+  }
+
+  .sidebar-header-search {
+    background-color: #474749; /* Dark Theme awesome bar background */
+    color: $photon-white;
+    border: none;
+  }
+
+  .sidebar-header-config:hover {
+    background-color: $dark-header-hover-background;
+  }
+
+  .sidebar-tab-group-tabs-list-item.target .sidebar-tab-view-item {
+    background-color: $photon-white;
+  }
+
+  .sidebar-tab-group-list-item-header {
+    background-color: black;
+    border-bottom: $photon-white 1px solid;
+  }
+
+  .sidebar-tabs-pinned-list-item.active {
+    background-color: $dark-header-active-background;
+  }
+
+  .sidebar-tabs-pinned-list-item:hover {
+    background-color: $dark-header-hover-background;
+  }
+
+  .sidebar-tabs-pinned-list-item.active:hover {
+    background-color: $dark-header-active-background;
+  }
+
+  .sidebar-tab-view-item.active {
+    background-color: $dark-header-active-background;
+  }
+
+  .sidebar-tab-view-item:hover {
+    background-color: $dark-header-hover-background;
+  }
+
+  .sidebar-tab-view-item.active:hover {
+    background-color: $dark-header-active-background;
+  }
+
+  .sidebar-tab-view-item-title {
+    color: $photon-white;
+  }
+
+  .sidebar-tab-view-item-url {
+    color: $photon-grey-50;
+  }
 }
 </style>
