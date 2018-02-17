@@ -8,9 +8,8 @@ import Sidebar from './components/Sidebar.vue'
 Promise.all([
   browser.windows.getCurrent(),
   browser.runtime.getBackgroundPage()
-    .then( ( background ) => {
+    .then( background => {
       // Save a reference to the background script so it can be accessed syncronously
-      // @todo don't think this is required
       window.background = background
       return background.getStore()
     })

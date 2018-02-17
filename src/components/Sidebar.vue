@@ -32,7 +32,7 @@
       >
         <div class="sidebar-tab-group-list-item-header"
             v-on:click="toggleTabGroupOpen( tab_group )"
-            @dragenter="onTabGroupDragEnter( $event, tab_group )" @dragover="onTabGroupDragOver( $event. tab_group )" @drop="onTabGroupDrop( $event. tab_group )" @dragend="onTabGroupDragEnd( $event, tab_group )"
+            @dragenter="onTabGroupDragEnter( $event, tab_group )" @dragover="onTabGroupDragOver( $event, tab_group )" @drop="onTabGroupDrop( $event, tab_group )" @dragend="onTabGroupDragEnd( $event, tab_group )"
         >
           <span class="text">
             <!-- @todo icons -->
@@ -76,14 +76,6 @@ import {
   cloneTabGroup,
   cloneTab,
 } from '../store/helpers.mjs'
-import {
-  closeTab,
-  getMessage,
-  // moveTabsToGroup,
-  openOptionsPage,
-  runTabSearch,
-  setTabActive,
-} from '../integrations/index.mjs'
 import {
   getTransferData,
   isTabTransfer,
@@ -172,10 +164,10 @@ export default {
   },
   computed: {
     __MSG_tab_group_new__() {
-      return getMessage( "tab_group_new" )
+      return window.background.getMessage( "tab_group_new" )
     },
     __MSG_tab_search_placeholder__() {
-      return getMessage( "tab_search_placeholder" )
+      return window.background.getMessage( "tab_search_placeholder" )
     }
   },
   methods: {
@@ -192,7 +184,7 @@ export default {
     },
     closeTab( tab ) {
       console.info('closeTab', tab)
-      closeTab( tab.id )
+      window.background.closeTab( tab.id )
     },
     isSelected( tab ) {
       return this.selected_tab_ids.includes( tab.id )
@@ -247,9 +239,11 @@ export default {
     onTabGroupDrop,
     onUpdateSearchText: debounce( function( search_text ) {
       console.info('runSearch', search_text)
-      runTabSearch( window.store, this.window_id, search_text )
+      window.background.runTabSearch( window.store, this.window_id, search_text )
     }, 250 ),
-    openOptionsPage,
+    openOptionsPage() {
+      window.background.openOptionsPage()
+    },
     resetDragState,
     toggleTabGroupOpen( tab_group ) {
       tab_group.open = ! tab_group.open
@@ -274,6 +268,8 @@ $photon-ink-90: #0f1126;
 $photon-grey-50: #737373;
 
 $photon-border-radius: 2px;
+
+// Imported from default firefox theme
 
 $dark-header-background: #0c0c0d;
 $dark-header-active-background: #323234;
@@ -334,16 +330,16 @@ $light-header-hover-background: #cccdcf;
 
 .sidebar-tab-group-tabs-list-item.target {
   background-color: red;
+
+  .sidebar-tab-view-item {
+    margin-top: 54px;
+  }
 }
 
 .sidebar-tab-view-item {
   transition-property: margin-top;
   transition-duration: 250ms;
   transition-timing-function: cubic-bezier(.07,.95,0,1);
-}
-
-.sidebar-tab-group-tabs-list-item.target .sidebar-tab-view-item {
-  margin-top: 54px;
 }
 
 .sidebar-tabs-pinned-list-item {

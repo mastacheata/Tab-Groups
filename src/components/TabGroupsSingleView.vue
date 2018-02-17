@@ -4,13 +4,13 @@
       <article class="tab-groups-list-item" :class="{ active: tab_group.id === selected_tab_group.id }"
           v-for="tab_group in tab_groups" :key="tab_group.id"
           @click.left="selectTabGroup( tab_group )"
-          draggable="true" @dragenter="onTabGroupDragEnter( tab_group, $event )" @dragover="onTabGroupDragOver( tab_group, $event )" @drop="onTabGroupDrop( tab_group, $event )" @dragend="onTabGroupDragEnd( tab_group, $event )"
+          draggable="true" @dragenter="onTabGroupDragEnter( $event, tab_group )" @dragover="onTabGroupDragOver( $event, tab_group )" @drop="onTabGroupDrop( $event, tab_group )" @dragend="onTabGroupDragEnd( $event, tab_group )"
       >
         {{ tab_group.title }}
       </article>
       <article class="tab-groups-list-item"
           @click.left="createTabGroup()"
-          @dragenter="onTabGroupDragEnter( null, $event )" @dragover="onTabGroupDragOver( null, $event )" @drop="onTabGroupDrop( null, $event )"
+          @dragenter="onTabGroupDragEnter( null, $event )" @dragover="onTabGroupDragOver( $event, null )" @drop="onTabGroupDrop( $event, null )"
       >
         +
       </article>
