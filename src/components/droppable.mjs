@@ -26,6 +26,7 @@ export function resetDragState() {
   this.target_tab_group_id = null
   this.target_tab_group_index = null
   this.target_tab_id = null
+  this.selected_tab_ids.splice( 0, this.selected_tab_ids.length )
 }
 
 export function onTabGroupDragEnter( event, tab_group ) {

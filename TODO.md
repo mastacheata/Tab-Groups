@@ -8,7 +8,6 @@ p1
   - target after start issue
     - could fix with style change
   - drag from new window to existing
-  - moving to start adds to pinned
   - fix move when there are pinned tabs
   - search text weirdness
   - pinned tab drag
@@ -25,6 +24,7 @@ p1
       - clear selection after move
       - preview placeholder
       - drag below the fold to trigger timer scroll
+      - drag over collapsed group should open after 1s
       - drag image
         - experiment with svg content
     - out of window drop target makes new window?
