@@ -45,7 +45,7 @@
         <div v-if="tab_group.open" class="sidebar-tab-group-tabs-list">
           <div class="sidebar-tab-group-tabs-list-item"
               v-for="tab in tab_group.tabs" :key="tab.id" :tab="tab"
-              v-if="! search_text || ! search_resolved || tab.is_matched" :title="tab.title"
+              v-if="! search_text || ! search_resolved || tab.matched" :title="tab.title"
               :class="{ active: tab_group.active_tab_id === tab.id, selected: isSelected( tab ), source: isSelected( tab ) && is_dragging, target: target_tab_id === tab.id && ! isSelected( tab ) }"
               @click.ctrl="toggleTabSelection( tab )" @click.exact="openTab( tab )" @click.middle="closeTab( tab )"
               draggable="true" @dragstart="onTabDragStart( $event, tab )" @dragend="onTabDragEnd" @drop="onTabDrop( tab, $event )"
@@ -53,7 +53,10 @@
           >
               <!-- @drag="onTabDrag" @dragenter="onTabDragEnter( tab_group, tab, $event )" @dragleave="onTabDragLeave( tab_group, tab, $event )" @dragexit="onTabDragExit" -->
             <div class="sidebar-tab-view-item" :class="{ active: tab_group.active_tab_id === tab.id }">
-              <img class="sidebar-tab-view-item-icon" :src="tab.icon_url"/>
+              <div class="sidebar-tab-view-item-icon">
+                <div></div>
+                <img :src="tab.icon_url"/>
+              </div>
               <div class="sidebar-tab-view-item-text">
                 <span class="sidebar-tab-view-item-title">{{ tab.title }}</span>
                 <br>
@@ -274,10 +277,12 @@ $photon-border-radius: 2px;
 $dark-header-background: #0c0c0d;
 $dark-header-active-background: #323234;
 $dark-header-hover-background: #252526;
+$dark-awesome-bar-background: #474749;
 
 $light-header-background: #0c0c0d;
 $light-header-active-background: #f5f6f7;
 $light-header-hover-background: #cccdcf;
+$light-awesome-bar-background: #474749; // @todo
 
 .sidebar {
   width: 100%;
@@ -411,9 +416,22 @@ $light-header-hover-background: #cccdcf;
 }
 
 .sidebar-tab-view-item-icon {
-  width: 24px;
-  height: 24px;
-  margin: 0 8px;
+  min-width: 32px;
+  height: 32px;
+  margin: 0 4px;
+
+  > div {
+    padding: 16px;
+    border-radius: 16px;
+    position: absolute;
+  }
+
+  > img {
+    width: 24px;
+    height: 24px;
+    position: relative;
+    margin: 4px;
+  }
 }
 
 .sidebar-tab-view-item-text {
@@ -520,7 +538,7 @@ $light-header-hover-background: #cccdcf;
   }
 
   .sidebar-header-search {
-    background-color: #474749; /* Dark Theme awesome bar background */
+    background-color: $dark-awesome-bar-background;
     color: $photon-white;
     border: none;
   }
@@ -560,6 +578,10 @@ $light-header-hover-background: #cccdcf;
 
   .sidebar-tab-view-item.active:hover {
     background-color: $dark-header-active-background;
+  }
+
+  .sidebar-tab-view-item-icon > div {
+    background-color: $photon-grey-50;
   }
 
   .sidebar-tab-view-item-title {

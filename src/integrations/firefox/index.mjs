@@ -12,6 +12,7 @@ import {
   detachTabAction,
   startSearchAction,
   finishSearchAction,
+  resetSearchAction,
   updateConfigAction,
 } from '../../store/actions.mjs'
 import {
@@ -533,6 +534,11 @@ export function runTabSearch( store, window_id, search_text ) {
 
   if( ! window ) {
     // @todo error
+    return
+  }
+
+  if( ! search_text ) {
+    store.dispatch( resetSearchAction( window_id ) )
     return
   }
 

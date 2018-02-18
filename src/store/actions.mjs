@@ -5,6 +5,7 @@ import {
   WINDOW_REMOVE,
   WINDOW_SEARCH_START,
   WINDOW_SEARCH_FINISH,
+  WINDOW_SEARCH_RESET,
   GROUP_ACTIVATE,
   GROUP_CREATE,
   GROUP_REMOVE,
@@ -183,6 +184,13 @@ export function finishSearchAction( window_id, search_text, matching_tab_ids ) {
     window_id,
     search_text,
     matching_tab_ids
+  }
+}
+
+export function resetSearchAction( window_id ) {
+  return {
+    type: WINDOW_SEARCH_RESET,
+    window_id
   }
 }
 

@@ -56,5 +56,6 @@ export function onTabGroupDrop( event, tab_group ) {
       tab_group_id: tab_group.id
     }
     window.background.moveTabsToGroup( window.store, source_data, target_data )
+    this.resetDragState()
   }
 }

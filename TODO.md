@@ -34,7 +34,6 @@ p1
     - context display is broken
     - icons
       - better handling for broken icons
-      - add background for icon visibility
   - open new tab should open at the end of the current collection
 - watch task with compile / tests
 - sidebar

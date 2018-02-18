@@ -4,6 +4,7 @@ import {
   WINDOW_REMOVE,
   WINDOW_SEARCH_START,
   WINDOW_SEARCH_FINISH,
+  WINDOW_SEARCH_RESET,
   GROUP_CREATE,
   GROUP_REMOVE,
   GROUP_UPDATE,
@@ -30,6 +31,7 @@ import {
   getSourceTabGroupData,
   getTabMoveData,
   getTargetTabGroupData,
+  omit,
 } from './helpers.mjs'
 
 // @todo remove dependency
@@ -236,12 +238,12 @@ export function startWindowSearch( state, { window_id, search_text } ) {
         tab_groups = tab_groups.map( tab_group => {
           return Object.assign( {}, tab_group, {
             tabs: tab_group.tabs.map( tab => {
-              if( ! tab.is_matched ) {
+              if( ! tab.matched ) {
                 return tab
               }
               const new_tab = {}
               for( let key in tab ) {
-                if( key !== 'is_matched' ) {
+                if( key !== 'matched' ) {
                   new_tab[ key ] = tab[ key ]
                 }
               }
@@ -279,12 +281,40 @@ export function finishWindowSearch( state, { window_id, search_text, matching_ta
                 return tab
               }
               return Object.assign( {}, tab, {
-                is_matched: true
+                matched: true
               })
             })
           })
         })
       })
+    })
+  })
+}
+
+export function resetWindowSearch( state, { window_id } ) {
+  return Object.assign( {}, state, {
+    windows: state.windows.map( window => {
+      if( window.id !== window_id ) {
+        return window
+      }
+
+      const new_window = omit( window, 'search_text', 'search_resolved' )
+
+      new_window.tab_groups = window.tab_groups.map( tab_group => {
+        if( ! tab_group.tabs.some( tab => tab.hasOwnProperty( 'matched' ) && tab.matched ) ) {
+          return tab_group
+        }
+        return Object.assign( {}, tab_group, {
+          tabs: tab_group.tabs.map( tab => {
+            if( tab.hasOwnProperty( 'matched' ) && tab.matched ) {
+              return omit( tab, 'matched' )
+            }
+            return tab
+          })
+        })
+      })
+
+      return new_window
     })
   })
 }
@@ -691,6 +721,8 @@ export default function App( state = initial_state, action ) {
       return startWindowSearch( state, action )
     case WINDOW_SEARCH_FINISH:
       return finishWindowSearch( state, action )
+    case WINDOW_SEARCH_RESET:
+      return resetWindowSearch( state, action )
     case GROUP_CREATE:
       return createGroup( state, action )
     case GROUP_REMOVE:

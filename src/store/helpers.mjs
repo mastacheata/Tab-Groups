@@ -263,3 +263,15 @@ export function getTabGroupsPersistState( window ) {
     return tab_group_state
   })
 }
+
+export function omit( obj, ...properties ) {
+  const new_obj = {}
+
+  for( let key in obj ) {
+    if( ! properties.includes( key ) ) {
+      new_obj[ key ] = obj[ key ]
+    }
+  }
+
+  return new_obj
+}
