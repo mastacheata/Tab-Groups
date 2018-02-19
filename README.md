@@ -15,8 +15,9 @@ npm run build
 
 This is not ready for public consumption, but if you're curious you can load in firefox on linux/mac (`build.sh` in the root dir could be ported to windows bat file if you're interested).
 
-1. Install node.js for your platform
-2. `npm run build`
-3. Load [about:debugging](about:debugging) in Firefox and click "Load Temporary Add-on".  Open `dist/manifest.json`.
+1. Install [Node.js](https://nodejs.org/en/) for your platform
+2. `git clone git@github.com:amccausl/Tab-Groups.git` and open directory in terminal
+3. `npm run build`
+4. Load [about:debugging](about:debugging) in Firefox and click "Load Temporary Add-on".  Open `dist/manifest.json`.
 
 Will add a new "Tab Group" sidebar.  It should open when you load.

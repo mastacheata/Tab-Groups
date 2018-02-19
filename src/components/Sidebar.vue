@@ -297,7 +297,7 @@ $light-awesome-bar-background: #474749; // @todo
 }
 
 .sidebar-tab-view-item {
-  transition-property: margin-top margin-left;
+  transition-property: margin-top, margin-left;
   transition-duration: 250ms;
   transition-timing-function: cubic-bezier(.07,.95,0,1);
 }
@@ -326,13 +326,13 @@ $light-awesome-bar-background: #474749; // @todo
 
 .sidebar-tab-group-list-item-header {
   padding: 10px;
-
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   position: sticky;
   top: 0;
+  z-index: 1;
 }
 
 .sidebar-tab-group-list-item-header > span {
@@ -384,20 +384,21 @@ $light-awesome-bar-background: #474749; // @todo
 }
 
 .sidebar-tab-view-item-icon {
+  position: relative;
   min-width: 32px;
   height: 32px;
   margin: 0 4px;
 
   > div {
+    position: absolute;
     padding: 16px;
     border-radius: 16px;
-    position: absolute;
   }
 
   > img {
+    position: absolute;
     width: 24px;
     height: 24px;
-    position: relative;
     margin: 4px;
   }
 }
