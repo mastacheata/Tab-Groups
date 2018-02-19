@@ -29,6 +29,52 @@ export function resetDragState() {
   this.selected_tab_ids.splice( 0, this.selected_tab_ids.length )
 }
 
+export function onTabDragStart( event, tab ) {
+  console.info('onTabDragStart', event, this.window_id, this.selected_tab_ids)
+  this.is_dragging = true
+
+  // Use the selected tabs if the tab is selected
+  if( this.isSelected( tab ) ) {
+    setTabTransferData( event.dataTransfer, this.window_id, [ ...this.selected_tab_ids ] )
+  } else {
+    this.selected_tab_ids.splice( 0, this.selected_tab_ids.length, tab.id )
+    setTabTransferData( event.dataTransfer, this.window_id, [ tab.id ] )
+  }
+}
+
+export function onTabDragOver( event, tab_group, tab ) {
+  event.preventDefault()
+  const event_data = getTransferData( event.dataTransfer )
+  // console.info('onTabDragOver', event)
+  if( isTabTransfer( event_data ) ) {
+    this.target_tab_group_id = tab_group.id
+    this.target_tab_group_index = tab_group.tabs.indexOf( tab )
+    this.target_tab_id = tab.id
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.dropEffect = 'move'
+  }
+}
+
+export function onTabDragEnd( event ) {
+  console.info('onTabDragEnd', event)
+  this.resetDragState()
+}
+
+export function onTabDrop( event, tab ) {
+  const source_data = getTransferData( event.dataTransfer )
+  console.info('onTabDrop', tab.id, event, source_data )
+
+  const target_data = {
+    window_id: this.window_id,
+    tab_group_id: this.target_tab_group_id,
+    tab_group_index: this.target_tab_group_index
+  }
+
+  window.background.moveTabsToGroup( window.store, source_data, target_data )
+  this.selected_tab_ids.splice( 0, this.selected_tab_ids.length )
+  this.resetDragState()
+}
+
 export function onTabGroupDragEnter( event, tab_group ) {
   console.info('onTabGroupDragEnter', tab_group, event)
   event.dataTransfer.effectAllowed = 'move'

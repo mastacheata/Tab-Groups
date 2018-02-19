@@ -48,7 +48,7 @@
               v-if="! search_text || ! search_resolved || tab.matched" :title="tab.title"
               :class="{ active: tab_group.active_tab_id === tab.id, selected: isSelected( tab ), source: isSelected( tab ) && is_dragging, target: target_tab_id === tab.id && ! isSelected( tab ) }"
               @click.ctrl="toggleTabSelection( tab )" @click.exact="openTab( tab )" @click.middle="closeTab( tab )"
-              draggable="true" @dragstart="onTabDragStart( $event, tab )" @dragend="onTabDragEnd" @drop="onTabDrop( tab, $event )"
+              draggable="true" @dragstart="onTabDragStart( $event, tab )" @dragend="onTabDragEnd( $event )" @drop="onTabDrop( $event, tab )"
               @dragover="onTabDragOver( $event, tab_group, tab )"
           >
               <!-- @drag="onTabDrag" @dragenter="onTabDragEnter( tab_group, tab, $event )" @dragleave="onTabDragLeave( tab_group, tab, $event )" @dragexit="onTabDragExit" -->
@@ -82,6 +82,10 @@ import {
 import {
   getTransferData,
   isTabTransfer,
+  onTabDragStart,
+  onTabDragOver,
+  onTabDragEnd,
+  onTabDrop,
   onTabGroupDragEnter,
   onTabGroupDragOver,
   onTabGroupDrop,
@@ -183,7 +187,7 @@ export default {
     openTab( tab ) {
       console.info('openTab', tab)
       this.selected_tab_ids.splice( 0, this.selected_tab_ids.length )
-      setTabActive( tab.id )
+      window.background.setTabActive( tab.id )
     },
     closeTab( tab ) {
       console.info('closeTab', tab)
@@ -192,51 +196,10 @@ export default {
     isSelected( tab ) {
       return this.selected_tab_ids.includes( tab.id )
     },
-    onTabDrag( event ) {
-      // console.info('onTabDrag', event)
-    },
-    onTabDragStart( event, tab ) {
-      console.info('onTabDragStart', event, this.window_id, this.selected_tab_ids)
-      this.is_dragging = true
-
-      // Use the selected tabs if the tab is selected
-      if( this.isSelected( tab ) ) {
-        setTabTransferData( event.dataTransfer, this.window_id, [ ...this.selected_tab_ids ] )
-      } else {
-        this.selected_tab_ids.splice( 0, this.selected_tab_ids.length, tab.id )
-        setTabTransferData( event.dataTransfer, this.window_id, [ tab.id ] )
-      }
-    },
-    onTabDragOver( event, tab_group, tab ) {
-      event.preventDefault()
-      const event_data = getTransferData( event.dataTransfer )
-      // console.info('onTabDragOver', event)
-      if( isTabTransfer( event_data ) ) {
-        this.target_tab_group_id = tab_group.id
-        this.target_tab_group_index = tab_group.tabs.indexOf( tab )
-        this.target_tab_id = tab.id
-        event.dataTransfer.effectAllowed = 'move'
-        event.dataTransfer.dropEffect = 'move'
-      }
-    },
-    onTabDragEnd( event ) {
-      console.info('onTabDragEnd', event)
-      this.resetDragState()
-    },
-    onTabDrop( tab, event ) {
-      const source_data = getTransferData( event.dataTransfer )
-      console.info('onTabDrop', tab.id, event, source_data )
-
-      const target_data = {
-        window_id: this.window_id,
-        tab_group_id: this.target_tab_group_id,
-        tab_group_index: this.target_tab_group_index
-      }
-
-      window.background.moveTabsToGroup( window.store, source_data, target_data )
-      this.selected_tab_ids.splice( 0, this.selected_tab_ids.length )
-      this.resetDragState()
-    },
+    onTabDragStart,
+    onTabDragOver,
+    onTabDragEnd,
+    onTabDrop,
     onTabGroupDragEnter,
     onTabGroupDragOver,
     onTabGroupDrop,
